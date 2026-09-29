@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="web_standard" name="shell-type"/>
+<title>E-CELL • VSB College of Engineering &amp; Technical Campus</title>
+<!-- Typography -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Space+Mono:ital,wght@0,400;0,700;1,400&amp;family=Syne:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with custom Swiss Style Design Tokens -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            paper: "#FBF9F4",
+            "paper-dim": "#F5F3EE",
+            "paper-muted": "#EDEAE2",
+            "paper-border": "rgba(14, 14, 16, 0.16)",
+            "paper-dark": "#0E0E10",
+            ink: "#0E0E10",
+            "ink-muted": "#57565B",
+            vermilion: "#FF4D2E",
+            "vermilion-dark": "#B61B00",
+            primary: "#0E0E10",
+            secondary: "#FF4D2E",
+            surface: "#FBF9F4",
+            "surface-dim": "#F5F3EE",
+            "surface-container": "#EDEAE2",
+            "surface-container-high": "#E4E0D6",
+            "on-surface": "#0E0E10",
+            "on-surface-variant": "#57565B",
+            outline: "rgba(14, 14, 16, 0.18)"
+          },
+          fontFamily: {
+            headline: ["Syne", "sans-serif"],
+            body: ["Plus Jakarta Sans", "sans-serif"],
+            mono: ["Space Mono", "monospace"]
+          },
+          spacing: {
+            gutter: "1.5rem",
+            margin: "3rem",
+            "margin-mobile": "1.25rem"
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    @layer base {
+      html, body {
+        margin: 0;
+        padding: 0;
+        background-color: #FBF9F4;
+        color: #0E0E10;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+      }
+      ::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #F5F3EE;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #0E0E10;
+      }
+    }
+    
+    /* Swiss Editorial Strict Grid Utilities */
+    .swiss-border-b { border-bottom: 1px solid rgba(14, 14, 16, 0.14); }
+    .swiss-border-t { border-top: 1px solid rgba(14, 14, 16, 0.14); }
+    .swiss-border-r { border-right: 1px solid rgba(14, 14, 16, 0.14); }
+    .swiss-border-l { border-left: 1px solid rgba(14, 14, 16, 0.14); }
+    .swiss-border { border: 1px solid rgba(14, 14, 16, 0.14); }
+    
+    /* Isometric canvas positioning */
+    #swiss-webgl-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.65;
+    }
+
+    @keyframes marquee {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+    .animate-marquee {
+      display: inline-flex;
+      white-space: nowrap;
+      animation: marquee 28s linear infinite;
+    }
+    .animate-marquee:hover {
+      animation-play-state: paused;
+    }
+
+    /* Tactile 3D Paper Shadowing */
+    .btn-3d {
+      box-shadow: 3px 3px 0px #0E0E10;
+      transition: all 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-3d:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0px #0E0E10;
+    }
+    .btn-3d:active {
+      transform: translate(2px, 2px);
+      box-shadow: 0px 0px 0px #0E0E10;
+    }
+
+    .btn-3d-vermilion {
+      box-shadow: 3px 3px 0px #B61B00;
+      transition: all 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-3d-vermilion:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0px #B61B00;
+    }
+    .btn-3d-vermilion:active {
+      transform: translate(2px, 2px);
+      box-shadow: 0px 0px 0px #B61B00;
+    }
+  </style>
+</head>
+<body class="bg-paper font-body text-ink antialiased selection:bg-vermilion selection:text-white relative overflow-x-hidden">
+<!-- Interactive 3D WebGL Background Canvas (Light Mode Raymarched Isometric Grid / Platonic Architecture) -->
+<canvas id="swiss-webgl-canvas"></canvas>
+<!-- Interactive Cursor Follower -->
+<div class="fixed top-0 left-0 w-2 h-2 bg-vermilion pointer-events-none z-[100] -translate-x-1/2 -translate-y-1/2 hidden md:block" id="cursor-dot"></div>
+<div class="fixed top-0 left-0 w-8 h-8 border border-ink/40 pointer-events-none z-[99] -translate-x-1/2 -translate-y-1/2 transition-transform duration-100 ease-out hidden md:block" id="cursor-ring"></div>
+<!-- Skip Navigation -->
+<a class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[130] focus:px-4 focus:py-2 focus:bg-ink focus:text-paper focus:font-mono focus:text-xs uppercase tracking-wider" href="#main-content">
+    Skip to Content [01]
+  </a>
+<!-- Minimalist Swiss Editorial Intro Curtain (Skippable) -->
+<div class="fixed inset-0 z-[120] bg-paper flex flex-col justify-between p-6 md:p-12 transition-all duration-700 ease-in-out select-none border-b-2 border-ink" id="intro-curtain">
+<div class="w-full flex items-center justify-between pb-4 swiss-border-b">
+<div class="flex items-center gap-3">
+<span class="w-2.5 h-2.5 bg-vermilion"></span>
+<span class="font-mono text-xs text-ink tracking-[0.2em] uppercase font-bold">SWISS SYSTEM // KERNEL VSB.EC.25</span>
+</div>
+<button class="flex items-center gap-2 px-3 py-1 bg-ink text-paper hover:bg-vermilion transition-colors font-mono text-xs uppercase tracking-widest btn-3d" id="skip-intro-btn" type="button">
+<span>SKIP [SPACE]</span>
+<span class="material-symbols-outlined text-[13px]">arrow_forward</span>
+</button>
+</div>
+<!-- Editorial Central Emblem Statement -->
+<div class="max-w-4xl mx-auto my-auto w-full py-8">
+<div class="flex flex-col md:flex-row items-baseline gap-6 md:gap-12 mb-8">
+<div class="font-headline text-7xl md:text-9xl font-extrabold text-ink leading-none shrink-0 tracking-tighter">
+          01
+        </div>
+<div class="flex flex-col gap-3">
+<div class="flex items-center gap-4">
+<img alt="ECELL Logo" class="h-10 w-10 object-contain grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAG6e0EAt2aEyGvPFwfCVqZIehaK6b8sYrC9KgXw-ZDvzURUXWR5oGvTeB5AOUh0riZLAe10qfejxhoiGo_fgSkNNJn6k1bMNMi02h-DzuSSvRq64tvz6BRR5AfrBGd1bPLpRFik2-bpY7ouZdj1Bu7IamJt6v__jsa-vkhuox9KtLd0I5eWyUPTI-nYYG9tuIfLDa72P6sTKNs5rgQU8idaCX7AwPPxHKYKz84qCZb4JhhJcGHJsVI7N7eWU76OdYr5w"/>
+<span class="font-mono text-xs uppercase tracking-[0.25em] text-vermilion font-bold">FOUNDATIONAL MANIFESTO</span>
+</div>
+<h1 class="font-headline text-3xl md:text-5xl font-extrabold tracking-tight text-ink uppercase leading-none">
+            Igniting Student Ventures Into Enduring Enterprises.
+          </h1>
+<p class="font-body text-ink-muted text-base max-w-xl">
+            Autonomous Hardware Labs, Venture Syndicate, Pre-Seed Pipeline, and Patent Foundry at NH-67 Karur, Tamil Nadu.
+          </p>
+</div>
+</div>
+</div>
+<!-- Telemetry progress strip -->
+<div class="w-full pt-4 swiss-border-t flex flex-col gap-2">
+<div class="flex justify-between items-center font-mono text-xs text-ink uppercase font-bold tracking-widest">
+<span>BUILDING SPATIAL CACHE</span>
+<span id="intro-timer-display">1.8 SEC</span>
+</div>
+<div class="w-full h-1 bg-ink/15 overflow-hidden">
+<div class="h-full bg-vermilion w-0 transition-all duration-[1800ms] ease-out" id="intro-progress-bar"></div>
+</div>
+</div>
+</div>
+<!-- PERSISTENT EDITORIAL NAVIGATION -->
+<header class="fixed top-0 w-full z-50 bg-paper/90 backdrop-blur-md swiss-border-b">
+<div class="h-16 w-full px-4 md:px-margin flex items-center justify-between gap-4">
+<!-- Brand & Metadata Unit -->
+<div class="flex items-center gap-4 shrink-0">
+<a class="flex items-center gap-3.5 group" href="#">
+<div class="w-9 h-9 border border-ink bg-white flex items-center justify-center p-1 shadow-[2px_2px_0px_#0E0E10] group-hover:bg-paper-dim transition-colors">
+<img alt="VSB E-CELL Emblem" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD1r2VlotA7G1xYqPy4jdjWTUxObHJctPRiQW7beYSgRUp4a4xs7eNEgN9EfqdU3VdcDhlPo0rv18Qjfsb11j8I8h0356iOCDaSPGC-CGPPkDppXSEoqf2p7HK8Iap4MNDMJ7Eo4ns_5mHqTe-bpKNKiVV8eaC7hkU1iOHCwcVdbNVGNdjXFsrk1w8hGrgEgGjBP16LZoSHB8j-_bo-6purdLdSJ4wgCZ90MViLD45LJXfwjZHeaYj7D-omhKwKWDPUg"/>
+</div>
+<div class="flex flex-col justify-center leading-none">
+<span class="font-headline text-base font-extrabold tracking-tight uppercase text-ink">E-CELL</span>
+<span class="font-mono text-[9px] tracking-widest text-ink-muted uppercase mt-0.5">VSB ENGR &amp; TECH CAMPUS</span>
+</div>
+</a>
+</div>
+<!-- Swiss Indexed Navigation -->
+<nav class="hidden lg:flex items-center border-l border-r border-ink/15">
+<a aria-current="page" class="px-5 py-5 font-mono text-xs uppercase tracking-wider text-ink font-bold bg-white swiss-border-r hover:bg-paper-dim transition-colors flex items-center gap-2" data-path="home" href="#">
+<span class="w-1.5 h-1.5 bg-vermilion"></span>
+<span>[01] INDEX</span>
+</a>
+<a class="px-5 py-5 font-mono text-xs uppercase tracking-wider text-ink-muted hover:text-ink swiss-border-r hover:bg-white transition-colors" data-path="about" href="#">
+<span>[02] ABOUT</span>
+</a>
+<a class="px-5 py-5 font-mono text-xs uppercase tracking-wider text-ink-muted hover:text-ink swiss-border-r hover:bg-white transition-colors" data-path="team" href="#">
+<span>[03] TEAM</span>
+</a>
+<a class="px-5 py-5 font-mono text-xs uppercase tracking-wider text-ink-muted hover:text-ink swiss-border-r hover:bg-white transition-colors" data-path="events" href="#">
+<span>[04] EVENTS</span>
+</a>
+<a class="px-5 py-5 font-mono text-xs uppercase tracking-wider text-ink-muted hover:text-ink hover:bg-white transition-colors" data-path="contact" href="#">
+<span>[05] CONTACT</span>
+</a>
+</nav>
+<!-- Right Utility Actions -->
+<div class="flex items-center gap-3 shrink-0">
+<div class="hidden xl:flex items-center gap-2 px-3 py-1 bg-white border border-ink/15">
+<span class="w-1.5 h-1.5 bg-vermilion animate-pulse"></span>
+<span class="font-mono text-[10px] uppercase tracking-widest text-ink font-semibold">INCUBATOR ACTIVE '25</span>
+</div>
+<a class="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-ink text-paper font-mono text-xs uppercase font-bold tracking-wider hover:bg-vermilion transition-colors btn-3d" data-path="launch-pitch" href="#">
+<span>LAUNCH PITCH</span>
+<span class="font-headline font-bold text-vermilion">→</span>
+</a>
+<div class="w-8 h-8 border border-ink bg-white flex items-center justify-center font-mono text-xs font-bold shadow-[2px_2px_0px_#0E0E10]">
+          VSB
+        </div>
+</div>
+</div>
+</header>
+<!-- MAIN EDITORIAL CONTENT -->
+<main class="w-full pt-16 relative z-10" id="main-content">
+<!-- SECTION 1: HERO VIEWPORT -->
+<section class="w-full px-4 md:px-margin pt-10 pb-16 swiss-border-b bg-paper">
+<!-- Telemetry Sub-bar -->
+<div class="w-full flex flex-wrap items-center justify-between pb-3 mb-8 swiss-border-b text-ink font-mono text-xs">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 bg-vermilion"></span>
+<span class="uppercase tracking-widest font-bold">SYSTEM STATUS // COHORT RECRUITMENT OPEN</span>
+</div>
+<div class="text-ink-muted uppercase tracking-wider">
+          COORDINATES: 10.9601° N, 78.0766° E • KARUR
+        </div>
+</div>
+<!-- Main Display Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+<!-- Left: Huge Swiss Typography Statement -->
+<div class="lg:col-span-8 flex flex-col justify-between">
+<div class="flex flex-col gap-4">
+<div class="inline-flex items-center gap-2 self-start px-2 py-0.5 border border-ink bg-white font-mono text-[11px] font-bold text-ink uppercase tracking-wider">
+<span>EST. 2018</span>
+<span class="text-ink/30">•</span>
+<span class="text-vermilion">VSB CETC VENTURE FOUNDRY</span>
+</div>
+<h1 class="font-headline text-5xl sm:text-7xl xl:text-8xl uppercase font-extrabold tracking-tighter text-ink leading-[0.92] mt-2">
+              WE DO NOT<br/>
+              WAIT FOR<br/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-ink via-ink-muted to-ink">THE FUTURE.</span><br/>
+<span class="text-vermilion underline decoration-4 underline-offset-8">WE ENGINEER IT.</span>
+</h1>
+<p class="font-body text-lg md:text-xl text-ink-muted max-w-2xl mt-4 leading-relaxed">
+              The premier student-led venture accelerator, rapid prototyping sandbox, and angel syndicate network at <strong class="text-ink font-semibold">VSB College of Engineering &amp; Technical Campus</strong>. Converting academic engineering hypotheses into enterprise equity.
+            </p>
+</div>
+<!-- Action Buttons with 3D Tactile Paper Depth -->
+<div class="flex flex-wrap items-center gap-4 mt-8 pt-6 swiss-border-t">
+<a class="px-6 py-3.5 bg-ink text-paper font-mono text-xs uppercase tracking-wider font-bold hover:bg-vermilion transition-colors flex items-center gap-3 btn-3d" data-path="events" href="#">
+<span>FLAGSHIP SUMMIT '25</span>
+<span class="material-symbols-outlined text-[16px]">bolt</span>
+</a>
+<a class="px-6 py-3.5 bg-white border border-ink text-ink font-mono text-xs uppercase tracking-wider font-bold hover:bg-paper-dim transition-colors flex items-center gap-2 btn-3d" data-path="about" href="#">
+<span>READ E-CELL MANIFESTO</span>
+<span class="text-vermilion font-bold">→</span>
+</a>
+<div class="ml-auto hidden xl:flex items-center gap-2 font-mono text-xs text-ink-muted uppercase">
+<span>[FIG 1.0]</span>
+<span>INDEX: PROTOTYPE_TO_MARKET</span>
+</div>
+</div>
+</div>
+<!-- Right: Interactive 3D Perspective Emblem Card -->
+<div class="lg:col-span-4 flex justify-center lg:justify-end">
+<div class="relative w-full max-w-[380px] bg-white border-2 border-ink p-6 cursor-pointer select-none transition-transform duration-150 ease-out shadow-[8px_8px_0px_#0E0E10]" id="tilt-emblem-card">
+<!-- Top Card Header -->
+<div class="flex justify-between items-center pb-4 mb-4 swiss-border-b">
+<span class="font-mono text-xs uppercase tracking-widest text-vermilion font-bold">[NODE // KARUR.HQ]</span>
+<div class="w-6 h-6 border border-ink flex items-center justify-center font-mono text-[10px] font-bold bg-paper-dim">
+                3D
+              </div>
+</div>
+<!-- Central 3D Embossed Sculpture Visual -->
+<div class="my-6 py-4 flex flex-col items-center justify-center relative">
+<!-- Embossed Shadow Layer -->
+<div class="relative w-44 h-44 flex items-center justify-center bg-paper-dim border border-ink/20 shadow-[inset_2px_2px_4px_rgba(0,0,0,0.06)] group">
+<!-- Hairline crosshairs -->
+<div class="absolute inset-x-0 top-1/2 h-[1px] bg-ink/10 pointer-events-none"></div>
+<div class="absolute inset-y-0 left-1/2 w-[1px] bg-ink/10 pointer-events-none"></div>
+<img alt="E-CELL Official Emblem" class="w-32 h-32 object-contain relative z-10 transition-transform duration-300 drop-shadow-[0_8px_16px_rgba(14,14,16,0.18)]" id="card-emblem-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDufpz_M4GFnCvdbS2JAkufp2hsFbLxv57IS3TMHsIwxjtIUcV7ia1bIg2IIE6193hcBUk_NNYoJeh3FIBqjtky-f3zDNFpWhuLb7ufcZfHr9Awdf4ahumfblk1MjiLwwSbhFKA3ToY2VR6wRPjU2CTuHt6_r5mPi-1V6BjtKDtgOzZTby0dfc1IRQ8Q_3DGawIJLoUEPqt77k8t4DG46JJ1dOY-mXp4UQABRvFkhtqotSijScxvfLgzDPvAGtV3lOmMw"/>
+</div>
+<div class="text-center mt-5">
+<span class="font-headline text-lg font-extrabold uppercase text-ink block tracking-tight">VSB E-CELL CORE</span>
+<span class="font-mono text-[10px] text-ink-muted uppercase tracking-widest">AUTONOMOUS STUDENT INCUBATOR</span>
+</div>
+</div>
+<!-- Bottom Metadata Unit -->
+<div class="pt-3 swiss-border-t flex justify-between items-center font-mono text-[11px] text-ink">
+<span class="flex items-center gap-1.5 font-bold">
+<span class="w-2 h-2 bg-vermilion"></span>
+                ACTIVE PIPELINE
+              </span>
+<span class="text-ink-muted">PITCH.IO READY</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Telemetry Counters Grid (Stark Swiss Hairlines) -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-0 swiss-border mt-12 bg-white">
+<div class="p-5 md:p-6 swiss-border-r border-b lg:border-b-0 border-ink/15 hover:bg-paper-dim transition-colors">
+<div class="flex justify-between items-baseline mb-2">
+<span class="font-mono text-[11px] uppercase tracking-wider text-ink-muted">[A1] CAPITAL PIPELINE</span>
+<span class="w-1.5 h-1.5 bg-vermilion"></span>
+</div>
+<div class="font-headline text-3xl md:text-4xl font-extrabold text-vermilion tracking-tight">₹4.2 Cr</div>
+<p class="font-body text-xs text-ink-muted mt-1">Angel &amp; institutional seed capital deployed</p>
+</div>
+<div class="p-5 md:p-6 swiss-border-r border-b lg:border-b-0 border-ink/15 hover:bg-paper-dim transition-colors">
+<div class="flex justify-between items-baseline mb-2">
+<span class="font-mono text-[11px] uppercase tracking-wider text-ink-muted">[A2] FOUNDRY VENTURES</span>
+<span class="w-1.5 h-1.5 bg-ink"></span>
+</div>
+<div class="font-headline text-3xl md:text-4xl font-extrabold text-ink tracking-tight">48+</div>
+<p class="font-body text-xs text-ink-muted mt-1">Active student-led startups in acceleration</p>
+</div>
+<div class="p-5 md:p-6 swiss-border-r border-ink/15 hover:bg-paper-dim transition-colors">
+<div class="flex justify-between items-baseline mb-2">
+<span class="font-mono text-[11px] uppercase tracking-wider text-ink-muted">[A3] PATENTS &amp; IP</span>
+<span class="w-1.5 h-1.5 bg-ink"></span>
+</div>
+<div class="font-headline text-3xl md:text-4xl font-extrabold text-ink tracking-tight">18</div>
+<p class="font-body text-xs text-ink-muted mt-1">Deep-tech patent &amp; design utility grants</p>
+</div>
+<div class="p-5 md:p-6 hover:bg-paper-dim transition-colors">
+<div class="flex justify-between items-baseline mb-2">
+<span class="font-mono text-[11px] uppercase tracking-wider text-ink-muted">[A4] TALENT COHORT</span>
+<span class="w-1.5 h-1.5 bg-ink"></span>
+</div>
+<div class="font-headline text-3xl md:text-4xl font-extrabold text-ink tracking-tight">2,400+</div>
+<p class="font-body text-xs text-ink-muted mt-1">Founders, hackers, and applied researchers</p>
+</div>
+</div>
+</section>
+<!-- SECTION 2: LIVE CURRENT EVENT MARQUEE & COUNTDOWN STRIP -->
+<section class="w-full bg-paper-dim swiss-border-b">
+<!-- Continuous Kinetic Marquee -->
+<div class="w-full overflow-hidden bg-vermilion text-white py-2.5 select-none swiss-border-b">
+<div class="animate-marquee font-headline text-sm md:text-base uppercase tracking-wider font-extrabold flex items-center gap-8">
+<span>INNOVEX 2025 • NATIONAL HACKATHON &amp; ANGEL SUMMIT</span>
+<span class="font-mono">— [₹10,00,000 PRIZE POOL] —</span>
+<span>40+ VENTURE CAPITAL FIRMS CONFIRMED</span>
+<span class="font-mono">— [36-HOUR PROTOTYPE SPRINT] —</span>
+<span>APPLICATIONS CLOSING SOON</span>
+<span class="font-mono">— [NH-67 KARUR CAMPUS] —</span>
+<span>INNOVEX 2025 • NATIONAL HACKATHON &amp; ANGEL SUMMIT</span>
+<span class="font-mono">— [₹10,00,000 PRIZE POOL] —</span>
+</div>
+</div>
+<!-- Real-Time Countdown & Dossier Grid -->
+<div class="w-full px-4 md:px-margin py-8">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white border-2 border-ink p-6 md:p-8 shadow-[6px_6px_0px_#0E0E10]">
+<div class="lg:col-span-5 flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 bg-vermilion text-white font-mono text-[11px] font-bold uppercase tracking-wider">ANNUAL FLAGSHIP</span>
+<span class="font-mono text-xs text-ink-muted uppercase">[MARCH 2025]</span>
+</div>
+<h2 class="font-headline text-2xl md:text-3xl font-extrabold text-ink tracking-tight uppercase">
+              INNOVEX 2025 CONVERGENCE
+            </h2>
+<p class="font-body text-sm text-ink-muted">
+              36-hour physical hackathon, live hardware demo arena, and speed-pitching rounds before institutional angel investors.
+            </p>
+</div>
+<!-- Swiss Digital Flip Clock Layout -->
+<div class="lg:col-span-4 grid grid-cols-4 gap-2 bg-paper-dim p-3 border border-ink/20 text-center font-mono">
+<div class="bg-white border border-ink/15 p-2">
+<div class="font-headline text-2xl md:text-3xl font-bold text-ink" id="cd-days">14</div>
+<div class="text-[9px] uppercase tracking-wider text-ink-muted font-bold">DAYS</div>
+</div>
+<div class="bg-white border border-ink/15 p-2">
+<div class="font-headline text-2xl md:text-3xl font-bold text-ink" id="cd-hours">08</div>
+<div class="text-[9px] uppercase tracking-wider text-ink-muted font-bold">HOURS</div>
+</div>
+<div class="bg-white border border-ink/15 p-2">
+<div class="font-headline text-2xl md:text-3xl font-bold text-ink" id="cd-mins">42</div>
+<div class="text-[9px] uppercase tracking-wider text-ink-muted font-bold">MINS</div>
+</div>
+<div class="bg-white border border-ink/15 p-2">
+<div class="font-headline text-2xl md:text-3xl font-bold text-vermilion" id="cd-secs">19</div>
+<div class="text-[9px] uppercase tracking-wider text-ink-muted font-bold">SECS</div>
+</div>
+</div>
+<!-- Dual Trigger Actions -->
+<div class="lg:col-span-3 flex flex-col gap-2.5">
+<a class="px-5 py-3 bg-ink text-paper font-mono text-xs uppercase font-bold tracking-wider text-center hover:bg-vermilion transition-colors btn-3d" data-path="events" href="#">
+              REGISTER SQUAD (FREE) →
+            </a>
+<a class="px-5 py-2.5 bg-paper-dim border border-ink text-ink font-mono text-xs uppercase font-bold tracking-wider text-center hover:bg-white transition-colors flex items-center justify-center gap-1.5" href="#">
+<span class="material-symbols-outlined text-[15px]">download</span>
+<span>RULEBOOK [PDF]</span>
+</a>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 3: THE 4 ACCELERATION PILLARS (Strict Asymmetric Swiss Grid) -->
+<section class="w-full px-4 md:px-margin py-16 bg-paper swiss-border-b">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 swiss-border-b mb-8">
+<div>
+<span class="font-mono text-xs uppercase tracking-[0.25em] text-vermilion font-bold">[INFRASTRUCTURE SPECIFICATION]</span>
+<h2 class="font-headline text-3xl md:text-5xl font-extrabold uppercase text-ink tracking-tight mt-1">
+            THE ACCELERATION ENGINE
+          </h2>
+</div>
+<p class="font-body text-sm md:text-base text-ink-muted max-w-md">
+          Zero generic lecture halls. E-CELL provisions high-frequency compute clusters, legal coverage, non-dilutive seed grants, and veteran operator advisory.
+        </p>
+</div>
+<!-- 4 Columns Grid with Hairline Framework -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 swiss-border bg-white">
+<!-- Pillar 01 -->
+<div class="group p-6 md:p-8 swiss-border-r border-b lg:border-b-0 border-ink/15 flex flex-col justify-between hover:bg-paper-dim transition-colors">
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-baseline font-mono">
+<span class="font-headline text-3xl font-bold text-ink group-hover:text-vermilion transition-colors">01</span>
+<span class="text-xs uppercase tracking-widest text-ink-muted">[HARDWARE]</span>
+</div>
+<div class="pt-2">
+<h3 class="font-headline text-xl font-bold text-ink uppercase tracking-tight">PROTOTYPE INCUBATION</h3>
+<span class="font-mono text-[10px] text-vermilion uppercase tracking-widest font-bold block mt-1">SANDBOX &amp; WORKSHOPS</span>
+</div>
+<p class="font-body text-sm text-ink-muted leading-relaxed">
+              24/7 access to high-precision CNC routers, rapid SLA 3D printing suites, embedded FPGA test benches, and $100k+ in partnered AWS and GCP cloud credits.
+            </p>
+</div>
+<div class="pt-8 swiss-border-t mt-8 flex justify-between items-center font-mono text-[11px] text-ink group-hover:text-vermilion transition-colors font-bold">
+<span>LAB // BLDG 4</span>
+<span>↗</span>
+</div>
+</div>
+<!-- Pillar 02 -->
+<div class="group p-6 md:p-8 swiss-border-r border-b lg:border-b-0 border-ink/15 flex flex-col justify-between hover:bg-paper-dim transition-colors">
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-baseline font-mono">
+<span class="font-headline text-3xl font-bold text-ink group-hover:text-vermilion transition-colors">02</span>
+<span class="text-xs uppercase tracking-widest text-ink-muted">[SYNDICATE]</span>
+</div>
+<div class="pt-2">
+<h3 class="font-headline text-xl font-bold text-ink uppercase tracking-tight">CAPITAL &amp; ANGEL NETWORK</h3>
+<span class="font-mono text-[10px] text-vermilion uppercase tracking-widest font-bold block mt-1">PRE-SEED TO INSTITUTIONAL</span>
+</div>
+<p class="font-body text-sm text-ink-muted leading-relaxed">
+              Non-dilutive pre-seed micro-grants up to ₹5,00,000 for verified prototypes. Bi-monthly investor pitch clinics evaluated by Tamil Nadu Angel Network and tier-1 VCs.
+            </p>
+</div>
+<div class="pt-8 swiss-border-t mt-8 flex justify-between items-center font-mono text-[11px] text-ink group-hover:text-vermilion transition-colors font-bold">
+<span>CAPITAL DESK // ACTIVE</span>
+<span>↗</span>
+</div>
+</div>
+<!-- Pillar 03 -->
+<div class="group p-6 md:p-8 swiss-border-r border-b md:border-b-0 border-ink/15 flex flex-col justify-between hover:bg-paper-dim transition-colors">
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-baseline font-mono">
+<span class="font-headline text-3xl font-bold text-ink group-hover:text-vermilion transition-colors">03</span>
+<span class="text-xs uppercase tracking-widest text-ink-muted">[GOVERNANCE]</span>
+</div>
+<div class="pt-2">
+<h3 class="font-headline text-xl font-bold text-ink uppercase tracking-tight">LEGAL &amp; IP ADVISORY</h3>
+<span class="font-mono text-[10px] text-vermilion uppercase tracking-widest font-bold block mt-1">PATENTING &amp; EQUITY VESTING</span>
+</div>
+<p class="font-body text-sm text-ink-muted leading-relaxed">
+              Institutional coverage for drafting provisional and complete patent claims, free Pvt Ltd incorporation, Cap Table structuring, and equity vesting agreements.
+            </p>
+</div>
+<div class="pt-8 swiss-border-t mt-8 flex justify-between items-center font-mono text-[11px] text-ink group-hover:text-vermilion transition-colors font-bold">
+<span>100% PRO-BONO</span>
+<span>↗</span>
+</div>
+</div>
+<!-- Pillar 04 -->
+<div class="group p-6 md:p-8 flex flex-col justify-between hover:bg-paper-dim transition-colors">
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-baseline font-mono">
+<span class="font-headline text-3xl font-bold text-ink group-hover:text-vermilion transition-colors">04</span>
+<span class="text-xs uppercase tracking-widest text-ink-muted">[OPERATOR]</span>
+</div>
+<div class="pt-2">
+<h3 class="font-headline text-xl font-bold text-ink uppercase tracking-tight">CXO VENTURE MENTORSHIP</h3>
+<span class="font-mono text-[10px] text-vermilion uppercase tracking-widest font-bold block mt-1">OPERATOR NETWORK</span>
+</div>
+<p class="font-body text-sm text-ink-muted leading-relaxed">
+              Weekly 1-on-1 office hours with seasoned tech CTOs, private founder dinners with funded alumni, and ruthless go-to-market stress test simulations.
+            </p>
+</div>
+<div class="pt-8 swiss-border-t mt-8 flex justify-between items-center font-mono text-[11px] text-ink group-hover:text-vermilion transition-colors font-bold">
+<span>40+ ADVISORS</span>
+<span>↗</span>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 4: VENTURE SHOWCASE MATRIX -->
+<section class="w-full px-4 md:px-margin py-12 bg-paper-dim swiss-border-b">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+<div class="lg:col-span-5 flex flex-col gap-2">
+<span class="font-mono text-xs uppercase tracking-[0.25em] text-vermilion font-bold">[PORTFOLIO TRAJECTORY]</span>
+<h3 class="font-headline text-3xl font-extrabold uppercase text-ink tracking-tight">
+            INCUBATED BREAKTHROUGHS
+          </h3>
+<p class="font-body text-sm text-ink-muted">
+            Discover how student founders build agrarian robotics, EV battery management platforms, and autonomous flight firmware inside VSB labs.
+          </p>
+</div>
+<div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+<!-- Venture 1 -->
+<div class="bg-white border-2 border-ink p-5 shadow-[4px_4px_0px_#0E0E10] flex flex-col justify-between">
+<div class="flex justify-between items-center mb-3">
+<span class="font-mono text-[10px] bg-paper-dim border border-ink/20 px-2 py-0.5 text-ink uppercase font-bold">AGRI-ROBOTICS</span>
+<span class="font-mono text-xs text-vermilion font-bold">₹45L RAISED</span>
+</div>
+<h4 class="font-headline text-xl font-bold text-ink">KisanOps AI</h4>
+<p class="font-body text-xs text-ink-muted mt-1">Autonomous weed eradication robotics with edge vision models.</p>
+<div class="pt-4 mt-4 swiss-border-t font-mono text-[10px] text-ink-muted uppercase">
+              STATUS: SEED STAGE • BATCH '23
+            </div>
+</div>
+<!-- Venture 2 -->
+<div class="bg-white border-2 border-ink p-5 shadow-[4px_4px_0px_#0E0E10] flex flex-col justify-between">
+<div class="flex justify-between items-center mb-3">
+<span class="font-mono text-[10px] bg-paper-dim border border-ink/20 px-2 py-0.5 text-ink uppercase font-bold">CLEANTECH</span>
+<span class="font-mono text-xs text-ink font-bold">PATENT GRANTED</span>
+</div>
+<h4 class="font-headline text-xl font-bold text-ink">VoltFlux Grid</h4>
+<p class="font-body text-xs text-ink-muted mt-1">Ultra-capacitor hybrid thermal battery cells for commercial 2-wheelers.</p>
+<div class="pt-4 mt-4 swiss-border-t font-mono text-[10px] text-ink-muted uppercase">
+              STATUS: PRE-SERIES A • BATCH '24
+            </div>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 5: CALL TO ACTION BANNER -->
+<section class="w-full px-4 md:px-margin py-16 bg-paper">
+<div class="bg-white border-2 border-ink p-8 md:p-12 shadow-[8px_8px_0px_#0E0E10] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+<div class="flex flex-col gap-3 max-w-2xl">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 bg-vermilion"></span>
+<span class="font-mono text-xs uppercase tracking-widest text-ink font-bold">APPLICATIONS OPEN // COHORT '25</span>
+</div>
+<h2 class="font-headline text-4xl sm:text-5xl font-extrabold uppercase text-ink tracking-tight leading-none">
+            HAVE AN AUDACIOUS HYPOTHESIS?
+          </h2>
+<p class="font-body text-lg text-ink-muted">
+            Let's turn your laboratory code and breadboard circuitry into real enterprise equity.
+          </p>
+</div>
+<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto shrink-0">
+<a class="px-8 py-4 bg-vermilion text-white font-mono text-xs uppercase tracking-wider font-bold text-center hover:bg-ink transition-colors btn-3d-vermilion" data-path="contact" href="#">
+            SUBMIT PITCH DECK →
+          </a>
+<a class="px-6 py-4 bg-paper-dim border border-ink text-ink font-mono text-xs uppercase tracking-wider font-bold text-center hover:bg-white transition-colors" data-path="team" href="#">
+            TALK WITH INCUBATION LEAD
+          </a>
+</div>
+</div>
+</section>
+</main>
+<!-- SWISS SYSTEM EDITORIAL FOOTER -->
+<footer class="w-full bg-paper-dim swiss-border-t relative z-10">
+<div class="w-full px-4 md:px-margin py-12 flex flex-col gap-12">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+<div class="md:col-span-6 flex flex-col gap-3">
+<span class="font-mono text-xs uppercase tracking-[0.2em] text-vermilion font-bold">[ACCREDITATION &amp; AFFILIATION]</span>
+<p class="font-headline text-2xl font-bold uppercase text-ink">E-CELL • VSB College of Engineering &amp; Technical Campus</p>
+<p class="font-body text-sm text-ink-muted max-w-md">
+            NH-67, Karur-Coimbatore Highway, Ezhil Nagar, Karur, Tamil Nadu 639111. Fostering frontier technology innovation, patent filings, and pre-seed institutional angel syndication.
+          </p>
+</div>
+<div class="md:col-span-6 flex flex-col gap-3">
+<span class="font-mono text-xs uppercase tracking-[0.2em] text-ink font-bold">[VENTURE DISPATCHES]</span>
+<p class="font-body text-sm text-ink-muted">
+            Receive private angel investor pitch invitations, demo-day registration dates, and incubator cohort briefings.
+          </p>
+<div class="flex flex-col sm:flex-row gap-2 max-w-md mt-1">
+<input class="flex-1 bg-white border border-ink px-4 py-2.5 font-mono text-xs text-ink placeholder:text-ink-muted focus:outline-none focus:ring-1 focus:ring-vermilion" placeholder="founder@institution.edu" type="email"/>
+<button class="px-5 py-2.5 bg-ink text-paper font-mono text-xs uppercase tracking-wider font-bold hover:bg-vermilion transition-colors shrink-0 btn-3d" type="button">
+              SUBSCRIBE
+            </button>
+</div>
+</div>
+</div>
+<div class="pt-6 swiss-border-t flex flex-col md:flex-row justify-between items-center gap-4 font-mono text-xs text-ink-muted">
+<div class="flex items-center gap-6 flex-wrap">
+<a class="hover:text-ink uppercase tracking-wider transition-colors" href="https://linkedin.com" rel="noreferrer" target="_blank">LINKEDIN ↗</a>
+<a class="hover:text-ink uppercase tracking-wider transition-colors" href="https://instagram.com" rel="noreferrer" target="_blank">INSTAGRAM ↗</a>
+<a class="hover:text-ink uppercase tracking-wider transition-colors" href="https://github.com" rel="noreferrer" target="_blank">GITHUB ↗</a>
+<a class="hover:text-ink uppercase tracking-wider transition-colors" href="https://youtube.com" rel="noreferrer" target="_blank">YOUTUBE ↗</a>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 bg-vermilion"></span>
+<span>KARUR UTC+5:30 [IST] • LIGHT MODE EDITION</span>
+</div>
+<a aria-label="Portal Gateway" class="text-ink hover:text-vermilion transition-colors" data-path="admin-portal" href="#">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+</a>
+</div>
+</div>
+</div>
+</footer>
+<!-- SCRIPT: 3D WEBGL SHADER CANVAS & INTERACTIVE SCRIPTS -->
+<script>
+    (function initSwissScene() {
+      // 1. High-Fidelity Light-Mode 3D WebGL Background (Architectural Isometric Grid & Floating Geometry)
+      const canvas = document.getElementById('swiss-webgl-canvas');
+      if (canvas) {
+        const gl = canvas.getContext('webgl');
+        if (gl) {
+          // Resize handler
+          function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+          }
+          window.addEventListener('resize', resize);
+          resize();
+
+          // Vertex Shader
+          const vsSource = `
+            attribute vec2 position;
+            void main() {
+              gl_Position = vec4(position, 0.0, 1.0);
+            }
+          `;
+
+          // Light mode Architectural Raymarched Shader
+          const fsSource = `
+            precision highp float;
+            uniform vec2 u_resolution;
+            uniform vec2 u_mouse;
+            uniform float u_time;
+
+            // Rotation matrix
+            mat2 rot(float a) {
+              float s = sin(a), c = cos(a);
+              return mat2(c, -s, s, c);
+            }
+
+            // Box SDF
+            float sdBox(vec3 p, vec3 b) {
+              vec3 q = abs(p) - b;
+              return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
+            }
+
+            // Scene Raymarching
+            float map(vec3 p) {
+              vec3 q = p;
+              // Gentle wave elevation
+              float wave = sin(q.x * 0.4 + u_time * 0.6) * cos(q.z * 0.4 + u_time * 0.5) * 0.4;
+              
+              // Infinite modular architectural isometric cubes
+              vec3 gridP = mod(q + vec3(2.5, 0.0, 2.5), 5.0) - 2.5;
+              gridP.y -= wave;
+              
+              float box = sdBox(gridP, vec3(0.55, 0.25, 0.55));
+              
+              // Floating central platonic prism
+              vec3 centerP = p - vec3(0.0, 1.5, 0.0);
+              centerP.xz *= rot(u_time * 0.35 + u_mouse.x * 2.0);
+              centerP.xy *= rot(u_time * 0.25 + u_mouse.y * 2.0);
+              float centerBox = sdBox(centerP, vec3(0.8));
+
+              return min(box, centerBox);
+            }
+
+            void main() {
+              vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution) / min(u_resolution.x, u_resolution.y);
+              vec2 m = (u_mouse - 0.5) * 0.6;
+
+              // Camera Ray
+              vec3 ro = vec3(m.x * 3.0, 4.5 + m.y * 2.0, -7.0);
+              vec3 ta = vec3(0.0, 0.5, 0.0);
+              vec3 ww = normalize(ta - ro);
+              vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
+              vec3 vv = normalize(cross(uu, ww));
+              vec3 rd = normalize(uv.x * uu + uv.y * vv + 1.6 * ww);
+
+              float t = 0.0;
+              for (int i = 0; i < 48; i++) {
+                vec3 p = ro + rd * t;
+                float d = map(p);
+                if (d < 0.002 || t > 22.0) break;
+                t += d;
+              }
+
+              // Warm Paper Background: #FBF9F4
+              vec3 paperCol = vec3(0.984, 0.976, 0.957);
+              vec3 finalCol = paperCol;
+
+              if (t < 22.0) {
+                vec3 p = ro + rd * t;
+                // Subtle architectural outline ink shading
+                float edge = clamp(t * 0.06, 0.0, 1.0);
+                vec3 inkCol = vec3(0.055, 0.055, 0.063); // #0E0E10
+                
+                // Wireframe / Depth hatch
+                float hatch = sin(p.x * 16.0) * sin(p.z * 16.0);
+                float alpha = mix(0.18, 0.04, edge);
+                
+                // Accent highlight near center
+                if (length(p - vec3(0.0, 1.5, 0.0)) < 1.3) {
+                  inkCol = vec3(1.0, 0.30, 0.18); // Vermilion
+                  alpha = 0.35;
+                }
+                
+                finalCol = mix(paperCol, inkCol, alpha);
+              }
+
+              gl_FragColor = vec4(finalCol, 1.0);
+            }
+          `;
+
+          // Compile Shaders
+          function createShader(gl, type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            return shader;
+          }
+
+          const vs = createShader(gl, gl.VERTEX_SHADER, vsSource);
+          const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+          const prog = gl.createProgram();
+          gl.attachShader(prog, vs);
+          gl.attachShader(prog, fs);
+          gl.linkProgram(prog);
+
+          const posBuf = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            -1, -1,  1, -1, -1,  1,
+            -1,  1,  1, -1,  1,  1
+          ]), gl.STATIC_DRAW);
+
+          const posLoc = gl.getAttribLocation(prog, "position");
+          const resLoc = gl.getUniformLocation(prog, "u_resolution");
+          const mouseLoc = gl.getUniformLocation(prog, "u_mouse");
+          const timeLoc = gl.getUniformLocation(prog, "u_time");
+
+          let mouseX = 0.5, mouseY = 0.5;
+          let targetMX = 0.5, targetMY = 0.5;
+
+          window.addEventListener('mousemove', (e) => {
+            targetMX = e.clientX / window.innerWidth;
+            targetMY = 1.0 - (e.clientY / window.innerHeight);
+          });
+
+          let startTime = performance.now();
+          function render(now) {
+            mouseX += (targetMX - mouseX) * 0.05;
+            mouseY += (targetMY - mouseY) * 0.05;
+
+            gl.useProgram(prog);
+            gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+            gl.enableVertexAttribArray(posLoc);
+            gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+            gl.uniform2f(resLoc, canvas.width, canvas.height);
+            gl.uniform2f(mouseLoc, mouseX, mouseY);
+            gl.uniform1f(timeLoc, (now - startTime) * 0.001);
+
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            requestAnimationFrame(render);
+          }
+          requestAnimationFrame(render);
+        }
+      }
+
+      // 2. 3D Perspective Card Tilt on Official Emblem Card
+      const tiltCard = document.getElementById('tilt-emblem-card');
+      const emblemImg = document.getElementById('card-emblem-img');
+      if (tiltCard) {
+        tiltCard.addEventListener('mousemove', (e) => {
+          const rect = tiltCard.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width / 2;
+          const y = e.clientY - rect.top - rect.height / 2;
+          const rotX = -(y / rect.height) * 20;
+          const rotY = (x / rect.width) * 20;
+          
+          tiltCard.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(8px)`;
+          if (emblemImg) {
+            emblemImg.style.transform = `translate3d(${rotY * 0.8}px, ${-rotX * 0.8}px, 20px) scale(1.05)`;
+          }
+        });
+
+        tiltCard.addEventListener('mouseleave', () => {
+          tiltCard.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)';
+          if (emblemImg) {
+            emblemImg.style.transform = 'translate3d(0, 0, 0) scale(1)';
+          }
+        });
+      }
+
+      // 3. Skippable Editorial Intro Logic
+      const curtain = document.getElementById('intro-curtain');
+      const skipBtn = document.getElementById('skip-intro-btn');
+      const bar = document.getElementById('intro-progress-bar');
+      const timerDisplay = document.getElementById('intro-timer-display');
+
+      function dismissIntro() {
+        if (!curtain) return;
+        curtain.style.opacity = '0';
+        curtain.style.pointerEvents = 'none';
+        setTimeout(() => {
+          curtain.style.display = 'none';
+        }, 600);
+      }
+
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        dismissIntro();
+      } else {
+        requestAnimationFrame(() => {
+          if (bar) bar.style.width = '100%';
+        });
+
+        let remaining = 1.8;
+        const interval = setInterval(() => {
+          remaining -= 0.1;
+          if (timerDisplay) {
+            timerDisplay.textContent = Math.max(0, remaining).toFixed(1) + ' SEC';
+          }
+        }, 100);
+
+        const autoDismiss = setTimeout(() => {
+          clearInterval(interval);
+          dismissIntro();
+        }, 1800);
+
+        if (skipBtn) {
+          skipBtn.addEventListener('click', () => {
+            clearTimeout(autoDismiss);
+            clearInterval(interval);
+            dismissIntro();
+          });
+        }
+
+        window.addEventListener('keydown', (e) => {
+          if (e.code === 'Space' && curtain && curtain.style.display !== 'none') {
+            e.preventDefault();
+            clearTimeout(autoDismiss);
+            clearInterval(interval);
+            dismissIntro();
+          }
+        });
+      }
+
+      // 4. Countdown Timer for INNOVEX 2025
+      const cdDays = document.getElementById('cd-days');
+      const cdHours = document.getElementById('cd-hours');
+      const cdMins = document.getElementById('cd-mins');
+      const cdSecs = document.getElementById('cd-secs');
+
+      let targetTime = new Date();
+      targetTime.setDate(targetTime.getDate() + 14);
+      targetTime.setHours(targetTime.getHours() + 8);
+
+      function updateClock() {
+        const now = new Date().getTime();
+        const diff = targetTime.getTime() - now;
+        if (diff > 0) {
+          const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+          const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+          if (cdDays) cdDays.textContent = String(d).padStart(2, '0');
+          if (cdHours) cdHours.textContent = String(h).padStart(2, '0');
+          if (cdMins) cdMins.textContent = String(m).padStart(2, '0');
+          if (cdSecs) cdSecs.textContent = String(s).padStart(2, '0');
+        }
+      }
+      setInterval(updateClock, 1000);
+      updateClock();
+
+      // 5. Cursor follower interaction
+      const dot = document.getElementById('cursor-dot');
+      const ring = document.getElementById('cursor-ring');
+      if (dot && ring) {
+        window.addEventListener('mousemove', (e) => {
+          dot.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+          ring.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+        });
+        document.querySelectorAll('a, button, input').forEach((el) => {
+          el.addEventListener('mouseenter', () => {
+            ring.classList.add('scale-150', 'border-vermilion');
+          });
+          el.addEventListener('mouseleave', () => {
+            ring.classList.remove('scale-150', 'border-vermilion');
+          });
+        });
+      }
+    })();
+  </script>
+</body></html>

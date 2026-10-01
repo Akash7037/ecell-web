@@ -75,7 +75,7 @@ export default function Hero({
             animate="visible"
             className="mt-6 text-lg sm:text-xl text-ink-muted leading-relaxed max-w-2xl"
           >
-            The official Entrepreneurship Cell of VSB CETC Coimbatore. Converting student engineering hypotheses into defensible enterprise equity, utility patents, and venture-backed prototypes.
+            The official Entrepreneurship Cell of VSB CETC Coimbatore. Empowering student innovators, supporting hands-on projects, and fostering the entrepreneurial ecosystem on campus.
           </motion.p>
 
           <motion.div
@@ -91,30 +91,6 @@ export default function Hero({
             <Button href="/team" variant="ghost" size="lg" className="border-paper-muted hover:bg-[#D0E4ED]/40 text-ink">
               Meet the Team
             </Button>
-          </motion.div>
-
-          {/* Quick Metrics Bar */}
-          <motion.div
-            custom={4}
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            className="mt-12 pt-8 border-t border-paper-muted flex flex-wrap items-center gap-8 sm:gap-12 text-xs font-mono"
-          >
-            <div>
-              <span className="block font-headline text-xl sm:text-2xl font-bold text-ink">12+</span>
-              <span className="text-ink-light uppercase tracking-wider text-[11px]">Utility Patents</span>
-            </div>
-            <div className="h-8 w-px bg-paper-muted" />
-            <div>
-              <span className="block font-headline text-xl sm:text-2xl font-bold text-ink">8 Cohorts</span>
-              <span className="text-ink-light uppercase tracking-wider text-[11px]">Hardware Sandboxes</span>
-            </div>
-            <div className="h-8 w-px bg-paper-muted" />
-            <div>
-              <span className="block font-headline text-xl sm:text-2xl font-bold text-ink">22 Leads</span>
-              <span className="text-ink-light uppercase tracking-wider text-[11px]">Student Council</span>
-            </div>
           </motion.div>
         </div>
       </div>

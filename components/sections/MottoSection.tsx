@@ -9,8 +9,8 @@ interface MottoSectionProps {
 }
 
 export default function MottoSection({
-  quote = "Ideas today, impact tomorrow. We do not wait for permission or polish—we prototype at midnight, test to failure, and build defensible enterprises from engineering hypotheses.",
-  author = "E-Cell Council & Prototyping Sandbox",
+  quote = "Ideas today, impact tomorrow. Building, prototyping, and empowering student engineers to turn ideas into real-world impact.",
+  author = "E-Cell Council",
   role = "VSB College of Engineering & Technical Campus · Coimbatore",
 }: MottoSectionProps) {
   return (

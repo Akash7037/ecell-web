@@ -17,8 +17,8 @@ export const defaultSiteSettings: SiteSettings = {
   brevoSenderEmail: process.env.SMTP_FROM_EMAIL || 'ecell.vsbcetc@gmail.com',
   brevoSenderName: process.env.SMTP_FROM_NAME || 'E-Cell VSBCETC',
   mottoQuote:
-    'Ideas today, impact tomorrow. We do not wait for permission or polish—we prototype at midnight, test to failure, and build defensible enterprises from engineering hypotheses.',
-  mottoAuthor: 'E-Cell Council & Prototyping Sandbox',
+    'Ideas today, impact tomorrow. Building, prototyping, and empowering student engineers to turn ideas into real-world impact.',
+  mottoAuthor: 'E-Cell Council',
   mottoRole: 'VSB College of Engineering & Technical Campus · Coimbatore',
   updatedAt: new Date().toISOString(),
 };

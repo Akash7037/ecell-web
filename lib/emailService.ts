@@ -7,10 +7,10 @@ let cachedTransporter: Transporter | null = null;
 export function getMailTransporter() {
   if (cachedTransporter) return cachedTransporter;
 
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = parseInt(process.env.SMTP_PORT || '587', 10);
-  const user = process.env.SMTP_USER || 'ecell.vsbcetc@gmail.com';
-  const rawPass = process.env.SMTP_PASS || 'gunv vtva xzsg sjfp';
+  const host = process.env.SMTP_HOST;
+  const port = parseInt(process.env.SMTP_PORT, 10);
+  const user = process.env.SMTP_USER ;
+  const rawPass = process.env.SMTP_PASS;
   const pass = rawPass.replace(/\s+/g, ''); // strip spaces for Google app passwords
 
   cachedTransporter = nodemailer.createTransport({

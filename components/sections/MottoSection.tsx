@@ -31,17 +31,7 @@ export default function MottoSection({
       </div>
 
       <div className="relative mx-auto max-w-5xl px-6 z-10 text-center">
-        {/* Small Section Chip */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/5 border border-[#DAD0ED]/25 text-[#DAD0ED] font-mono text-[11px] uppercase tracking-widest mb-8"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-vermilion" />
-          Institutional Creed &bull; VSBCETC
-        </motion.div>
+
 
         {/* The Quote Statement */}
         <motion.blockquote

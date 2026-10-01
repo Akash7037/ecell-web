@@ -13,7 +13,15 @@ const fadeUp = {
   }),
 };
 
-export default function Hero() {
+interface HeroProps {
+  watermarkEnabled?: boolean;
+  watermarkOpacity?: number;
+}
+
+export default function Hero({
+  watermarkEnabled = true,
+  watermarkOpacity = 0.02,
+}: HeroProps) {
   return (
     <section className="relative min-h-[92vh] flex items-center pt-16 md:pt-[72px] overflow-hidden">
       {/* Reduced Opacity Background Image & Ambient Aura */}
@@ -23,13 +31,16 @@ export default function Hero() {
         <div className="absolute bottom-1/3 left-1/4 w-[420px] h-[420px] bg-[#D0E4ED]/40 rounded-full blur-3xl -z-10" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-[#EDE8D0]/30 rounded-full blur-3xl -z-10" />
 
-        {/* Subtle reduced-opacity watermark of the actual student team */}
-        <img
-          src="/images/hero-team.jpg"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover opacity-[0.06] contrast-125 filter grayscale mix-blend-multiply"
-        />
+        {/* Faint, subtle reduced-opacity watermark of the student team */}
+        {watermarkEnabled && (
+          <img
+            src="/images/hero-team.jpg"
+            alt=""
+            aria-hidden="true"
+            style={{ opacity: watermarkOpacity }}
+            className="absolute inset-0 w-full h-full object-cover contrast-110 filter grayscale mix-blend-multiply transition-opacity duration-300 pointer-events-none"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#FAF8F2] via-transparent to-[#FAF8F2]/70" />
       </div>
 
@@ -39,10 +50,9 @@ export default function Hero() {
           {/* Left: Text & Positioning */}
           <div className="lg:col-span-7">
             <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible" className="mb-4">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EDE8D0] border border-[#DAD0ED]/60 text-ink text-[11px] font-mono uppercase tracking-wider">
-                <span className="w-1.5 h-1.5 rounded-full bg-vermilion animate-pulse" />
-                VSB College of Engineering & Technical Campus &bull; Coimbatore
-              </span>
+              <p className="font-mono text-xs text-ink-muted uppercase tracking-wider">
+                VSB College of Engineering &amp; Technical Campus &bull; Coimbatore
+              </p>
             </motion.div>
 
             <motion.h1
@@ -109,7 +119,7 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* Right: Real Team Photography Showcase (Replacing old abstract SVG E) */}
+          {/* Right: Real Team Photography Showcase */}
           <motion.div
             custom={2}
             variants={fadeUp}
@@ -118,43 +128,12 @@ export default function Hero() {
             className="lg:col-span-5 flex justify-center lg:justify-end"
           >
             <div className="relative w-full max-w-md lg:max-w-none">
-              {/* Soft decorative color rings echoing the stage lights (#DAD0ED & #D0E4ED) */}
-              <div className="absolute -inset-2 bg-gradient-to-tr from-[#DAD0ED]/60 via-[#D0E4ED]/50 to-[#EDE8D0]/60 rounded-sm blur-md -z-10 opacity-75" />
-
-              <div className="relative rounded-sm overflow-hidden border border-paper-muted bg-paper shadow-2xl group">
+              <div className="relative rounded-sm overflow-hidden border border-paper-muted bg-paper shadow-xl">
                 <img
                   src="/images/hero-team.jpg"
-                  alt="E-Cell VSBCETC Student Founders and Executive Council on Stage"
-                  className="w-full h-auto aspect-[16/10] object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                  alt="E-Cell VSBCETC Student Founders and Executive Council"
+                  className="w-full h-auto aspect-[16/10] object-cover"
                 />
-
-                {/* Glassmorphic Caption Card */}
-                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-ink/90 via-ink/65 to-transparent text-white">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="font-headline text-sm font-bold tracking-wide">
-                        E-Cell Executive Council
-                      </p>
-                      <p className="font-mono text-[10px] text-[#D0E4ED] tracking-wider uppercase mt-0.5">
-                        Ideas Today &bull; Impact Tomorrow
-                      </p>
-                    </div>
-                    <span className="px-2 py-0.5 rounded-sm bg-[#EDE8D0] text-ink font-mono text-[10px] font-semibold tracking-wider uppercase shrink-0">
-                      2026 Cohort
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Verified badge tag below photo */}
-              <div className="mt-3 flex items-center justify-between text-[11px] font-mono text-ink-light px-1">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  Autonomous Institution &bull; NAAC A+
-                </span>
-                <span className="text-[#8B5CF6] font-medium">
-                  VSBCETC Prototyping Stage
-                </span>
               </div>
             </div>
           </motion.div>

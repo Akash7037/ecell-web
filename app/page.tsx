@@ -28,7 +28,10 @@ export default async function HomePage() {
   return (
     <>
       <Navbar />
-      <Hero />
+      <Hero
+        watermarkEnabled={settings.heroWatermarkEnabled ?? true}
+        watermarkOpacity={settings.heroWatermarkOpacity ?? 0.02}
+      />
       <AboutStrip />
       <EventsSection events={upcomingEvents} showViewAll={events.length > upcomingEvents.length || upcomingEvents.length > 3} limit={3} />
       <MottoSection quote={settings.mottoQuote} author={settings.mottoAuthor} role={settings.mottoRole} />

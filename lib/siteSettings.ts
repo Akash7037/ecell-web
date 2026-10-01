@@ -1,5 +1,7 @@
 export interface SiteSettings {
   heroDynamicBackground: boolean;
+  heroWatermarkEnabled?: boolean;
+  heroWatermarkOpacity?: number;
   brevoSenderEmail?: string;
   brevoSenderName?: string;
   mottoQuote?: string;
@@ -10,6 +12,8 @@ export interface SiteSettings {
 
 export const defaultSiteSettings: SiteSettings = {
   heroDynamicBackground: true,
+  heroWatermarkEnabled: true,
+  heroWatermarkOpacity: 0.02,
   brevoSenderEmail: process.env.SMTP_FROM_EMAIL || 'ecell.vsbcetc@gmail.com',
   brevoSenderName: process.env.SMTP_FROM_NAME || 'E-Cell VSBCETC',
   mottoQuote:

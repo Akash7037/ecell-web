@@ -775,6 +775,8 @@ function SubscribersManager() {
 // ─── Site Settings ────────────────────────────────────────
 function SiteSettings() {
   const [bgEnabled, setBgEnabled] = useState(true);
+  const [watermarkEnabled, setWatermarkEnabled] = useState(true);
+  const [watermarkOpacity, setWatermarkOpacity] = useState(0.02);
   const [mottoQuote, setMottoQuote] = useState('');
   const [mottoAuthor, setMottoAuthor] = useState('');
   const [mottoRole, setMottoRole] = useState('');
@@ -789,6 +791,12 @@ function SiteSettings() {
       .then((data) => {
         if (typeof data.heroDynamicBackground === 'boolean') {
           setBgEnabled(data.heroDynamicBackground);
+        }
+        if (typeof data.heroWatermarkEnabled === 'boolean') {
+          setWatermarkEnabled(data.heroWatermarkEnabled);
+        }
+        if (typeof data.heroWatermarkOpacity === 'number') {
+          setWatermarkOpacity(data.heroWatermarkOpacity);
         }
         if (data.mottoQuote) setMottoQuote(data.mottoQuote);
         if (data.mottoAuthor) setMottoAuthor(data.mottoAuthor);
@@ -814,6 +822,47 @@ function SiteSettings() {
       }
     } catch (err) {
       console.error('Failed to update settings:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleWatermark = async () => {
+    const nextVal = !watermarkEnabled;
+    setWatermarkEnabled(nextVal);
+    setSaving(true);
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ heroWatermarkEnabled: nextVal }),
+      });
+      if (res.ok) {
+        setNotice('Hero watermark saved');
+        setTimeout(() => setNotice(''), 3000);
+      }
+    } catch (err) {
+      console.error('Failed to update watermark:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updateOpacity = async (val: number) => {
+    setWatermarkOpacity(val);
+    setSaving(true);
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ heroWatermarkOpacity: val }),
+      });
+      if (res.ok) {
+        setNotice(`Watermark opacity set to ${(val * 100).toFixed(1)}%`);
+        setTimeout(() => setNotice(''), 3000);
+      }
+    } catch (err) {
+      console.error('Failed to update opacity:', err);
     } finally {
       setSaving(false);
     }
@@ -948,6 +997,57 @@ function SiteSettings() {
             />
           </button>
         </div>
+
+        {/* Hero Watermark Toggle */}
+        <div className="flex items-center justify-between py-4">
+          <div>
+            <p className="text-sm font-medium text-ink">Hero Background Watermark Photo</p>
+            <p className="text-xs text-ink-muted mt-0.5">Enable or disable the faint student team photo watermark behind hero text</p>
+          </div>
+          <button
+            onClick={toggleWatermark}
+            disabled={loading || saving}
+            role="switch"
+            aria-checked={watermarkEnabled}
+            className={`relative w-10 h-5 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-vermilion ${
+              watermarkEnabled ? 'bg-ink' : 'bg-paper-muted'
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-paper-DEFAULT shadow transition-transform duration-200 ${
+                watermarkEnabled ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+
+        {/* Watermark Opacity Slider */}
+        {watermarkEnabled && (
+          <div className="py-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-ink">Watermark Opacity</p>
+                <p className="text-xs text-ink-muted mt-0.5">Keep it very light and faint (recommended: 1.5% - 2.5%)</p>
+              </div>
+              <span className="font-mono text-xs font-semibold text-ink bg-paper-muted/50 px-2 py-0.5 rounded-sm">
+                {(watermarkOpacity * 100).toFixed(1)}%
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-[11px] font-mono text-ink-light">0.5%</span>
+              <input
+                type="range"
+                min="0.005"
+                max="0.06"
+                step="0.005"
+                value={watermarkOpacity}
+                onChange={(e) => updateOpacity(parseFloat(e.target.value))}
+                className="w-full accent-ink cursor-pointer"
+              />
+              <span className="text-[11px] font-mono text-ink-light">6.0%</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

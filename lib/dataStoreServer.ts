@@ -11,6 +11,7 @@ export interface StoredEvent {
   date: string;
   time: string;
   registrationUrl?: string;
+  imageUrl?: string;
 }
 
 export interface StoredMember {
@@ -99,7 +100,7 @@ function writeJsonFile<T>(filePath: string, data: T): void {
 export async function getStoredEvents(): Promise<StoredEvent[]> {
   if (supabase) {
     try {
-      const { data, error } = await supabase.from('events').select('*').order('created_at', { ascending: true });
+      const { data, error } = await supabase.from('events').select('*').order('created_at', { ascending: false });
       if (!error && data && data.length > 0) {
         return data.map((d: any) => ({
           id: d.id,
@@ -109,6 +110,7 @@ export async function getStoredEvents(): Promise<StoredEvent[]> {
           date: d.date,
           time: d.time,
           registrationUrl: d.registration_url || d.registrationUrl || '',
+          imageUrl: d.image_url || d.imageUrl || '',
         }));
       }
     } catch (err) {
@@ -135,20 +137,21 @@ export async function saveStoredEvent(event: StoredEvent): Promise<StoredEvent> 
         date: event.date,
         time: event.time,
         registration_url: event.registrationUrl || '',
+        image_url: event.imageUrl || '',
       });
     } catch (err) {
       console.warn('Supabase saveStoredEvent error, saved to file:', err);
     }
   }
 
-  // Always save to file store
+  // Always save to file store — newest events at the top!
   const current = await getStoredEvents();
   const index = current.findIndex((e) => e.id === event.id);
   let updated: StoredEvent[];
   if (index >= 0) {
     updated = current.map((e) => (e.id === event.id ? event : e));
   } else {
-    updated = [...current, event];
+    updated = [event, ...current];
   }
   writeJsonFile(eventsFilePath, updated);
   return event;

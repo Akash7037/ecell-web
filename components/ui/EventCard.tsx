@@ -10,6 +10,7 @@ export interface Event {
   date: string;      // e.g. "March 15, 2026"
   time: string;      // e.g. "9:00 AM – 5:00 PM"
   registrationUrl?: string;
+  imageUrl?: string;
 }
 
 interface EventCardProps {
@@ -19,8 +20,20 @@ interface EventCardProps {
 export function EventCard({ event }: EventCardProps) {
   return (
     <article className="group border-t border-paper-muted py-6 md:py-8 transition-colors duration-150 hover:border-ink/20">
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-        {/* Left: info */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">
+        
+        {/* Optional Event Photo Thumbnail */}
+        {event.imageUrl && (
+          <div className="w-full sm:w-36 h-28 sm:h-24 rounded-sm bg-paper-muted overflow-hidden shrink-0 border border-paper-muted relative">
+            <img
+              src={event.imageUrl}
+              alt={event.name}
+              className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+            />
+          </div>
+        )}
+
+        {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <Badge label={event.isFree ? 'Free' : 'Paid'} variant={event.isFree ? 'muted' : 'accent'} />
@@ -45,7 +58,7 @@ export function EventCard({ event }: EventCardProps) {
 
         {/* Right: CTA */}
         {event.registrationUrl && (
-          <div className="shrink-0">
+          <div className="shrink-0 self-start sm:self-center">
             <Button
               href={event.registrationUrl}
               external
@@ -61,3 +74,5 @@ export function EventCard({ event }: EventCardProps) {
     </article>
   );
 }
+
+export default EventCard;

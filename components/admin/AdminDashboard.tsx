@@ -24,6 +24,7 @@ interface AdminEvent {
   date: string;
   time: string;
   registrationUrl?: string;
+  imageUrl?: string;
 }
 
 interface AdminMember {
@@ -120,6 +121,7 @@ function EventsManager() {
     date: '',
     time: '',
     registrationUrl: '',
+    imageUrl: '',
   };
   const [form, setForm] = useState(empty);
 
@@ -167,8 +169,8 @@ function EventsManager() {
           setEvents((prev) => prev.map((e) => (e.id === savedEvent.id ? savedEvent : e)));
           flashNotice('Event updated successfully');
         } else {
-          setEvents((prev) => [...prev, savedEvent]);
-          flashNotice('Event created successfully');
+          setEvents((prev) => [savedEvent, ...prev.filter((e) => e.id !== savedEvent.id)]);
+          flashNotice('Event created successfully (showing at top)');
         }
         close();
       }
@@ -205,7 +207,7 @@ function EventsManager() {
       });
       const data = await res.json();
       if (res.ok) {
-        flashNotice(`Success: ${data.message || 'Notification broadcast sent.'}`);
+        flashNotice(`Dispatched notification to ${data.sentCount} subscriber(s)! (Check Spam/Junk folder if not in Inbox)`);
       } else {
         alert(data.error || 'Failed to broadcast notification.');
       }
@@ -255,7 +257,12 @@ function EventsManager() {
             <div className="sm:col-span-2">
               <AdminInput label="Short Description" value={form.shortDescription} onChange={(v) => setForm((f) => ({ ...f, shortDescription: v }))} />
             </div>
-            <div className="flex items-center gap-3">
+            <ImageUploadField
+              label="Event Photo / Banner (optional)"
+              value={form.imageUrl ?? ''}
+              onChange={(v) => setForm((f) => ({ ...f, imageUrl: v }))}
+            />
+            <div className="flex items-center gap-3 sm:col-span-2">
               <input
                 type="checkbox"
                 id="isFree"
@@ -386,8 +393,8 @@ function TeamManager() {
           setMembers((prev) => prev.map((m) => (m.id === savedMember.id ? savedMember : m)));
           flashNotice('Member updated successfully');
         } else {
-          setMembers((prev) => [...prev, savedMember]);
-          flashNotice('Member created successfully');
+          setMembers((prev) => [savedMember, ...prev.filter((m) => m.id !== savedMember.id)]);
+          flashNotice('Member created successfully (showing at top)');
         }
         close();
       }
@@ -735,9 +742,11 @@ function AdminInput({
 function ImageUploadField({
   value,
   onChange,
+  label = 'Member Photo / Avatar',
 }: {
   value: string;
   onChange: (url: string) => void;
+  label?: string;
 }) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -805,7 +814,7 @@ function ImageUploadField({
   return (
     <div className="sm:col-span-2">
       <label className="block font-mono text-[10px] tracking-widest uppercase text-ink-light mb-1.5">
-        Member Photo / Avatar
+        {label}
       </label>
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-3.5 bg-paper rounded-sm border border-paper-muted">
         {/* Preview Thumbnail */}

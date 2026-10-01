@@ -63,21 +63,21 @@ export function SubscribeSection({ variant = 'section' }: SubscribeSectionProps)
         <p className="text-xs text-ink-muted leading-relaxed mb-4 max-w-md">
           Receive a concise email notice when prototype registrations and innovation summits open.
         </p>
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2.5">
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email"
-            className="flex-1 border border-paper-muted bg-paper rounded-sm px-3.5 py-2 text-xs text-ink placeholder:text-ink-light focus:outline-none focus:border-ink transition-colors"
+            className="flex-1 border border-paper-muted bg-paper rounded-sm px-3.5 py-2.5 text-xs text-ink placeholder:text-ink-light focus:outline-none focus:border-ink transition-colors"
             required
           />
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center justify-center gap-1.5 bg-ink text-paper-DEFAULT text-xs font-semibold px-4 py-2 rounded-sm hover:bg-ink/80 transition-colors shrink-0 disabled:opacity-50"
+            className="flex items-center justify-center gap-2 bg-ink hover:bg-vermilion text-white text-xs font-semibold px-5 py-2.5 rounded-sm transition-all duration-150 shrink-0 shadow-sm disabled:opacity-50"
           >
-            {loading ? <Loader2Icon size={12} className="animate-spin" /> : 'Notify Me'}
+            {loading ? <Loader2Icon size={13} className="animate-spin text-white" /> : 'Notify Me'}
           </button>
         </form>
         {status === 'success' && (
@@ -106,39 +106,40 @@ export function SubscribeSection({ variant = 'section' }: SubscribeSectionProps)
             Get direct alerts for Project Expo '26 registration dates, hackathons, and investor rounds. No spam, only calendar updates.
           </p>
 
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2.5 max-w-md">
+          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md">
             <div className="relative flex-1">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
-                className="w-full border border-paper-muted bg-paper rounded-sm px-4 py-2.5 text-sm text-ink placeholder:text-ink-light focus:outline-none focus:border-ink transition-colors duration-150"
+                className="w-full border border-paper-muted bg-paper rounded-sm px-4 py-3 text-sm text-ink placeholder:text-ink-light focus:outline-none focus:border-ink transition-colors duration-150 shadow-sm"
                 required
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center justify-center gap-2 bg-ink text-paper-DEFAULT text-xs font-semibold px-5 py-2.5 rounded-sm hover:bg-ink/80 transition-colors shrink-0 disabled:opacity-50"
+              className="flex items-center justify-center gap-2 bg-ink hover:bg-vermilion text-white text-xs uppercase tracking-wider font-bold px-6 py-3 rounded-sm transition-all duration-150 shrink-0 shadow-sm disabled:opacity-50 cursor-pointer"
             >
               {loading ? (
-                <Loader2Icon size={13} className="animate-spin" />
+                <Loader2Icon size={14} className="animate-spin text-white" />
               ) : (
                 <>
-                  Subscribe <ArrowRightIcon size={12} />
+                  <span>Subscribe</span>
+                  <ArrowRightIcon size={14} className="text-white" />
                 </>
               )}
             </button>
           </form>
 
           {status === 'success' && (
-            <p className="mt-3 flex items-center gap-1.5 text-xs text-emerald-600 font-mono">
+            <p className="mt-3.5 flex items-center gap-1.5 text-xs text-emerald-600 font-mono">
               <CheckCircle2Icon size={14} /> {message}
             </p>
           )}
           {status === 'error' && (
-            <p className="mt-3 text-xs text-vermilion font-mono">
+            <p className="mt-3.5 text-xs text-vermilion font-mono">
               {message}
             </p>
           )}
@@ -147,4 +148,5 @@ export function SubscribeSection({ variant = 'section' }: SubscribeSectionProps)
     </section>
   );
 }
+
 export default SubscribeSection;

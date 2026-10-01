@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
       date: body.date.trim(),
       time: body.time?.trim() || 'TBA',
       registrationUrl: body.registrationUrl?.trim() || undefined,
+      imageUrl: body.imageUrl?.trim() || undefined,
     };
 
     const saved = await saveStoredEvent(event);

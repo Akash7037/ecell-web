@@ -1,19 +1,30 @@
-import nodemailer from 'nodemailer';
+import nodemailer, { Transporter } from 'nodemailer';
 import { StoredEvent } from './dataStoreServer';
 
-// Brevo SMTP transporter
+let cachedTransporter: Transporter | null = null;
+
+// Pooled Brevo SMTP transporter for instant parallel delivery
 export function getMailTransporter() {
+  if (cachedTransporter) return cachedTransporter;
+
   const host = process.env.SMTP_HOST || 'smtp-relay.brevo.com';
   const port = parseInt(process.env.SMTP_PORT || '587', 10);
   const user = process.env.SMTP_USER || '';
   const pass = process.env.SMTP_PASS || '';
 
-  return nodemailer.createTransport({
+  cachedTransporter = nodemailer.createTransport({
     host,
     port,
     secure: false, // port 587 uses STARTTLS
+    pool: true,
+    maxConnections: 5,
+    maxMessages: 50,
+    rateDelta: 1000,
+    rateLimit: 10,
     auth: { user, pass },
   });
+
+  return cachedTransporter;
 }
 
 /**
@@ -259,7 +270,7 @@ export function buildWelcomeSubscriptionEmailHtml(siteUrl: string = 'https://ece
 }
 
 /**
- * Sends event notification to a list of subscriber emails via Brevo SMTP.
+ * Sends event notification to a list of subscriber emails via pooled Brevo SMTP concurrently.
  */
 export async function sendEventToSubscribers(
   event: StoredEvent,
@@ -274,21 +285,35 @@ export async function sendEventToSubscribers(
   const fromName = process.env.SMTP_FROM_NAME || 'E-Cell VSBCETC';
   const fromEmail = process.env.SMTP_FROM_EMAIL || 'b58da7001@smtp-brevo.com';
 
-  let sentCount = 0;
-  const errors: string[] = [];
-
-  for (const recipient of subscribers) {
+  const sendPromises = subscribers.map(async (recipient) => {
     try {
-      await transporter.sendMail({
+      const info = await transporter.sendMail({
         from: `"${fromName}" <${fromEmail}>`,
+        replyTo: fromEmail,
         to: recipient,
         subject: `New Event: ${event.name} — E-Cell VSBCETC`,
         html: htmlContent,
       });
-      sentCount++;
+      return { success: true, recipient, messageId: info.messageId };
     } catch (err: any) {
-      console.error(`Failed to send email to ${recipient}:`, err);
-      errors.push(`${recipient}: ${err.message}`);
+      console.error(`Failed to send email to ${recipient}:`, err.message);
+      return { success: false, recipient, error: err.message };
+    }
+  });
+
+  const results = await Promise.allSettled(sendPromises);
+  let sentCount = 0;
+  const errors: string[] = [];
+
+  for (const res of results) {
+    if (res.status === 'fulfilled') {
+      if (res.value.success) {
+        sentCount++;
+      } else if (res.value.error) {
+        errors.push(`${res.value.recipient}: ${res.value.error}`);
+      }
+    } else {
+      errors.push(res.reason?.message || 'Send failed');
     }
   }
 
@@ -310,6 +335,7 @@ export async function sendWelcomeEmail(email: string): Promise<boolean> {
 
     await transporter.sendMail({
       from: `"${fromName}" <${fromEmail}>`,
+      replyTo: fromEmail,
       to: email,
       subject: `Confirmed: E-Cell VSBCETC Event Notifications`,
       html: buildWelcomeSubscriptionEmailHtml(),

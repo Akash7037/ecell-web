@@ -50,6 +50,11 @@ const config: Config = {
           light: '#FF6B50',
           dark: '#D6391C',
         },
+        palette: {
+          cream: '#EDE8D0',
+          ice: '#D0E4ED',
+          lavender: '#DAD0ED',
+        },
       },
       fontFamily: {
         headline: ['"Syne"', '"Space Grotesk"', 'sans-serif'],

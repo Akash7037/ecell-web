@@ -15,7 +15,14 @@
   }
 
   body {
-    background-color: #FBF9F4;
+    background-color: #FAF8F2;
+    background-image: 
+      radial-gradient(at 10% 12%, rgba(208, 228, 237, 0.45) 0px, transparent 45%),
+      radial-gradient(at 90% 18%, rgba(218, 208, 237, 0.4) 0px, transparent 50%),
+      radial-gradient(at 50% 55%, rgba(237, 232, 208, 0.55) 0px, transparent 60%),
+      radial-gradient(at 15% 85%, rgba(218, 208, 237, 0.35) 0px, transparent 50%),
+      radial-gradient(at 85% 90%, rgba(208, 228, 237, 0.4) 0px, transparent 55%);
+    background-attachment: fixed;
     color: #121316;
     font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
     min-height: 100vh;

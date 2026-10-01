@@ -1,6 +1,5 @@
 'use client';
 
-import { Badge } from './Atoms';
 import Button from './Button';
 import { CalendarIcon, ClockIcon } from 'lucide-react';
 
@@ -39,13 +38,6 @@ export function EventCard({ event, onClick }: EventCardProps) {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2">
-            <Badge
-              label={event.isFree ? 'Free' : isConcluded ? 'Archived' : 'Paid'}
-              variant={event.isFree ? 'muted' : isConcluded ? 'default' : 'accent'}
-            />
-          </div>
-
           <h3 className="font-headline text-lg md:text-xl font-bold text-ink leading-tight group-hover:text-vermilion transition-colors">
             {event.name}
           </h3>
@@ -71,20 +63,38 @@ export function EventCard({ event, onClick }: EventCardProps) {
           </div>
         </div>
 
-        {/* Right: CTA */}
-        {event.registrationUrl && !isConcluded && (
-          <div className="shrink-0 self-start sm:self-center" onClick={(e) => e.stopPropagation()}>
-            <Button
-              href={event.registrationUrl}
-              external
-              variant="ghost"
-              size="sm"
-              aria-label={`Register for ${event.name}`}
-            >
-              Register ↗
-            </Button>
+        {/* Rightmost Middle: Simple Text Fee Indicator & CTA */}
+        <div className="shrink-0 self-start sm:self-center flex flex-row sm:flex-col items-center sm:items-end gap-2.5 sm:gap-2">
+          {/* Simple text fee label (replaces boxed badge) */}
+          <div className="font-mono text-xs tracking-wider uppercase">
+            {isConcluded ? (
+              <span className="text-ink-light/60">Concluded</span>
+            ) : event.isFree ? (
+              <span className="text-ink-muted">Free Entry</span>
+            ) : (
+              <span className="text-vermilion font-medium flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-vermilion" />
+                Paid Event
+              </span>
+            )}
           </div>
-        )}
+
+          {/* Registration Button */}
+          {event.registrationUrl && !isConcluded && (
+            <div onClick={(e) => e.stopPropagation()}>
+              <Button
+                href={event.registrationUrl}
+                external
+                variant="ghost"
+                size="sm"
+                aria-label={`Register for ${event.name}`}
+                className="hover:bg-[#EDE8D0]/60 text-xs"
+              >
+                Register ↗
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     </article>
   );

@@ -775,8 +775,12 @@ function SubscribersManager() {
 // ─── Site Settings ────────────────────────────────────────
 function SiteSettings() {
   const [bgEnabled, setBgEnabled] = useState(true);
+  const [mottoQuote, setMottoQuote] = useState('');
+  const [mottoAuthor, setMottoAuthor] = useState('');
+  const [mottoRole, setMottoRole] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingMotto, setSavingMotto] = useState(false);
   const [notice, setNotice] = useState('');
 
   useEffect(() => {
@@ -786,6 +790,9 @@ function SiteSettings() {
         if (typeof data.heroDynamicBackground === 'boolean') {
           setBgEnabled(data.heroDynamicBackground);
         }
+        if (data.mottoQuote) setMottoQuote(data.mottoQuote);
+        if (data.mottoAuthor) setMottoAuthor(data.mottoAuthor);
+        if (data.mottoRole) setMottoRole(data.mottoRole);
       })
       .catch((err) => console.error('Error fetching settings:', err))
       .finally(() => setLoading(false));
@@ -812,10 +819,40 @@ function SiteSettings() {
     }
   };
 
+  const saveMotto = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingMotto(true);
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mottoQuote: mottoQuote.trim(),
+          mottoAuthor: mottoAuthor.trim(),
+          mottoRole: mottoRole.trim(),
+        }),
+      });
+      if (res.ok) {
+        setNotice('Motto & quote updated successfully!');
+        setTimeout(() => setNotice(''), 3500);
+      } else {
+        alert('Failed to save motto.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error updating motto.');
+    } finally {
+      setSavingMotto(false);
+    }
+  };
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="font-headline text-xl font-bold text-ink">Site Settings</h2>
+    <div className="space-y-10">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-headline text-xl font-bold text-ink">Site Settings & Motto</h2>
+          <p className="text-xs text-ink-muted mt-1">Configure global display options and homepage motto</p>
+        </div>
         {notice && (
           <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-mono">
             <CheckCircle2Icon size={14} />
@@ -823,11 +860,77 @@ function SiteSettings() {
           </span>
         )}
       </div>
-      <div className="divide-y divide-paper-muted">
-        <div className="flex items-center justify-between py-5">
+
+      {/* Motto / Institutional Creed Editor */}
+      <div className="border border-paper-muted rounded-sm p-6 bg-paper-dim space-y-4">
+        <div>
+          <h3 className="font-semibold text-sm text-ink">Homepage Motto & Quote Section</h3>
+          <p className="text-xs text-ink-muted mt-1">
+            Displayed on the black statement banner directly under the Events section.
+          </p>
+        </div>
+
+        <form onSubmit={saveMotto} className="space-y-4">
           <div>
-            <p className="text-sm font-medium text-ink">Animated Background</p>
-            <p className="text-xs text-ink-muted mt-0.5">Toggle the visual canvas animation on the homepage hero</p>
+            <label className="block font-mono text-[10px] tracking-widest uppercase text-ink-light mb-1.5">
+              Quote / Message Text *
+            </label>
+            <textarea
+              value={mottoQuote}
+              onChange={(e) => setMottoQuote(e.target.value)}
+              rows={3}
+              placeholder="Ideas today, impact tomorrow..."
+              className="w-full border border-paper-muted bg-paper rounded-sm px-3 py-2 text-sm text-ink placeholder:text-ink-light focus:outline-none focus:border-ink transition-colors"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block font-mono text-[10px] tracking-widest uppercase text-ink-light mb-1.5">
+                Author / Attribution
+              </label>
+              <input
+                type="text"
+                value={mottoAuthor}
+                onChange={(e) => setMottoAuthor(e.target.value)}
+                placeholder="E-Cell Council & Prototyping Sandbox"
+                className="w-full border border-paper-muted bg-paper rounded-sm px-3 py-2 text-xs text-ink placeholder:text-ink-light focus:outline-none focus:border-ink"
+              />
+            </div>
+            <div>
+              <label className="block font-mono text-[10px] tracking-widest uppercase text-ink-light mb-1.5">
+                Role / Department Subtitle
+              </label>
+              <input
+                type="text"
+                value={mottoRole}
+                onChange={(e) => setMottoRole(e.target.value)}
+                placeholder="VSB College of Engineering & Technical Campus · Coimbatore"
+                className="w-full border border-paper-muted bg-paper rounded-sm px-3 py-2 text-xs text-ink placeholder:text-ink-light focus:outline-none focus:border-ink"
+              />
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              disabled={savingMotto}
+              className="flex items-center gap-2 bg-ink text-paper-DEFAULT text-xs font-semibold px-4 py-2 rounded-sm hover:bg-ink/80 transition-colors disabled:opacity-50"
+            >
+              {savingMotto ? <Loader2Icon size={12} className="animate-spin" /> : null}
+              {savingMotto ? 'Saving...' : 'Save Motto & Quote'}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* General Settings */}
+      <div className="divide-y divide-paper-muted border-t border-paper-muted pt-6">
+        <div className="flex items-center justify-between py-4">
+          <div>
+            <p className="text-sm font-medium text-ink">Hero Background Animation</p>
+            <p className="text-xs text-ink-muted mt-0.5">Toggle dynamic visual canvas aura on the homepage hero</p>
           </div>
           <button
             onClick={toggleBg}

@@ -21,18 +21,18 @@ export function MemberCard({ member }: MemberCardProps) {
 
   return (
     <div className="group flex flex-col">
-      {/* Avatar Container */}
-      <div className="w-full aspect-square bg-paper-muted rounded-sm overflow-hidden mb-3 relative">
+      {/* Avatar Container with Mobile Vibrant Color & Desktop Hover Animation */}
+      <div className="w-full aspect-square bg-[#EDE8D0]/40 border border-[#EDE8D0] rounded-sm overflow-hidden mb-3 relative shadow-sm transition-all duration-300 active:scale-[0.98] md:group-hover:shadow-md md:group-hover:border-[#DAD0ED]">
         {hasValidImage ? (
           <img
             src={member.avatarUrl}
             alt={member.name}
             onError={() => setImgError(true)}
-            className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-500"
+            className="w-full h-full object-cover object-top grayscale-0 md:grayscale md:group-hover:grayscale-0 transition-all duration-500 md:group-hover:scale-105"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-paper-dim border border-paper-muted">
-            <span className="font-headline text-3xl md:text-4xl font-bold text-ink-light select-none">
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#EDE8D0] to-[#DAD0ED]/40 border border-paper-muted">
+            <span className="font-headline text-3xl md:text-4xl font-bold text-ink-muted select-none">
               {member.name ? member.name.charAt(0).toUpperCase() : '?'}
             </span>
           </div>

@@ -3,18 +3,49 @@
     "id": "expo-26",
     "name": "Project Expo '26",
     "shortDescription": "Flagship Inter-Collegiate Engineering Prototype & Innovation Summit",
+    "description": "Flagship hardware prototype competition hosted at VSBCETC Coimbatore. Teams present functional engineering prototypes before angel syndicates and patent mentors.",
     "isFree": false,
     "date": "Dates Announcing Soon",
-    "time": "TBA",
-    "registrationUrl": "https://forms.gle/vsbcetc-expo-26-registration"
+    "time": "9:00 AM – 5:00 PM",
+    "location": "Central Auditorium & Innovation Labs, VSBCETC Coimbatore",
+    "registrationUrl": "https://forms.gle/vsbcetc-expo-26-registration",
+    "imageUrl": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+    "gallery": [
+      "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80"
+    ]
   },
   {
     "id": "evt-hackathon",
     "name": "Hardware & IoT Hackathon",
     "shortDescription": "48-Hour Rapid Embedded Prototyping Sprint where student teams build working IoT devices and sensor rigs.",
+    "description": "Intense 48-hour hardware design sprint where student teams build working IoT devices, sensors, and microcontroller rigs.",
     "isFree": true,
     "date": "Completed · Archived",
     "time": "48 Hours",
-    "registrationUrl": ""
+    "location": "IoT & Mechatronics Foundry Labs, VSBCETC Coimbatore",
+    "registrationUrl": "",
+    "imageUrl": "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?auto=format&fit=crop&w=1200&q=80",
+    "gallery": [
+      "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    "id": "evt-patent",
+    "name": "Patent & Utility Specification Drafting",
+    "shortDescription": "Turning Final-Year Capstone Projects into IP with registered patent attorneys.",
+    "description": "Expert-led workshop by registered patent attorneys on prior-art search methodology and provisional patent filing for student inventors.",
+    "isFree": true,
+    "date": "Completed · Archived",
+    "time": "Full Day Workshop",
+    "location": "Seminar Hall 1, VSBCETC Coimbatore",
+    "registrationUrl": "",
+    "imageUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80",
+    "gallery": [
+      "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80"
+    ]
   }
 ]

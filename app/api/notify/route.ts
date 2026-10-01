@@ -22,8 +22,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const subscribers = await getSubscribers();
-    if (subscribers.length === 0) {
+    // Check if testRecipient is provided for instant testing
+    const targetRecipients = body.testRecipient
+      ? [body.testRecipient]
+      : await getSubscribers();
+
+    if (targetRecipients.length === 0) {
       return NextResponse.json({
         success: true,
         sentCount: 0,
@@ -31,14 +35,23 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const result = await sendEventToSubscribers(event, subscribers);
+    const result = await sendEventToSubscribers(event, targetRecipients, {
+      senderEmail: body.senderEmail,
+      senderName: body.senderName,
+    });
+
+    const isBrevoDefault = result.fromEmailUsed.endsWith('@smtp-brevo.com');
 
     return NextResponse.json({
       success: result.success,
       sentCount: result.sentCount,
-      totalSubscribers: subscribers.length,
+      totalSubscribers: targetRecipients.length,
+      fromEmailUsed: result.fromEmailUsed,
+      warning: isBrevoDefault
+        ? 'Notice: Sending from @smtp-brevo.com is dropped by Brevo unless it is in your Brevo Senders list. Add your registered Brevo email address in Admin > Subscribers for guaranteed delivery.'
+        : undefined,
       errors: result.errors,
-      message: `Sent notification to ${result.sentCount} subscriber${result.sentCount !== 1 ? 's' : ''}.`,
+      message: `Sent notification to ${result.sentCount} recipient${result.sentCount !== 1 ? 's' : ''} from ${result.fromEmailUsed}.`,
     });
   } catch (error) {
     console.error('Failed to notify subscribers:', error);

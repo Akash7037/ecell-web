@@ -269,21 +269,54 @@ export function buildWelcomeSubscriptionEmailHtml(siteUrl: string = 'https://ece
 </html>`;
 }
 
+import { getSiteSettings } from './siteSettingsServer';
+
+export function resolveSender(overrideEmail?: string, overrideName?: string) {
+  let settingsEmail = '';
+  let settingsName = '';
+  try {
+    const s = getSiteSettings();
+    settingsEmail = s.brevoSenderEmail || '';
+    settingsName = s.brevoSenderName || '';
+  } catch {}
+
+  const fromEmail =
+    (overrideEmail && overrideEmail.includes('@') ? overrideEmail : null) ||
+    (settingsEmail && settingsEmail.includes('@') ? settingsEmail : null) ||
+    (process.env.SMTP_FROM_EMAIL && process.env.SMTP_FROM_EMAIL.includes('@') ? process.env.SMTP_FROM_EMAIL : null) ||
+    'b58da7001@smtp-brevo.com';
+
+  const fromName =
+    overrideName ||
+    settingsName ||
+    process.env.SMTP_FROM_NAME ||
+    'E-Cell VSBCETC';
+
+  return { fromEmail, fromName };
+}
+
 /**
  * Sends event notification to a list of subscriber emails via pooled Brevo SMTP concurrently.
  */
 export async function sendEventToSubscribers(
   event: StoredEvent,
-  subscribers: string[]
-): Promise<{ success: boolean; sentCount: number; errors?: string[] }> {
+  subscribers: string[],
+  senderOptions?: { senderEmail?: string; senderName?: string }
+): Promise<{ success: boolean; sentCount: number; fromEmailUsed: string; errors?: string[] }> {
   if (!subscribers || subscribers.length === 0) {
-    return { success: true, sentCount: 0 };
+    const { fromEmail } = resolveSender(senderOptions?.senderEmail, senderOptions?.senderName);
+    return { success: true, sentCount: 0, fromEmailUsed: fromEmail };
   }
 
   const transporter = getMailTransporter();
   const htmlContent = buildEventAnnouncementEmailHtml(event);
-  const fromName = process.env.SMTP_FROM_NAME || 'E-Cell VSBCETC';
-  const fromEmail = process.env.SMTP_FROM_EMAIL || 'b58da7001@smtp-brevo.com';
+  const { fromEmail, fromName } = resolveSender(senderOptions?.senderEmail, senderOptions?.senderName);
+
+  if (fromEmail.endsWith('@smtp-brevo.com')) {
+    console.warn(
+      `[Brevo Warning]: Sending with ${fromEmail}. Brevo requires the sender address to be verified under 'Senders & IPs' in your Brevo dashboard, otherwise emails may be silently discarded.`
+    );
+  }
 
   const sendPromises = subscribers.map(async (recipient) => {
     try {
@@ -320,6 +353,7 @@ export async function sendEventToSubscribers(
   return {
     success: sentCount > 0 || errors.length === 0,
     sentCount,
+    fromEmailUsed: fromEmail,
     errors: errors.length > 0 ? errors : undefined,
   };
 }
@@ -327,11 +361,13 @@ export async function sendEventToSubscribers(
 /**
  * Sends a welcome subscription confirmation email.
  */
-export async function sendWelcomeEmail(email: string): Promise<boolean> {
+export async function sendWelcomeEmail(
+  email: string,
+  senderOptions?: { senderEmail?: string; senderName?: string }
+): Promise<boolean> {
   try {
     const transporter = getMailTransporter();
-    const fromName = process.env.SMTP_FROM_NAME || 'E-Cell VSBCETC';
-    const fromEmail = process.env.SMTP_FROM_EMAIL || 'b58da7001@smtp-brevo.com';
+    const { fromEmail, fromName } = resolveSender(senderOptions?.senderEmail, senderOptions?.senderName);
 
     await transporter.sendMail({
       from: `"${fromName}" <${fromEmail}>`,
@@ -346,3 +382,4 @@ export async function sendWelcomeEmail(email: string): Promise<boolean> {
     return false;
   }
 }
+

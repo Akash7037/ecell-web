@@ -7,11 +7,14 @@ export interface StoredEvent {
   id: string;
   name: string;
   shortDescription: string;
+  description?: string;
   isFree: boolean;
   date: string;
   time: string;
+  location?: string;
   registrationUrl?: string;
   imageUrl?: string;
+  gallery?: string[];
 }
 
 export interface StoredMember {
@@ -28,19 +31,33 @@ const defaultEvents: StoredEvent[] = [
     id: 'expo-26',
     name: "Project Expo '26",
     shortDescription: "Flagship Inter-Collegiate Engineering Prototype & Innovation Summit",
+    description: "Flagship hardware prototype competition hosted at VSBCETC Coimbatore. Teams present functional engineering prototypes before angel syndicates and patent mentors.",
     isFree: false,
     date: "Dates Announcing Soon",
-    time: "TBA",
+    time: "9:00 AM – 5:00 PM",
+    location: "Central Auditorium & Innovation Labs, VSBCETC Coimbatore",
     registrationUrl: "https://forms.gle/vsbcetc-expo-26-registration",
+    imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80",
+    ],
   },
   {
     id: 'evt-hackathon',
     name: "Hardware & IoT Hackathon",
     shortDescription: "48-Hour Rapid Embedded Prototyping Sprint where student teams build working IoT devices and sensor rigs.",
+    description: "Intense 48-hour hardware design sprint where student teams build working IoT devices, sensors, and microcontroller rigs.",
     isFree: true,
     date: "Completed · Archived",
     time: "48 Hours",
+    location: "IoT & Mechatronics Foundry Labs, VSBCETC Coimbatore",
     registrationUrl: "",
+    imageUrl: "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?auto=format&fit=crop&w=1200&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80",
+    ],
   },
 ];
 
@@ -106,11 +123,14 @@ export async function getStoredEvents(): Promise<StoredEvent[]> {
           id: d.id,
           name: d.name,
           shortDescription: d.short_description || d.shortDescription || '',
+          description: d.description || '',
           isFree: d.is_free ?? d.isFree ?? true,
           date: d.date,
           time: d.time,
+          location: d.location || '',
           registrationUrl: d.registration_url || d.registrationUrl || '',
           imageUrl: d.image_url || d.imageUrl || '',
+          gallery: Array.isArray(d.gallery) ? d.gallery : [],
         }));
       }
     } catch (err) {
@@ -133,11 +153,14 @@ export async function saveStoredEvent(event: StoredEvent): Promise<StoredEvent> 
         id: event.id,
         name: event.name,
         short_description: event.shortDescription,
+        description: event.description || '',
         is_free: event.isFree,
         date: event.date,
         time: event.time,
+        location: event.location || '',
         registration_url: event.registrationUrl || '',
         image_url: event.imageUrl || '',
+        gallery: event.gallery || [],
       });
     } catch (err) {
       console.warn('Supabase saveStoredEvent error, saved to file:', err);

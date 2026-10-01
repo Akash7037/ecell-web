@@ -20,11 +20,14 @@ interface AdminEvent {
   id: string;
   name: string;
   shortDescription: string;
+  description?: string;
   isFree: boolean;
   date: string;
   time: string;
+  location?: string;
   registrationUrl?: string;
   imageUrl?: string;
+  gallery?: string[];
 }
 
 interface AdminMember {
@@ -117,11 +120,14 @@ function EventsManager() {
   const empty: Omit<AdminEvent, 'id'> = {
     name: '',
     shortDescription: '',
+    description: '',
     isFree: true,
     date: '',
     time: '',
+    location: '',
     registrationUrl: '',
     imageUrl: '',
+    gallery: [],
   };
   const [form, setForm] = useState(empty);
 
@@ -251,17 +257,55 @@ function EventsManager() {
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <AdminInput label="Event Name *" value={form.name} onChange={(v) => setForm((f) => ({ ...f, name: v }))} />
+            <AdminInput label="Venue / Location" value={form.location ?? ''} onChange={(v) => setForm((f) => ({ ...f, location: v }))} placeholder="e.g. VSBCETC Coimbatore" />
             <AdminInput label="Date *" value={form.date} onChange={(v) => setForm((f) => ({ ...f, date: v }))} placeholder="e.g. March 15, 2026 or Dates Announcing Soon" />
             <AdminInput label="Time" value={form.time} onChange={(v) => setForm((f) => ({ ...f, time: v }))} placeholder="e.g. 9:00 AM – 5:00 PM or TBA" />
-            <AdminInput label="Registration URL (optional)" value={form.registrationUrl ?? ''} onChange={(v) => setForm((f) => ({ ...f, registrationUrl: v }))} />
             <div className="sm:col-span-2">
-              <AdminInput label="Short Description" value={form.shortDescription} onChange={(v) => setForm((f) => ({ ...f, shortDescription: v }))} />
+              <AdminInput label="Registration URL (optional)" value={form.registrationUrl ?? ''} onChange={(v) => setForm((f) => ({ ...f, registrationUrl: v }))} placeholder="https://..." />
+            </div>
+            <div className="sm:col-span-2">
+              <AdminInput label="Short Summary (shown in event list)" value={form.shortDescription} onChange={(v) => setForm((f) => ({ ...f, shortDescription: v }))} />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block font-mono text-[10px] tracking-widest uppercase text-ink-light mb-1.5">
+                Full Description (shown inside modal popup)
+              </label>
+              <textarea
+                value={form.description ?? ''}
+                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                rows={3}
+                placeholder="Full event details, problem statements, prototyping rules..."
+                className="w-full border border-paper-muted bg-paper rounded-sm px-3 py-2 text-sm text-ink placeholder:text-ink-light focus:outline-none focus:border-ink transition-colors"
+              />
             </div>
             <ImageUploadField
-              label="Event Photo / Banner (optional)"
+              label="Main Event Header / Cover Photo (shown in modal)"
               value={form.imageUrl ?? ''}
               onChange={(v) => setForm((f) => ({ ...f, imageUrl: v }))}
             />
+            <div className="sm:col-span-2">
+              <label className="block font-mono text-[10px] tracking-widest uppercase text-ink-light mb-1.5">
+                Gallery Photos (comma separated URLs or paste links)
+              </label>
+              <input
+                type="text"
+                value={(form.gallery || []).join(', ')}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    gallery: e.target.value
+                      .split(',')
+                      .map((s) => s.trim())
+                      .filter(Boolean),
+                  }))
+                }
+                placeholder="https://images.unsplash.com/..., https://..."
+                className="w-full border border-paper-muted bg-paper rounded-sm px-3 py-2 text-xs text-ink placeholder:text-ink-light focus:outline-none focus:border-ink font-mono"
+              />
+              <span className="text-[11px] text-ink-light mt-1 block">
+                Additional event photos shown in the modal gallery grid with zoom viewer.
+              </span>
+            </div>
             <div className="flex items-center gap-3 sm:col-span-2">
               <input
                 type="checkbox"
@@ -519,6 +563,9 @@ function SubscribersManager() {
   const [subscribers, setSubscribers] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [testEmail, setTestEmail] = useState('');
+  const [senderEmail, setSenderEmail] = useState('');
+  const [senderName, setSenderName] = useState('E-Cell VSBCETC');
+  const [savingSender, setSavingSender] = useState(false);
   const [testing, setTesting] = useState(false);
   const [notice, setNotice] = useState('');
 
@@ -530,7 +577,41 @@ function SubscribersManager() {
       })
       .catch((err) => console.error('Failed to load subscribers:', err))
       .finally(() => setLoading(false));
+
+    fetch('/api/settings')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.brevoSenderEmail) setSenderEmail(data.brevoSenderEmail);
+        if (data.brevoSenderName) setSenderName(data.brevoSenderName);
+      })
+      .catch((err) => console.error('Failed to load settings:', err));
   }, []);
+
+  const saveSenderConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingSender(true);
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          brevoSenderEmail: senderEmail.trim(),
+          brevoSenderName: senderName.trim(),
+        }),
+      });
+      if (res.ok) {
+        setNotice('Sender email saved successfully!');
+        setTimeout(() => setNotice(''), 4000);
+      } else {
+        alert('Failed to save sender settings.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Network error while saving sender.');
+    } finally {
+      setSavingSender(false);
+    }
+  };
 
   const sendTestBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -542,6 +623,9 @@ function SubscribersManager() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          testRecipient: testEmail.trim(),
+          senderEmail: senderEmail.trim() || undefined,
+          senderName: senderName.trim() || undefined,
           event: {
             id: 'test-event',
             name: "Project Expo '26 (Sample Notification)",
@@ -555,8 +639,11 @@ function SubscribersManager() {
       });
       const data = await res.json();
       if (res.ok) {
-        setNotice('Sample email broadcast sent successfully via Brevo SMTP!');
-        setTimeout(() => setNotice(''), 4000);
+        setNotice(`Test sent to ${testEmail}! (Check Inbox & Spam)`);
+        if (data.warning) {
+          alert(data.warning);
+        }
+        setTimeout(() => setNotice(''), 6000);
       } else {
         alert(data.error || 'Failed to send sample broadcast.');
       }
@@ -572,9 +659,9 @@ function SubscribersManager() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="font-headline text-xl font-bold text-ink">Subscribers</h2>
+          <h2 className="font-headline text-xl font-bold text-ink">Subscribers & Email Relay</h2>
           <p className="text-xs text-ink-muted mt-1">
-            {loading ? 'Loading...' : `${subscribers.length} registered email${subscribers.length !== 1 ? 's' : ''}`}
+            {loading ? 'Loading...' : `${subscribers.length} registered subscriber${subscribers.length !== 1 ? 's' : ''}`}
           </p>
         </div>
         {notice && (
@@ -585,29 +672,82 @@ function SubscribersManager() {
         )}
       </div>
 
-      <div className="mb-8 border border-paper-muted rounded-sm p-6 bg-paper-dim">
-        <h3 className="font-semibold text-sm text-ink mb-1.5">Brevo SMTP Status</h3>
-        <p className="text-xs text-ink-muted mb-4">
-          Connected to <code className="font-mono text-ink">smtp-relay.brevo.com:587</code> via account <code className="font-mono text-ink">b58da7001@smtp-brevo.com</code>.
-        </p>
-        <form onSubmit={sendTestBroadcast} className="flex gap-2.5 max-w-md">
-          <input
-            type="email"
-            placeholder="Recipient email address for sample"
-            value={testEmail}
-            onChange={(e) => setTestEmail(e.target.value)}
-            className="flex-1 border border-paper-muted bg-paper rounded-sm px-3 py-2 text-xs text-ink placeholder:text-ink-light focus:outline-none focus:border-ink"
-            required
-          />
-          <button
-            type="submit"
-            disabled={testing}
-            className="flex items-center gap-1.5 bg-ink text-paper-DEFAULT text-xs font-semibold px-4 py-2 rounded-sm hover:bg-ink/80 transition-colors disabled:opacity-50 shrink-0"
-          >
-            {testing ? <Loader2Icon size={12} className="animate-spin" /> : <SendIcon size={12} />}
-            {testing ? 'Sending...' : 'Send Test Notice'}
-          </button>
+      {/* Brevo Configuration & Anti-Spam Notice */}
+      <div className="mb-8 border border-paper-muted rounded-sm p-6 bg-paper-dim space-y-6">
+        <div>
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-sm text-ink">1. Verified Brevo Sender Setup</h3>
+            <span className="font-mono text-[10px] text-vermilion bg-vermilion/10 px-2 py-0.5 rounded-sm">
+              Required for Delivery
+            </span>
+          </div>
+          <p className="text-xs text-ink-muted mt-1.5 leading-relaxed">
+            <strong>Why Brevo shows &quot;0 used&quot; in dashboard:</strong> Brevo automatically blocks emails if the <code className="font-mono text-ink">From</code> address is an unverified login like <code className="font-mono text-ink">b58da7001@smtp-brevo.com</code>. Enter the exact email address you registered your Brevo account with (or your domain email verified in Brevo &gt; Senders &amp; IPs).
+          </p>
+        </div>
+
+        <form onSubmit={saveSenderConfig} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block font-mono text-[10px] tracking-widest uppercase text-ink-light mb-1.5">
+              Verified Brevo Sender Email *
+            </label>
+            <input
+              type="email"
+              value={senderEmail}
+              onChange={(e) => setSenderEmail(e.target.value)}
+              placeholder="e.g. yourname@gmail.com (your Brevo login email)"
+              className="w-full border border-paper-muted bg-paper rounded-sm px-3 py-2 text-xs text-ink placeholder:text-ink-light focus:outline-none focus:border-ink font-mono"
+              required
+            />
+          </div>
+          <div>
+            <label className="block font-mono text-[10px] tracking-widest uppercase text-ink-light mb-1.5">
+              Sender Display Name
+            </label>
+            <input
+              type="text"
+              value={senderName}
+              onChange={(e) => setSenderName(e.target.value)}
+              placeholder="E-Cell VSBCETC"
+              className="w-full border border-paper-muted bg-paper rounded-sm px-3 py-2 text-xs text-ink placeholder:text-ink-light focus:outline-none focus:border-ink"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <button
+              type="submit"
+              disabled={savingSender}
+              className="flex items-center gap-2 bg-ink text-paper-DEFAULT text-xs font-semibold px-4 py-2 rounded-sm hover:bg-ink/80 transition-colors disabled:opacity-50"
+            >
+              {savingSender ? <Loader2Icon size={12} className="animate-spin" /> : null}
+              {savingSender ? 'Saving...' : 'Save Sender Email'}
+            </button>
+          </div>
         </form>
+
+        <div className="pt-4 border-t border-paper-muted">
+          <h3 className="font-semibold text-sm text-ink mb-1">2. Test Email Delivery</h3>
+          <p className="text-xs text-ink-muted mb-3">
+            Send a sample event notification directly to your personal email to verify inbox receipt and Brevo count.
+          </p>
+          <form onSubmit={sendTestBroadcast} className="flex gap-2.5 max-w-md">
+            <input
+              type="email"
+              placeholder="Your email address (e.g. user@gmail.com)"
+              value={testEmail}
+              onChange={(e) => setTestEmail(e.target.value)}
+              className="flex-1 border border-paper-muted bg-paper rounded-sm px-3 py-2 text-xs text-ink placeholder:text-ink-light focus:outline-none focus:border-ink"
+              required
+            />
+            <button
+              type="submit"
+              disabled={testing}
+              className="flex items-center gap-1.5 bg-ink text-paper-DEFAULT text-xs font-semibold px-4 py-2 rounded-sm hover:bg-ink/80 transition-colors disabled:opacity-50 shrink-0"
+            >
+              {testing ? <Loader2Icon size={12} className="animate-spin" /> : <SendIcon size={12} />}
+              {testing ? 'Sending...' : 'Send Test to Inbox'}
+            </button>
+          </form>
+        </div>
       </div>
 
       {loading ? (

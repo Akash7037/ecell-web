@@ -29,11 +29,14 @@ export async function POST(request: NextRequest) {
       id: body.id || `evt-${randomBytes(6).toString('hex')}`,
       name: body.name.trim(),
       shortDescription: body.shortDescription || '',
+      description: body.description || undefined,
       isFree: body.isFree ?? true,
       date: body.date.trim(),
       time: body.time?.trim() || 'TBA',
+      location: body.location?.trim() || undefined,
       registrationUrl: body.registrationUrl?.trim() || undefined,
       imageUrl: body.imageUrl?.trim() || undefined,
+      gallery: Array.isArray(body.gallery) ? body.gallery : undefined,
     };
 
     const saved = await saveStoredEvent(event);

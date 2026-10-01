@@ -1,10 +1,11 @@
 'use client';
 
 import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { EventCard, type Event } from '@/components/ui/EventCard';
 import { SectionLabel } from '@/components/ui/Atoms';
 import Button from '@/components/ui/Button';
+import EventModal from '@/components/ui/EventModal';
 
 interface EventsSectionProps {
   events: Event[];
@@ -15,6 +16,7 @@ interface EventsSectionProps {
 export default function EventsSection({ events, showViewAll = true, limit = 3 }: EventsSectionProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   const displayed = limit ? events.slice(0, limit) : events;
 
@@ -56,12 +58,16 @@ export default function EventsSection({ events, showViewAll = true, limit = 3 }:
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.45, delay: 0.1 + i * 0.08 }}
               >
-                <EventCard event={event} />
+                <EventCard event={event} onClick={() => setSelectedEvent(event)} />
               </motion.div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Modal on click */}
+      <EventModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
     </section>
   );
 }
+

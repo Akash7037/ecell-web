@@ -1,11 +1,9 @@
 import type { Metadata } from 'next';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import EventsSection from '@/components/sections/EventsSection';
+import EventsPageClient from '@/components/sections/EventsPageClient';
 import SubscribeSection from '@/components/ui/SubscribeSection';
 import { getStoredEvents } from '@/lib/dataStoreServer';
-import { SectionLabel } from '@/components/ui/Atoms';
-import { EventCard } from '@/components/ui/EventCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,26 +41,8 @@ export default async function EventsPage() {
           </p>
         </div>
 
-        {/* Upcoming Section */}
-        <EventsSection events={upcomingEvents} showViewAll={false} limit={100} />
-
-        {/* Past Events Archive (if any) */}
-        {pastEvents.length > 0 && (
-          <section className="bg-paper py-16 border-t border-paper-muted">
-            <div className="mx-auto max-w-7xl px-6">
-              <div className="mb-8">
-                <SectionLabel>Archive</SectionLabel>
-                <h2 className="font-headline text-2xl font-bold text-ink">Past & Concluded Events</h2>
-                <p className="text-xs text-ink-muted mt-1">Previous hackathons and prototypes tested on campus.</p>
-              </div>
-              <div className="divide-y divide-paper-muted opacity-80">
-                {pastEvents.map((event) => (
-                  <EventCard key={event.id} event={event} />
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
+        {/* Events List (Upcoming & Past with Modal Photo Support) */}
+        <EventsPageClient upcomingEvents={upcomingEvents} pastEvents={pastEvents} />
 
         {/* Subscribe Section */}
         <SubscribeSection />

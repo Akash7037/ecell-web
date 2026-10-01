@@ -20,124 +20,102 @@ interface HeroProps {
 
 export default function Hero({
   watermarkEnabled = true,
-  watermarkOpacity = 0.02,
+  watermarkOpacity = 0.08,
 }: HeroProps) {
   return (
-    <section className="relative min-h-[92vh] flex items-center pt-16 md:pt-[72px] overflow-hidden">
-      {/* Reduced Opacity Background Image & Ambient Aura */}
+    <section className="relative min-h-[88vh] flex items-center pt-20 md:pt-24 pb-16 overflow-hidden">
+      {/* Background Watermark Image & Ambient Palette Aura */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
-        {/* Ambient atmospheric aura spots using palette colors */}
-        <div className="absolute top-1/4 right-1/4 w-[480px] h-[480px] bg-[#DAD0ED]/40 rounded-full blur-3xl -z-10" />
-        <div className="absolute bottom-1/3 left-1/4 w-[420px] h-[420px] bg-[#D0E4ED]/40 rounded-full blur-3xl -z-10" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-[#EDE8D0]/30 rounded-full blur-3xl -z-10" />
+        {/* Soft atmospheric radial gradients using brand palette */}
+        <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-[#DAD0ED]/30 rounded-full blur-3xl -z-10" />
+        <div className="absolute bottom-1/4 left-1/4 w-[450px] h-[450px] bg-[#D0E4ED]/35 rounded-full blur-3xl -z-10" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#EDE8D0]/30 rounded-full blur-3xl -z-10" />
 
-        {/* Faint, subtle reduced-opacity watermark of the student team */}
+        {/* The student team photo as the background visual */}
         {watermarkEnabled && (
           <img
             src="/images/hero-team.jpg"
             alt=""
             aria-hidden="true"
             style={{ opacity: watermarkOpacity }}
-            className="absolute inset-0 w-full h-full object-cover contrast-110 filter grayscale mix-blend-multiply transition-opacity duration-300 pointer-events-none"
+            className="absolute inset-0 w-full h-full object-cover object-center filter grayscale contrast-110 mix-blend-multiply transition-opacity duration-300 pointer-events-none"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#FAF8F2] via-transparent to-[#FAF8F2]/70" />
+        {/* Subtle gradient wash to keep text crystal clear */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#FAF8F2] via-transparent to-[#FAF8F2]/60" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#FAF8F2]/85 via-[#FAF8F2]/40 to-transparent" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl w-full px-6 py-14 md:py-20 z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+      <div className="relative mx-auto max-w-7xl w-full px-6 py-12 md:py-20 z-10">
+        <div className="max-w-3xl lg:max-w-4xl">
+          <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible" className="mb-5">
+            <p className="font-mono text-xs text-ink-muted uppercase tracking-wider">
+              VSB College of Engineering &amp; Technical Campus &bull; Coimbatore
+            </p>
+          </motion.div>
 
-          {/* Left: Text & Positioning */}
-          <div className="lg:col-span-7">
-            <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible" className="mb-4">
-              <p className="font-mono text-xs text-ink-muted uppercase tracking-wider">
-                VSB College of Engineering &amp; Technical Campus &bull; Coimbatore
-              </p>
-            </motion.div>
+          <motion.h1
+            custom={1}
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
+            className="font-headline text-[2.75rem] sm:text-[3.5rem] md:text-[4.25rem] lg:text-[4.75rem] font-bold text-ink leading-[1.03] tracking-tight"
+          >
+            Building the<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-vermilion via-[#D6391C] to-[#8B5CF6]">
+              next generation
+            </span><br />
+            of founders.
+          </motion.h1>
 
-            <motion.h1
-              custom={1}
-              variants={fadeUp}
-              initial="hidden"
-              animate="visible"
-              className="font-headline text-[2.4rem] sm:text-[3.25rem] md:text-[3.85rem] lg:text-[4.2rem] font-bold text-ink leading-[1.04] tracking-tight"
-            >
-              Building the<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-vermilion via-[#D6391C] to-[#8B5CF6]">
-                next generation
-              </span><br />
-              of founders.
-            </motion.h1>
-
-            <motion.p
-              custom={2}
-              variants={fadeUp}
-              initial="hidden"
-              animate="visible"
-              className="mt-5 text-base sm:text-lg text-ink-muted leading-relaxed max-w-xl"
-            >
-              The official Entrepreneurship Cell of VSB CETC Coimbatore. Converting student engineering hypotheses into defensible enterprise equity, utility patents, and venture-backed prototypes.
-            </motion.p>
-
-            <motion.div
-              custom={3}
-              variants={fadeUp}
-              initial="hidden"
-              animate="visible"
-              className="mt-7 flex flex-wrap items-center gap-3.5"
-            >
-              <Button href="/events" size="lg">
-                Explore Events &rarr;
-              </Button>
-              <Button href="/team" variant="ghost" size="lg" className="border-paper-muted hover:bg-[#D0E4ED]/40 text-ink">
-                Meet the Team
-              </Button>
-            </motion.div>
-
-            {/* Quick Metrics Bar */}
-            <motion.div
-              custom={4}
-              variants={fadeUp}
-              initial="hidden"
-              animate="visible"
-              className="mt-10 pt-6 border-t border-paper-muted flex flex-wrap items-center gap-6 sm:gap-10 text-xs font-mono"
-            >
-              <div>
-                <span className="block font-headline text-lg sm:text-xl font-bold text-ink">12+</span>
-                <span className="text-ink-light uppercase tracking-wider text-[10px]">Utility Patents</span>
-              </div>
-              <div className="h-7 w-px bg-paper-muted" />
-              <div>
-                <span className="block font-headline text-lg sm:text-xl font-bold text-ink">8 Cohorts</span>
-                <span className="text-ink-light uppercase tracking-wider text-[10px]">Hardware Sandboxes</span>
-              </div>
-              <div className="h-7 w-px bg-paper-muted" />
-              <div>
-                <span className="block font-headline text-lg sm:text-xl font-bold text-ink">22 Leads</span>
-                <span className="text-ink-light uppercase tracking-wider text-[10px]">Student Council</span>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Right: Real Team Photography Showcase */}
-          <motion.div
+          <motion.p
             custom={2}
             variants={fadeUp}
             initial="hidden"
             animate="visible"
-            className="lg:col-span-5 flex justify-center lg:justify-end"
+            className="mt-6 text-lg sm:text-xl text-ink-muted leading-relaxed max-w-2xl"
           >
-            <div className="relative w-full max-w-md lg:max-w-none">
-              <div className="relative rounded-sm overflow-hidden border border-paper-muted bg-paper shadow-xl">
-                <img
-                  src="/images/hero-team.jpg"
-                  alt="E-Cell VSBCETC Student Founders and Executive Council"
-                  className="w-full h-auto aspect-[16/10] object-cover"
-                />
-              </div>
-            </div>
+            The official Entrepreneurship Cell of VSB CETC Coimbatore. Converting student engineering hypotheses into defensible enterprise equity, utility patents, and venture-backed prototypes.
+          </motion.p>
+
+          <motion.div
+            custom={3}
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
+            className="mt-8 flex flex-wrap items-center gap-4"
+          >
+            <Button href="/events" size="lg">
+              Explore Events &rarr;
+            </Button>
+            <Button href="/team" variant="ghost" size="lg" className="border-paper-muted hover:bg-[#D0E4ED]/40 text-ink">
+              Meet the Team
+            </Button>
           </motion.div>
 
+          {/* Quick Metrics Bar */}
+          <motion.div
+            custom={4}
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
+            className="mt-12 pt-8 border-t border-paper-muted flex flex-wrap items-center gap-8 sm:gap-12 text-xs font-mono"
+          >
+            <div>
+              <span className="block font-headline text-xl sm:text-2xl font-bold text-ink">12+</span>
+              <span className="text-ink-light uppercase tracking-wider text-[11px]">Utility Patents</span>
+            </div>
+            <div className="h-8 w-px bg-paper-muted" />
+            <div>
+              <span className="block font-headline text-xl sm:text-2xl font-bold text-ink">8 Cohorts</span>
+              <span className="text-ink-light uppercase tracking-wider text-[11px]">Hardware Sandboxes</span>
+            </div>
+            <div className="h-8 w-px bg-paper-muted" />
+            <div>
+              <span className="block font-headline text-xl sm:text-2xl font-bold text-ink">22 Leads</span>
+              <span className="text-ink-light uppercase tracking-wider text-[11px]">Student Council</span>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>

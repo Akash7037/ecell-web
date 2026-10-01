@@ -30,7 +30,7 @@ export default async function HomePage() {
       <Navbar />
       <Hero
         watermarkEnabled={settings.heroWatermarkEnabled ?? true}
-        watermarkOpacity={settings.heroWatermarkOpacity ?? 0.02}
+        watermarkOpacity={settings.heroWatermarkOpacity ?? 0.08}
       />
       <AboutStrip />
       <EventsSection events={upcomingEvents} showViewAll={events.length > upcomingEvents.length || upcomingEvents.length > 3} limit={3} />

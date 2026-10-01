@@ -1,7 +1,7 @@
 {
   "heroDynamicBackground": true,
   "heroWatermarkEnabled": true,
-  "heroWatermarkOpacity": 0.02,
+  "heroWatermarkOpacity": 0.08,
   "brevoSenderEmail": "ecell.vsbcetc@gmail.com",
   "brevoSenderName": "E-Cell VSBCETC",
   "mottoQuote": "Ideas today, impact tomorrow. We do not wait for permission or polish—we prototype at midnight, test to failure, and build defensible enterprises from engineering hypotheses.",

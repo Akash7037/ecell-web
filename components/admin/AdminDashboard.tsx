@@ -1026,25 +1026,25 @@ function SiteSettings() {
           <div className="py-4 space-y-2">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-ink">Watermark Opacity</p>
-                <p className="text-xs text-ink-muted mt-0.5">Keep it very light and faint (recommended: 1.5% - 2.5%)</p>
+                <p className="text-sm font-medium text-ink">Watermark Background Opacity</p>
+                <p className="text-xs text-ink-muted mt-0.5">Control how visible the background photo is (recommended: 6% - 12%)</p>
               </div>
-              <span className="font-mono text-xs font-semibold text-ink bg-paper-muted/50 px-2 py-0.5 rounded-sm">
-                {(watermarkOpacity * 100).toFixed(1)}%
+              <span className="font-mono text-xs font-semibold text-ink bg-paper-muted/50 px-2.5 py-1 rounded-sm">
+                {(watermarkOpacity * 100).toFixed(0)}%
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-[11px] font-mono text-ink-light">0.5%</span>
+              <span className="text-[11px] font-mono text-ink-light">1%</span>
               <input
                 type="range"
-                min="0.005"
-                max="0.06"
-                step="0.005"
+                min="0.01"
+                max="0.25"
+                step="0.01"
                 value={watermarkOpacity}
                 onChange={(e) => updateOpacity(parseFloat(e.target.value))}
                 className="w-full accent-ink cursor-pointer"
               />
-              <span className="text-[11px] font-mono text-ink-light">6.0%</span>
+              <span className="text-[11px] font-mono text-ink-light">25%</span>
             </div>
           </div>
         )}

@@ -2,7 +2,7 @@
 
 import { Badge } from './Atoms';
 import Button from './Button';
-import { CalendarIcon, ClockIcon, ImageIcon } from 'lucide-react';
+import { CalendarIcon, ClockIcon } from 'lucide-react';
 
 export interface Event {
   id: string;
@@ -24,7 +24,6 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, onClick }: EventCardProps) {
-  const hasPhotos = Boolean(event.imageUrl || (event.gallery && event.gallery.length > 0));
   const isConcluded =
     (event.date || '').toLowerCase().includes('completed') ||
     (event.date || '').toLowerCase().includes('archive') ||
@@ -45,11 +44,6 @@ export function EventCard({ event, onClick }: EventCardProps) {
               label={event.isFree ? 'Free' : isConcluded ? 'Archived' : 'Paid'}
               variant={event.isFree ? 'muted' : isConcluded ? 'default' : 'accent'}
             />
-            {hasPhotos && (
-              <span className="inline-flex items-center gap-1 font-mono text-[10px] text-ink-light bg-paper border border-paper-muted px-2 py-0.5 rounded-sm">
-                <ImageIcon size={11} className="text-vermilion" /> Photos Available
-              </span>
-            )}
           </div>
 
           <h3 className="font-headline text-lg md:text-xl font-bold text-ink leading-tight group-hover:text-vermilion transition-colors">

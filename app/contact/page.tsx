@@ -24,14 +24,14 @@ const contacts = [
   {
     icon: InstagramIcon,
     label: 'Instagram',
-    value: '@vsb_ecell',
-    href: 'https://instagram.com/vsb_ecell',
+    value: '@ecell.vsbcetc',
+    href: 'https://www.instagram.com/ecell.vsbcetc/',
   },
   {
     icon: LinkedinIcon,
     label: 'LinkedIn',
     value: 'E-Cell VSBCETC',
-    href: 'https://linkedin.com',
+    href: 'https://www.linkedin.com/in/e-cell-vsbcetc/',
   },
 ];
 

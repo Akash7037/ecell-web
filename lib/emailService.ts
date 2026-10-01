@@ -3,24 +3,25 @@ import { StoredEvent } from './dataStoreServer';
 
 let cachedTransporter: Transporter | null = null;
 
-// Pooled Brevo SMTP transporter for instant parallel delivery
+// Google Gmail SMTP transporter with rate-limiting and connection pooling
 export function getMailTransporter() {
   if (cachedTransporter) return cachedTransporter;
 
-  const host = process.env.SMTP_HOST || 'smtp-relay.brevo.com';
+  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = parseInt(process.env.SMTP_PORT || '587', 10);
-  const user = process.env.SMTP_USER || '';
-  const pass = process.env.SMTP_PASS || '';
+  const user = process.env.SMTP_USER || 'ecell.vsbcetc@gmail.com';
+  const rawPass = process.env.SMTP_PASS || 'gunv vtva xzsg sjfp';
+  const pass = rawPass.replace(/\s+/g, ''); // strip spaces for Google app passwords
 
   cachedTransporter = nodemailer.createTransport({
     host,
     port,
-    secure: false, // port 587 uses STARTTLS
+    secure: port === 465, // 587 uses STARTTLS
     pool: true,
-    maxConnections: 5,
-    maxMessages: 50,
+    maxConnections: 1, // Single pooled connection prevents Google SMTP concurrency flags
+    maxMessages: 100,
     rateDelta: 1000,
-    rateLimit: 10,
+    rateLimit: 2, // Max 2 emails per second for rate-limit protection
     auth: { user, pass },
   });
 
@@ -284,7 +285,7 @@ export function resolveSender(overrideEmail?: string, overrideName?: string) {
     (overrideEmail && overrideEmail.includes('@') ? overrideEmail : null) ||
     (settingsEmail && settingsEmail.includes('@') ? settingsEmail : null) ||
     (process.env.SMTP_FROM_EMAIL && process.env.SMTP_FROM_EMAIL.includes('@') ? process.env.SMTP_FROM_EMAIL : null) ||
-    'b58da7001@smtp-brevo.com';
+    'ecell.vsbcetc@gmail.com';
 
   const fromName =
     overrideName ||
@@ -296,7 +297,7 @@ export function resolveSender(overrideEmail?: string, overrideName?: string) {
 }
 
 /**
- * Sends event notification to a list of subscriber emails via pooled Brevo SMTP concurrently.
+ * Sends event notification to a list of subscriber emails via Google SMTP with rate-limiting delay.
  */
 export async function sendEventToSubscribers(
   event: StoredEvent,
@@ -312,41 +313,29 @@ export async function sendEventToSubscribers(
   const htmlContent = buildEventAnnouncementEmailHtml(event);
   const { fromEmail, fromName } = resolveSender(senderOptions?.senderEmail, senderOptions?.senderName);
 
-  if (fromEmail.endsWith('@smtp-brevo.com')) {
-    console.warn(
-      `[Brevo Warning]: Sending with ${fromEmail}. Brevo requires the sender address to be verified under 'Senders & IPs' in your Brevo dashboard, otherwise emails may be silently discarded.`
-    );
-  }
+  let sentCount = 0;
+  const errors: string[] = [];
 
-  const sendPromises = subscribers.map(async (recipient) => {
+  // Sequential delivery with 350ms delay between sends to respect Google SMTP rate limits
+  for (let i = 0; i < subscribers.length; i++) {
+    const recipient = subscribers[i];
     try {
-      const info = await transporter.sendMail({
+      await transporter.sendMail({
         from: `"${fromName}" <${fromEmail}>`,
         replyTo: fromEmail,
         to: recipient,
         subject: `New Event: ${event.name} — E-Cell VSBCETC`,
         html: htmlContent,
       });
-      return { success: true, recipient, messageId: info.messageId };
+      sentCount++;
     } catch (err: any) {
       console.error(`Failed to send email to ${recipient}:`, err.message);
-      return { success: false, recipient, error: err.message };
+      errors.push(`${recipient}: ${err.message}`);
     }
-  });
 
-  const results = await Promise.allSettled(sendPromises);
-  let sentCount = 0;
-  const errors: string[] = [];
-
-  for (const res of results) {
-    if (res.status === 'fulfilled') {
-      if (res.value.success) {
-        sentCount++;
-      } else if (res.value.error) {
-        errors.push(`${res.value.recipient}: ${res.value.error}`);
-      }
-    } else {
-      errors.push(res.reason?.message || 'Send failed');
+    // Rate-limiting delay between recipients
+    if (i < subscribers.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 350));
     }
   }
 

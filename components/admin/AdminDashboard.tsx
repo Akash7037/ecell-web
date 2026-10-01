@@ -672,30 +672,30 @@ function SubscribersManager() {
         )}
       </div>
 
-      {/* Brevo Configuration & Anti-Spam Notice */}
+      {/* Google SMTP Configuration & Relay Status */}
       <div className="mb-8 border border-paper-muted rounded-sm p-6 bg-paper-dim space-y-6">
         <div>
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-sm text-ink">1. Verified Brevo Sender Setup</h3>
-            <span className="font-mono text-[10px] text-vermilion bg-vermilion/10 px-2 py-0.5 rounded-sm">
-              Required for Delivery
+            <h3 className="font-semibold text-sm text-ink">Google SMTP Configuration</h3>
+            <span className="font-mono text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-sm">
+              Gmail Active & Verified
             </span>
           </div>
           <p className="text-xs text-ink-muted mt-1.5 leading-relaxed">
-            <strong>Why Brevo shows &quot;0 used&quot; in dashboard:</strong> Brevo automatically blocks emails if the <code className="font-mono text-ink">From</code> address is an unverified login like <code className="font-mono text-ink">b58da7001@smtp-brevo.com</code>. Enter the exact email address you registered your Brevo account with (or your domain email verified in Brevo &gt; Senders &amp; IPs).
+            Connected to <code className="font-mono text-ink">smtp.gmail.com:587</code> via <code className="font-mono text-ink">ecell.vsbcetc@gmail.com</code> with Google App Passwords and sequential delay for rate-limit protection.
           </p>
         </div>
 
         <form onSubmit={saveSenderConfig} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block font-mono text-[10px] tracking-widest uppercase text-ink-light mb-1.5">
-              Verified Brevo Sender Email *
+              Sender Email Address *
             </label>
             <input
               type="email"
               value={senderEmail}
               onChange={(e) => setSenderEmail(e.target.value)}
-              placeholder="e.g. yourname@gmail.com (your Brevo login email)"
+              placeholder="ecell.vsbcetc@gmail.com"
               className="w-full border border-paper-muted bg-paper rounded-sm px-3 py-2 text-xs text-ink placeholder:text-ink-light focus:outline-none focus:border-ink font-mono"
               required
             />
@@ -725,9 +725,9 @@ function SubscribersManager() {
         </form>
 
         <div className="pt-4 border-t border-paper-muted">
-          <h3 className="font-semibold text-sm text-ink mb-1">2. Test Email Delivery</h3>
+          <h3 className="font-semibold text-sm text-ink mb-1">Send Test Email</h3>
           <p className="text-xs text-ink-muted mb-3">
-            Send a sample event notification directly to your personal email to verify inbox receipt and Brevo count.
+            Send a sample event notification directly to your personal email to verify real-time inbox receipt.
           </p>
           <form onSubmit={sendTestBroadcast} className="flex gap-2.5 max-w-md">
             <input

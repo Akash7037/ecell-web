@@ -1,0 +1,72 @@
+[
+  {
+    "id": "m-1",
+    "name": "Dr. S. K. Ravichandran",
+    "role": "Faculty Mentor & Chief Advisor",
+    "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80",
+    "portfolioUrl": "https://linkedin.com"
+  },
+  {
+    "id": "m-2",
+    "name": "Kaviarasan S.",
+    "role": "Student President",
+    "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80",
+    "portfolioUrl": "https://linkedin.com"
+  },
+  {
+    "id": "m-3",
+    "name": "Sowmya R.",
+    "role": "Vice President & Head of Operations",
+    "avatarUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80",
+    "portfolioUrl": "https://linkedin.com"
+  },
+  {
+    "id": "m-4",
+    "name": "Dinesh Kumar M.",
+    "role": "Treasurer & Finance Secretary",
+    "avatarUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80",
+    "portfolioUrl": "https://linkedin.com"
+  },
+  {
+    "id": "m-5",
+    "name": "Vigneshwaran P.",
+    "role": "Lead, Hardware & Robotics Sandbox",
+    "avatarUrl": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=800&q=80",
+    "portfolioUrl": "https://linkedin.com"
+  },
+  {
+    "id": "m-6",
+    "name": "Harini B.",
+    "role": "Lead, AI & Software Architecture",
+    "avatarUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=800&q=80",
+    "portfolioUrl": "https://linkedin.com"
+  },
+  {
+    "id": "m-7",
+    "name": "Sudharsan K.",
+    "role": "Director, Corporate & Investor Relations",
+    "avatarUrl": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=800&q=80",
+    "portfolioUrl": "https://linkedin.com"
+  },
+  {
+    "id": "m-8",
+    "name": "Ananya S.",
+    "role": "Head, Ecosystem Outreach",
+    "avatarUrl": "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=800&q=80",
+    "portfolioUrl": "https://linkedin.com"
+  },
+  {
+    "id": "m-9",
+    "name": "Manoj Krishna T.",
+    "role": "Lead, Patent Drafting & IP Cell",
+    "avatarUrl": "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=800&q=80",
+    "portfolioUrl": "https://linkedin.com"
+  },
+  {
+    "id": "m-10",
+    "name": "Praveen Velu",
+    "role": "Creative Director & Visual Design Lead",
+    "avatarUrl": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=800&q=80",
+    "portfolioUrl": "https://linkedin.com"
+  }
+]

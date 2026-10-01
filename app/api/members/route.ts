@@ -1,49 +1,68 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllMembers, insertMember } from '@/lib/db';
+import { getStoredMembers, saveStoredMember, deleteStoredMember, StoredMember } from '@/lib/dataStoreServer';
 import { randomBytes } from 'crypto';
 
-// GET /api/members — public, returns all members
+// GET /api/members — returns all members
 export async function GET() {
   try {
-    const members = await getAllMembers();
+    const members = await getStoredMembers();
     return NextResponse.json(members);
   } catch (error) {
     console.error('Failed to fetch members:', error);
-    // Fallback to seed data
-    const { members } = await import('@/data/seed');
-    return NextResponse.json(members);
+    return NextResponse.json({ error: 'Failed to fetch members' }, { status: 500 });
   }
 }
 
-// POST /api/members — admin only, create member
+// POST /api/members — create or update member
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    if (!body.name || !body.role || !body.department) {
+    if (!body.name || !body.role) {
       return NextResponse.json(
-        { error: 'Name, role, and department are required' },
+        { error: 'Name and role are required' },
         { status: 400 }
       );
     }
 
-    const member = await insertMember({
-      id: randomBytes(16).toString('hex'),
-      name: body.name,
-      role: body.role,
-      department: body.department,
-      image_url: body.image_url || null,
-      bio: body.bio || '',
-      socials: JSON.stringify(body.socials || {}),
-      contributions: body.contributions || [],
-      year: body.year || 1,
-    });
+    const member: StoredMember = {
+      id: body.id || `m-${randomBytes(6).toString('hex')}`,
+      name: body.name.trim(),
+      role: body.role.trim(),
+      avatarUrl: body.avatarUrl?.trim() || undefined,
+      portfolioUrl: body.portfolioUrl?.trim() || undefined,
+    };
 
-    return NextResponse.json(member, { status: 201 });
+    const saved = await saveStoredMember(member);
+    return NextResponse.json(saved, { status: 200 });
   } catch (error) {
-    console.error('Failed to create member:', error);
+    console.error('Failed to save member:', error);
     return NextResponse.json(
-      { error: 'Failed to create member' },
+      { error: 'Failed to save member' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/members — delete member by ID
+export async function DELETE(request: NextRequest) {
+  try {
+    const url = new URL(request.url);
+    const id = url.searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Member ID is required' },
+        { status: 400 }
+      );
+    }
+
+    await deleteStoredMember(id);
+    return NextResponse.json({ success: true, deletedId: id });
+  } catch (error) {
+    console.error('Failed to delete member:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete member' },
       { status: 500 }
     );
   }

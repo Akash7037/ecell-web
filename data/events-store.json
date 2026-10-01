@@ -1,0 +1,20 @@
+[
+  {
+    "id": "expo-26",
+    "name": "Project Expo '26",
+    "shortDescription": "Flagship Inter-Collegiate Engineering Prototype & Innovation Summit",
+    "isFree": false,
+    "date": "Dates Announcing Soon",
+    "time": "TBA",
+    "registrationUrl": "https://forms.gle/vsbcetc-expo-26-registration"
+  },
+  {
+    "id": "evt-hackathon",
+    "name": "Hardware & IoT Hackathon",
+    "shortDescription": "48-Hour Rapid Embedded Prototyping Sprint where student teams build working IoT devices and sensor rigs.",
+    "isFree": true,
+    "date": "Completed · Archived",
+    "time": "48 Hours",
+    "registrationUrl": ""
+  }
+]

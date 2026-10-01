@@ -1,0 +1,223 @@
+﻿================================================================
+VSB E-CELL WEBSITE — FULL REDESIGN PLAN
+================================================================
+Version  : 2.0
+Date     : 2026-09-29
+Author   : Antigravity (AI pair programmer)
+Status   : APPROVED — Ready for execution
+================================================================
+
+SECTION 1: PROBLEM STATEMENT
+----------------------------------------------------------------
+The current website was built in a 'vibe-coded' style — heavy
+decorative effects, overly complex components, small animated
+circles in the nav, inconsistent layout, and a footer that
+still looks boxed and retro. The admin panel blended with the
+background and was accessible from the nav (a security issue).
+The result feels like an experiment, not a brand.
+
+SOLUTION: Complete teardown of all UI components. Keep only:
+  - app/ routing structure (Next.js App Router)
+  - lib/ (auth, expoConfig, siteSettings)
+  - data/ (seed data — content only)
+  - API routes
+  - tailwind.config.ts (tokens preserved, cleaned up)
+
+================================================================
+
+SECTION 2: DESIGN DIRECTION
+================================================================
+REFERENCE BRANDS: Google, Microsoft, Adidas, TCS, Linear, Stripe
+
+COMMON PATTERNS ACROSS TOP BRAND WEBSITES:
+  1. Whitespace is king — breathing room between sections
+  2. One typeface family, two weights max per section
+  3. One brand color, used sparingly (never decorative)
+  4. Navigation: flat, text-only links. NO icons in nav
+  5. Mobile-first grid: single column first
+  6. Large, confident headlines (editorial)
+  7. Dividers instead of cards with heavy borders
+  8. Footer: simple, text-based, never 'boxed'
+  9. CTAs: one primary (filled), one secondary (ghost)
+ 10. No gradients on text. No glowing borders on everything.
+
+================================================================
+
+SECTION 3: DESIGN TOKENS (KEPT FROM CURRENT BRAND)
+----------------------------------------------------------------
+COLORS:
+  Background (page)    : #FBF9F4  (off-white / cream)
+  Background (dim)     : #F5F3EE
+  Text (primary)       : #121316  (near-black)
+  Text (muted)         : #5C5A60
+  Accent (brand)       : #FF4D2E  (vermilion — SPARINGLY)
+
+TYPOGRAPHY:
+  Headline : Syne Bold
+  Body     : Plus Jakarta Sans
+  Mono     : Space Mono (labels, tags, metadata)
+
+  Scale (mobile-first):
+    h1  : 2.25rem (mobile)  -> 4rem (desktop)
+    h2  : 1.75rem (mobile)  -> 3rem (desktop)
+    body: 1rem always
+
+SPACING:
+  Section padding (mobile)  : 64px vertical, 24px horizontal
+  Section padding (desktop) : 96px vertical, auto
+  Max content width         : 1280px
+
+================================================================
+
+SECTION 4: NAVIGATION (NEW)
+----------------------------------------------------------------
+STYLE: Wordmark left + plain text links right
+BRAND: E-Cell VSBCETC (wordmark, no circle logo)
+
+MOBILE: Logo + hamburger, full-screen overlay on open
+DESKTOP: Logo left | Events  Team  Contact  (text only)
+
+RULES:
+  - Admin is NOT in the nav (accessed via /admin directly)
+  - Active page: 1px underline in vermilion
+  - Transparent on hero, solid cream on scroll
+  - Height: 64px mobile, 72px desktop
+  - NO circles, NO icons, NO glassmorphism
+
+================================================================
+
+SECTION 5: PAGE STRUCTURE
+----------------------------------------------------------------
+
+HOME PAGE
+  Hero        : Split — left text, right visual (stacked mobile)
+  About Strip : 3 value props (icon + label + text, no card box)
+  Events      : Upcoming events (from admin), each shows:
+                  Event name, short desc, Free/Paid, Date & Time
+  Team Preview: Grid of members with link to team page
+  Footer      : Single-row text, no boxes
+
+EVENTS PAGE (/events)
+  Full list of events — admin managed
+
+TEAM PAGE (/team)
+  Photo grid — name, role, portfolio button (only if URL given)
+  Portfolio button: ghost/outline style, appears conditionally
+
+CONTACT PAGE (/contact)
+  Email, socials, location. Minimal. Optional form.
+
+ADMIN PAGE (/admin) — HIDDEN FROM NAV, PASSWORD PROTECTED
+  Events Manager  : add / edit / delete events
+  Team Manager    : add / edit / delete members, set roles
+  Site Settings   : background toggle, other controls
+
+================================================================
+
+SECTION 6: ANIMATIONS
+----------------------------------------------------------------
+KEPT:
+  - Scroll reveal: fade up on viewport entry (Framer Motion)
+  - Page transitions: fade between routes (AnimatePresence)
+  - Hover on buttons/links: CSS only (opacity, underline slide)
+  - Nav: transparent to cream on scroll
+
+REMOVED:
+  - Floating animated circles
+  - Glowing borders
+  - Canvas particle backgrounds (admin toggle only)
+  - 3D card tilts, typewriter effects
+
+================================================================
+
+SECTION 7: MOBILE-FIRST RULES
+----------------------------------------------------------------
+  1. Write all Tailwind classes mobile first, expand with md: lg:
+  2. Touch targets: min 44x44px
+  3. No font below 14px on mobile
+  4. No horizontal scroll on any viewport
+  5. Baseline test: 375px width (iPhone SE)
+  6. Images: explicit width/height to prevent CLS
+
+================================================================
+
+SECTION 8: COMPONENT ARCHITECTURE
+----------------------------------------------------------------
+components/
+  layout/
+    Navbar.tsx
+    Footer.tsx
+    PageWrapper.tsx    (page transition wrapper)
+  ui/
+    Button.tsx         (Primary, Ghost, Text variants)
+    Badge.tsx          (Free/Paid, role labels)
+    EventCard.tsx
+    MemberCard.tsx
+    SectionLabel.tsx   (small ALL-CAPS mono label)
+    Divider.tsx
+  sections/
+    Hero.tsx
+    AboutStrip.tsx
+    EventsSection.tsx
+    TeamSection.tsx
+  admin/
+    AdminGate.tsx      (password protection)
+    AdminDashboard.tsx
+    EventsManager.tsx
+    TeamManager.tsx
+
+================================================================
+
+SECTION 9: PROS AND CONS
+----------------------------------------------------------------
+PROS:
+  + Complete fresh start removes all vibe-code debt
+  + Consistent design system — one token set, everywhere
+  + Mobile-first: works on smallest screen first
+  + Off-white + vermilion is a strong, distinctive palette
+  + Syne + Plus Jakarta Sans is a proven editorial pairing
+  + Admin is secure (not in nav, password gated)
+  + Event cards admin-managed — no code changes needed
+  + Portfolio button renders only when URL is present
+  + Footer is text-based — no boxed appearance
+
+CONS / RISKS:
+  - Full rewrite = re-testing everything
+  - Framer Motion transitions need careful SSR handling
+  - Real E-Cell photograph needed for split hero
+  - Admin data may need re-entry if DB is reset
+
+================================================================
+
+SECTION 10: EXECUTION ORDER
+----------------------------------------------------------------
+Phase 1 — Foundation
+  [1] Delete old UI components
+  [2] Update tailwind.config.ts
+  [3] Update globals.css (base styles, font smoothing)
+  [4] PageWrapper (Framer Motion page transitions)
+  [5] Navbar
+  [6] Footer
+
+Phase 2 — UI Atoms
+  [7] Button, Badge, SectionLabel, Divider
+  [8] EventCard, MemberCard
+
+Phase 3 — Sections
+  [9]  Hero (split layout)
+  [10] AboutStrip
+  [11] EventsSection
+  [12] TeamSection
+
+Phase 4 — Pages
+  [13] Home
+  [14] Events page
+  [15] Team page
+  [16] Contact page
+  [17] Admin panel (gate + dashboard)
+
+Phase 5 — Polish
+  [18] Scroll reveal animations
+  [19] Mobile testing
+  [20] Git push
+================================================================

@@ -1,607 +1,726 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Calendar, Users, Plus, Trash2, Clock, CheckCircle2, AlertCircle, 
-  MapPin, Sparkles, RefreshCw, Edit3, Save, LogOut, ArrowLeft, Shield,
-  X, ExternalLink, ChevronDown
+import { useState, useEffect } from 'react';
+import {
+  CalendarIcon,
+  UsersIcon,
+  SettingsIcon,
+  MailIcon,
+  PlusIcon,
+  PencilIcon,
+  Trash2Icon,
+  CheckCircle2Icon,
+  Loader2Icon,
+  SendIcon,
 } from 'lucide-react';
-import type { Event, Member } from '@/types';
-import { events as initialEvents, members as initialMembers } from '@/data/seed';
-import Link from 'next/link';
 
-const WINGS = [
-  'Core Leadership',
-  'Technical & Hardware Sandbox',
-  'Corporate & Venture Relations',
-  'Incubation & IP Cell',
-  'Media & Design Foundry',
-];
+// ─── Types ───────────────────────────────────────────────
+interface AdminEvent {
+  id: string;
+  name: string;
+  shortDescription: string;
+  isFree: boolean;
+  date: string;
+  time: string;
+  registrationUrl?: string;
+}
+
+interface AdminMember {
+  id: string;
+  name: string;
+  role: string;
+  avatarUrl?: string;
+  portfolioUrl?: string;
+}
+
+// ─── Admin Dashboard ─────────────────────────────────────
+type Tab = 'events' | 'team' | 'subscribers' | 'settings';
 
 export function AdminDashboard() {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [authChecking, setAuthChecking] = useState(true);
-  const [eventsList, setEventsList] = useState<Event[]>(initialEvents);
-  const [membersList, setMembersList] = useState<Member[]>(initialMembers);
-  const [activeTab, setActiveTab] = useState<'events' | 'members'>('events');
-  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
-  const [heroBgEnabled, setHeroBgEnabled] = useState(true);
-  const [bgToggling, setBgToggling] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>('events');
 
-  // Event form state
-  const [isAddingEvent, setIsAddingEvent] = useState(false);
-  const [editingEventId, setEditingEventId] = useState<string | null>(null);
-  const [eventForm, setEventForm] = useState({
-    title: '', subtitle: '', description: '',
-    date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
-    location: 'VSBCETC, Coimbatore',
-    feeType: 'Free' as 'Free' | 'Paid',
-    amountPerTeam: '',
+  const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
+    { id: 'events', label: 'Events', icon: CalendarIcon },
+    { id: 'team', label: 'Team', icon: UsersIcon },
+    { id: 'subscribers', label: 'Subscribers', icon: MailIcon },
+    { id: 'settings', label: 'Settings', icon: SettingsIcon },
+  ];
+
+  return (
+    <div className="min-h-screen bg-paper">
+      {/* Header */}
+      <header className="border-b border-paper-muted bg-paper sticky top-0 z-10">
+        <div className="mx-auto max-w-5xl px-6 py-4 flex items-center justify-between">
+          <div>
+            <p className="font-mono text-[10px] tracking-widest uppercase text-ink-light">
+              E-Cell VSBCETC
+            </p>
+            <h1 className="font-headline text-lg font-bold text-ink">Admin Panel</h1>
+          </div>
+          <button
+            onClick={() => {
+              sessionStorage.removeItem('ecell_admin_auth');
+              window.location.reload();
+            }}
+            className="text-xs text-ink-light hover:text-ink transition-colors font-mono"
+          >
+            Sign out
+          </button>
+        </div>
+      </header>
+
+      {/* Tabs */}
+      <div className="border-b border-paper-muted bg-paper">
+        <div className="mx-auto max-w-5xl px-6">
+          <nav className="flex gap-6" aria-label="Admin tabs">
+            {tabs.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={`flex items-center gap-2 py-3 text-sm font-medium border-b-2 transition-colors duration-150 -mb-px focus:outline-none ${
+                  activeTab === id
+                    ? 'border-vermilion text-ink'
+                    : 'border-transparent text-ink-muted hover:text-ink'
+                }`}
+              >
+                <Icon size={14} />
+                {label}
+              </button>
+            ))}
+          </nav>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="mx-auto max-w-5xl px-6 py-10">
+        {activeTab === 'events' && <EventsManager />}
+        {activeTab === 'team' && <TeamManager />}
+        {activeTab === 'subscribers' && <SubscribersManager />}
+        {activeTab === 'settings' && <SiteSettings />}
+      </div>
+    </div>
+  );
+}
+
+// ─── Events Manager ───────────────────────────────────────
+function EventsManager() {
+  const [events, setEvents] = useState<AdminEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [broadcastingId, setBroadcastingId] = useState<string | null>(null);
+  const [notice, setNotice] = useState('');
+  const [editing, setEditing] = useState<AdminEvent | null>(null);
+  const [adding, setAdding] = useState(false);
+
+  const empty: Omit<AdminEvent, 'id'> = {
+    name: '',
+    shortDescription: '',
+    isFree: true,
+    date: '',
+    time: '',
     registrationUrl: '',
-    tag: 'EVENT',
-    image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80',
-  });
+  };
+  const [form, setForm] = useState(empty);
 
-  // Member form state
-  const [isAddingMember, setIsAddingMember] = useState(false);
-  const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
-  const [memberForm, setMemberForm] = useState({
-    name: '', role: '', department: '', bio: '', wing: 'Core Leadership',
-    image: '', year: 3, portfolio: '',
-    linkedin: '', github: '', twitter: '', instagram: '',
-    quote: '', ecellPerspective: '', currentProject: '', whyEcell: '', keyMetric: '',
-  });
-
-  // Auth check
   useEffect(() => {
-    fetch('/api/auth/me', { credentials: 'same-origin' })
-      .then(r => {
-        if (r.ok) setAuthenticated(true);
-        else window.location.href = '/admin/login';
-      })
-      .catch(() => window.location.href = '/admin/login')
-      .finally(() => setAuthChecking(false));
+    fetchEvents();
   }, []);
 
-  // Fetch data
-  useEffect(() => {
-    if (!authenticated) return;
-    fetch('/api/events').then(r => r.json()).then(d => { if (Array.isArray(d)) setEventsList(d); }).catch(() => {});
-    fetch('/api/members').then(r => r.json()).then(d => { if (Array.isArray(d)) setMembersList(d); }).catch(() => {});
-    fetch('/api/settings').then(r => r.json()).then(d => { if (typeof d.heroDynamicBackground === 'boolean') setHeroBgEnabled(d.heroDynamicBackground); }).catch(() => {});
-  }, [authenticated]);
-
-  const handleToggleHeroBg = async () => {
-    setBgToggling(true);
+  const fetchEvents = async () => {
     try {
-      const nextVal = !heroBgEnabled;
+      setLoading(true);
+      const res = await fetch('/api/events');
+      if (res.ok) {
+        const data = await res.json();
+        setEvents(data);
+      }
+    } catch (err) {
+      console.error('Failed to load events:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const flashNotice = (msg: string) => {
+    setNotice(msg);
+    setTimeout(() => setNotice(''), 4000);
+  };
+
+  const openAdd = () => { setForm(empty); setAdding(true); setEditing(null); };
+  const openEdit = (ev: AdminEvent) => { setForm(ev); setEditing(ev); setAdding(false); };
+  const close = () => { setAdding(false); setEditing(null); };
+
+  const save = async () => {
+    if (!form.name.trim() || !form.date.trim()) return;
+    setSaving(true);
+    try {
+      const payload = editing ? { ...form, id: editing.id } : form;
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        const savedEvent: AdminEvent = await res.json();
+        if (editing) {
+          setEvents((prev) => prev.map((e) => (e.id === savedEvent.id ? savedEvent : e)));
+          flashNotice('Event updated successfully');
+        } else {
+          setEvents((prev) => [...prev, savedEvent]);
+          flashNotice('Event created successfully');
+        }
+        close();
+      }
+    } catch (err) {
+      console.error('Failed to save event:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const remove = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this event?')) return;
+    try {
+      const res = await fetch(`/api/events?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+      if (res.ok) {
+        setEvents((prev) => prev.filter((e) => e.id !== id));
+        flashNotice('Event deleted');
+      }
+    } catch (err) {
+      console.error('Failed to delete event:', err);
+    }
+  };
+
+  const broadcastEvent = async (ev: AdminEvent) => {
+    if (!confirm(`Broadcast email notification for "${ev.name}" to all newsletter subscribers via Brevo SMTP?`)) {
+      return;
+    }
+    setBroadcastingId(ev.id);
+    try {
+      const res = await fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: ev }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        flashNotice(`Success: ${data.message || 'Notification broadcast sent.'}`);
+      } else {
+        alert(data.error || 'Failed to broadcast notification.');
+      }
+    } catch (err) {
+      console.error('Broadcast error:', err);
+      alert('Error broadcasting email. Check SMTP settings.');
+    } finally {
+      setBroadcastingId(null);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="font-headline text-xl font-bold text-ink">Events</h2>
+          <p className="text-xs text-ink-muted mt-1">
+            {loading ? 'Loading...' : `${events.length} event${events.length !== 1 ? 's' : ''}`}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          {notice && (
+            <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-mono">
+              <CheckCircle2Icon size={14} />
+              {notice}
+            </span>
+          )}
+          <button
+            onClick={openAdd}
+            className="flex items-center gap-2 bg-ink text-paper-DEFAULT text-xs font-semibold px-4 py-2 rounded-sm hover:bg-ink/80 transition-colors"
+          >
+            <PlusIcon size={12} /> Add Event
+          </button>
+        </div>
+      </div>
+
+      {(adding || editing) && (
+        <div className="mb-8 border border-paper-muted rounded-sm p-6 bg-paper-dim">
+          <h3 className="font-semibold text-sm text-ink mb-4">
+            {adding ? 'New Event' : 'Edit Event'}
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <AdminInput label="Event Name *" value={form.name} onChange={(v) => setForm((f) => ({ ...f, name: v }))} />
+            <AdminInput label="Date *" value={form.date} onChange={(v) => setForm((f) => ({ ...f, date: v }))} placeholder="e.g. March 15, 2026 or Dates Announcing Soon" />
+            <AdminInput label="Time" value={form.time} onChange={(v) => setForm((f) => ({ ...f, time: v }))} placeholder="e.g. 9:00 AM – 5:00 PM or TBA" />
+            <AdminInput label="Registration URL (optional)" value={form.registrationUrl ?? ''} onChange={(v) => setForm((f) => ({ ...f, registrationUrl: v }))} />
+            <div className="sm:col-span-2">
+              <AdminInput label="Short Description" value={form.shortDescription} onChange={(v) => setForm((f) => ({ ...f, shortDescription: v }))} />
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="isFree"
+                checked={form.isFree}
+                onChange={(e) => setForm((f) => ({ ...f, isFree: e.target.checked }))}
+                className="accent-vermilion w-4 h-4 cursor-pointer"
+              />
+              <label htmlFor="isFree" className="text-sm text-ink cursor-pointer select-none">Free event</label>
+            </div>
+          </div>
+          <div className="flex gap-3 mt-5">
+            <button
+              onClick={save}
+              disabled={saving}
+              className="flex items-center gap-2 bg-ink text-paper-DEFAULT text-xs font-semibold px-5 py-2 rounded-sm hover:bg-ink/80 transition-colors disabled:opacity-50"
+            >
+              {saving && <Loader2Icon size={12} className="animate-spin" />}
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+            <button onClick={close} className="text-xs text-ink-muted hover:text-ink px-4 py-2 border border-paper-muted rounded-sm transition-colors">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="py-12 flex items-center justify-center text-xs text-ink-light gap-2">
+          <Loader2Icon size={16} className="animate-spin" /> Loading events...
+        </div>
+      ) : events.length === 0 ? (
+        <p className="py-12 text-sm text-ink-light">No events found. Click "Add Event" to create one.</p>
+      ) : (
+        <div className="divide-y divide-paper-muted">
+          {events.map((ev) => (
+            <div key={ev.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-5">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`font-mono text-[9px] tracking-widest uppercase px-1.5 py-0.5 rounded-sm ${ev.isFree ? 'bg-paper-muted text-ink-muted' : 'bg-vermilion/10 text-vermilion'}`}>
+                    {ev.isFree ? 'Free' : 'Paid'}
+                  </span>
+                </div>
+                <p className="font-semibold text-sm text-ink">{ev.name}</p>
+                <p className="text-xs text-ink-muted mt-0.5">{ev.shortDescription}</p>
+                <p className="text-xs text-ink-light mt-1 font-mono">{ev.date} · {ev.time}</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => broadcastEvent(ev)}
+                  disabled={broadcastingId === ev.id}
+                  title="Notify subscribers via Brevo email"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-ink border border-paper-muted hover:border-vermilion hover:text-vermilion transition-colors rounded-sm"
+                >
+                  {broadcastingId === ev.id ? (
+                    <Loader2Icon size={12} className="animate-spin text-vermilion" />
+                  ) : (
+                    <SendIcon size={12} />
+                  )}
+                  <span>{broadcastingId === ev.id ? 'Sending...' : 'Notify Email'}</span>
+                </button>
+                <button onClick={() => openEdit(ev)} aria-label="Edit" className="p-2 text-ink-muted hover:text-ink transition-colors rounded-sm hover:bg-paper-muted">
+                  <PencilIcon size={14} />
+                </button>
+                <button onClick={() => remove(ev.id)} aria-label="Delete" className="p-2 text-ink-muted hover:text-vermilion transition-colors rounded-sm hover:bg-vermilion/10">
+                  <Trash2Icon size={14} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Team Manager ─────────────────────────────────────────
+function TeamManager() {
+  const [members, setMembers] = useState<AdminMember[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState('');
+  const [editing, setEditing] = useState<AdminMember | null>(null);
+  const [adding, setAdding] = useState(false);
+  const empty: Omit<AdminMember, 'id'> = { name: '', role: '', avatarUrl: '', portfolioUrl: '' };
+  const [form, setForm] = useState(empty);
+
+  useEffect(() => {
+    fetchMembers();
+  }, []);
+
+  const fetchMembers = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/members');
+      if (res.ok) {
+        const data = await res.json();
+        setMembers(data);
+      }
+    } catch (err) {
+      console.error('Failed to load members:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const flashNotice = (msg: string) => {
+    setNotice(msg);
+    setTimeout(() => setNotice(''), 3000);
+  };
+
+  const openAdd = () => { setForm(empty); setAdding(true); setEditing(null); };
+  const openEdit = (m: AdminMember) => { setForm(m); setEditing(m); setAdding(false); };
+  const close = () => { setAdding(false); setEditing(null); };
+
+  const save = async () => {
+    if (!form.name.trim() || !form.role.trim()) return;
+    setSaving(true);
+    try {
+      const payload = editing ? { ...form, id: editing.id } : form;
+      const res = await fetch('/api/members', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        const savedMember: AdminMember = await res.json();
+        if (editing) {
+          setMembers((prev) => prev.map((m) => (m.id === savedMember.id ? savedMember : m)));
+          flashNotice('Member updated successfully');
+        } else {
+          setMembers((prev) => [...prev, savedMember]);
+          flashNotice('Member created successfully');
+        }
+        close();
+      }
+    } catch (err) {
+      console.error('Failed to save member:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const remove = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this member?')) return;
+    try {
+      const res = await fetch(`/api/members?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+      if (res.ok) {
+        setMembers((prev) => prev.filter((m) => m.id !== id));
+        flashNotice('Member deleted');
+      }
+    } catch (err) {
+      console.error('Failed to delete member:', err);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="font-headline text-xl font-bold text-ink">Team</h2>
+          <p className="text-xs text-ink-muted mt-1">
+            {loading ? 'Loading...' : `${members.length} member${members.length !== 1 ? 's' : ''}`}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          {notice && (
+            <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-mono">
+              <CheckCircle2Icon size={14} />
+              {notice}
+            </span>
+          )}
+          <button
+            onClick={openAdd}
+            className="flex items-center gap-2 bg-ink text-paper-DEFAULT text-xs font-semibold px-4 py-2 rounded-sm hover:bg-ink/80 transition-colors"
+          >
+            <PlusIcon size={12} /> Add Member
+          </button>
+        </div>
+      </div>
+
+      {(adding || editing) && (
+        <div className="mb-8 border border-paper-muted rounded-sm p-6 bg-paper-dim">
+          <h3 className="font-semibold text-sm text-ink mb-4">
+            {adding ? 'New Member' : 'Edit Member'}
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <AdminInput label="Full Name *" value={form.name} onChange={(v) => setForm((f) => ({ ...f, name: v }))} />
+            <AdminInput label="Role / Title *" value={form.role} onChange={(v) => setForm((f) => ({ ...f, role: v }))} />
+            <AdminInput label="Avatar Image URL (optional)" value={form.avatarUrl ?? ''} onChange={(v) => setForm((f) => ({ ...f, avatarUrl: v }))} placeholder="https://..." />
+            <AdminInput label="Portfolio / LinkedIn URL (optional)" value={form.portfolioUrl ?? ''} onChange={(v) => setForm((f) => ({ ...f, portfolioUrl: v }))} placeholder="https://..." />
+          </div>
+          <div className="flex gap-3 mt-5">
+            <button
+              onClick={save}
+              disabled={saving}
+              className="flex items-center gap-2 bg-ink text-paper-DEFAULT text-xs font-semibold px-5 py-2 rounded-sm hover:bg-ink/80 transition-colors disabled:opacity-50"
+            >
+              {saving && <Loader2Icon size={12} className="animate-spin" />}
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+            <button onClick={close} className="text-xs text-ink-muted hover:text-ink px-4 py-2 border border-paper-muted rounded-sm transition-colors">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="py-12 flex items-center justify-center text-xs text-ink-light gap-2">
+          <Loader2Icon size={16} className="animate-spin" /> Loading team members...
+        </div>
+      ) : members.length === 0 ? (
+        <p className="py-12 text-sm text-ink-light">No members found. Click "Add Member" to add one.</p>
+      ) : (
+        <div className="divide-y divide-paper-muted">
+          {members.map((m) => (
+            <div key={m.id} className="flex items-center justify-between gap-4 py-4">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="w-8 h-8 rounded-sm bg-paper-muted flex items-center justify-center shrink-0 overflow-hidden">
+                  {m.avatarUrl ? (
+                    <img src={m.avatarUrl} alt={m.name} className="w-full h-full object-cover grayscale" />
+                  ) : (
+                    <span className="font-headline text-xs font-bold text-ink-muted">{m.name.charAt(0)}</span>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-ink truncate">{m.name}</p>
+                  <p className="text-xs text-ink-muted font-mono truncate">{m.role}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button onClick={() => openEdit(m)} aria-label="Edit" className="p-2 text-ink-muted hover:text-ink transition-colors rounded-sm hover:bg-paper-muted">
+                  <PencilIcon size={14} />
+                </button>
+                <button onClick={() => remove(m.id)} aria-label="Delete" className="p-2 text-ink-muted hover:text-vermilion transition-colors rounded-sm hover:bg-vermilion/10">
+                  <Trash2Icon size={14} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Subscribers Manager ──────────────────────────────────
+function SubscribersManager() {
+  const [subscribers, setSubscribers] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [testEmail, setTestEmail] = useState('');
+  const [testing, setTesting] = useState(false);
+  const [notice, setNotice] = useState('');
+
+  useEffect(() => {
+    fetch('/api/subscribe')
+      .then((r) => r.json())
+      .then((data) => {
+        setSubscribers(data.subscribers || []);
+      })
+      .catch((err) => console.error('Failed to load subscribers:', err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const sendTestBroadcast = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!testEmail || !testEmail.includes('@')) return;
+
+    setTesting(true);
+    try {
+      const res = await fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: {
+            id: 'test-event',
+            name: "Project Expo '26 (Sample Notification)",
+            shortDescription: 'Inter-Collegiate Prototype and Hardware Innovation Summit at VSBCETC Coimbatore.',
+            date: 'March 15, 2026',
+            time: '9:00 AM – 5:00 PM',
+            isFree: false,
+            registrationUrl: 'https://ecell-vsbcetc.vercel.app/events',
+          },
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setNotice('Sample email broadcast sent successfully via Brevo SMTP!');
+        setTimeout(() => setNotice(''), 4000);
+      } else {
+        alert(data.error || 'Failed to send sample broadcast.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Network error while testing broadcast.');
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="font-headline text-xl font-bold text-ink">Subscribers</h2>
+          <p className="text-xs text-ink-muted mt-1">
+            {loading ? 'Loading...' : `${subscribers.length} registered email${subscribers.length !== 1 ? 's' : ''}`}
+          </p>
+        </div>
+        {notice && (
+          <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-mono">
+            <CheckCircle2Icon size={14} />
+            {notice}
+          </span>
+        )}
+      </div>
+
+      <div className="mb-8 border border-paper-muted rounded-sm p-6 bg-paper-dim">
+        <h3 className="font-semibold text-sm text-ink mb-1.5">Brevo SMTP Status</h3>
+        <p className="text-xs text-ink-muted mb-4">
+          Connected to <code className="font-mono text-ink">smtp-relay.brevo.com:587</code> via account <code className="font-mono text-ink">b58da7001@smtp-brevo.com</code>.
+        </p>
+        <form onSubmit={sendTestBroadcast} className="flex gap-2.5 max-w-md">
+          <input
+            type="email"
+            placeholder="Recipient email address for sample"
+            value={testEmail}
+            onChange={(e) => setTestEmail(e.target.value)}
+            className="flex-1 border border-paper-muted bg-paper rounded-sm px-3 py-2 text-xs text-ink placeholder:text-ink-light focus:outline-none focus:border-ink"
+            required
+          />
+          <button
+            type="submit"
+            disabled={testing}
+            className="flex items-center gap-1.5 bg-ink text-paper-DEFAULT text-xs font-semibold px-4 py-2 rounded-sm hover:bg-ink/80 transition-colors disabled:opacity-50 shrink-0"
+          >
+            {testing ? <Loader2Icon size={12} className="animate-spin" /> : <SendIcon size={12} />}
+            {testing ? 'Sending...' : 'Send Test Notice'}
+          </button>
+        </form>
+      </div>
+
+      {loading ? (
+        <div className="py-12 flex items-center justify-center text-xs text-ink-light gap-2">
+          <Loader2Icon size={16} className="animate-spin" /> Loading subscriber list...
+        </div>
+      ) : subscribers.length === 0 ? (
+        <p className="py-8 text-sm text-ink-light">No subscribers yet. Users can subscribe on the homepage or events page.</p>
+      ) : (
+        <div className="divide-y divide-paper-muted">
+          {subscribers.map((email, idx) => (
+            <div key={idx} className="flex items-center justify-between py-3">
+              <span className="font-mono text-xs text-ink">{email}</span>
+              <span className="text-[10px] uppercase font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-sm">
+                Active
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Site Settings ────────────────────────────────────────
+function SiteSettings() {
+  const [bgEnabled, setBgEnabled] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState('');
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (typeof data.heroDynamicBackground === 'boolean') {
+          setBgEnabled(data.heroDynamicBackground);
+        }
+      })
+      .catch((err) => console.error('Error fetching settings:', err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const toggleBg = async () => {
+    const nextVal = !bgEnabled;
+    setBgEnabled(nextVal);
+    setSaving(true);
+    try {
       const res = await fetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ heroDynamicBackground: nextVal }),
-        credentials: 'same-origin',
       });
       if (res.ok) {
-        setHeroBgEnabled(nextVal);
-        showMsg(`Hero dynamic background turned ${nextVal ? 'ON (Active)' : 'OFF (Disabled)'}.`, 'success');
-      } else {
-        showMsg('Failed to update background setting', 'error');
+        setNotice('Setting saved');
+        setTimeout(() => setNotice(''), 3000);
       }
-    } catch {
-      showMsg('Network error updating setting', 'error');
+    } catch (err) {
+      console.error('Failed to update settings:', err);
     } finally {
-      setBgToggling(false);
+      setSaving(false);
     }
   };
 
-  const handleLogout = () => {
-    document.cookie = 'session_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    window.location.href = '/admin/login';
-  };
-
-  const showMsg = (text: string, type: 'success' | 'error') => {
-    setMessage({ text, type });
-    setTimeout(() => setMessage(null), 4000);
-  };
-
-  // ─── Event CRUD ───
-  const resetEventForm = () => {
-    setEventForm({
-      title: '', subtitle: '', description: '',
-      date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
-      location: 'VSBCETC, Coimbatore', feeType: 'Free', amountPerTeam: '',
-      registrationUrl: '', tag: 'EVENT',
-      image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80',
-    });
-    setEditingEventId(null);
-    setIsAddingEvent(false);
-  };
-
-  const handleSaveEvent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!eventForm.title || !eventForm.date) { showMsg('Title and date required.', 'error'); return; }
-
-    const payload = {
-      ...eventForm,
-      date: new Date(eventForm.date).toISOString(),
-      amountPerTeam: eventForm.feeType === 'Paid' ? eventForm.amountPerTeam : 'Free Entry',
-    };
-
-    try {
-      if (editingEventId) {
-        const res = await fetch('/api/events', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editingEventId, ...payload }) });
-        if (res.ok) { setEventsList(prev => prev.map(ev => ev.id === editingEventId ? { ...ev, ...payload } : ev)); showMsg('Event updated.', 'success'); resetEventForm(); }
-        else showMsg('Failed to update.', 'error');
-      } else {
-        const res = await fetch('/api/events', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        if (res.ok) { const created = await res.json(); setEventsList(prev => [created, ...prev]); showMsg('Event created.', 'success'); resetEventForm(); }
-        else showMsg('Failed to create.', 'error');
-      }
-    } catch { showMsg('Network error.', 'error'); }
-  };
-
-  const handleEditEvent = (event: Event) => {
-    setEventForm({
-      title: event.title, subtitle: event.subtitle, description: event.description,
-      date: new Date(event.date).toISOString().slice(0, 16), location: event.location,
-      feeType: event.feeType || 'Free', amountPerTeam: event.amountPerTeam || '',
-      registrationUrl: event.registrationUrl || '', tag: event.tag || 'EVENT',
-      image: event.image,
-    });
-    setEditingEventId(event.id);
-    setIsAddingEvent(true);
-  };
-
-  const handleDeleteEvent = async (id: string, title: string) => {
-    if (!confirm(`Delete "${title}"?`)) return;
-    try {
-      const res = await fetch(`/api/events?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
-      if (res.ok) { setEventsList(prev => prev.filter(ev => ev.id !== id)); showMsg(`Deleted "${title}".`, 'success'); }
-      else showMsg('Failed to delete.', 'error');
-    } catch { showMsg('Network error.', 'error'); }
-  };
-
-  // ─── Member CRUD ───
-  const resetMemberForm = () => {
-    setMemberForm({ name: '', role: '', department: '', bio: '', wing: 'Core Leadership', image: '', year: 3, portfolio: '', linkedin: '', github: '', twitter: '', instagram: '', quote: '', ecellPerspective: '', currentProject: '', whyEcell: '', keyMetric: '' });
-    setEditingMemberId(null);
-    setIsAddingMember(false);
-  };
-
-  const handleSaveMember = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!memberForm.name || !memberForm.role) { showMsg('Name and role required.', 'error'); return; }
-
-    const payload = {
-      name: memberForm.name, role: memberForm.role, department: memberForm.department,
-      bio: memberForm.bio, wing: memberForm.wing, image: memberForm.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
-      year: memberForm.year, portfolio: memberForm.portfolio || undefined,
-      socials: { linkedin: memberForm.linkedin || undefined, github: memberForm.github || undefined, twitter: memberForm.twitter || undefined, instagram: memberForm.instagram || undefined },
-      contributions: [], featured: false,
-      quote: memberForm.quote || undefined, ecellPerspective: memberForm.ecellPerspective || undefined,
-      currentProject: memberForm.currentProject || undefined, whyEcell: memberForm.whyEcell || undefined,
-      keyMetric: memberForm.keyMetric || undefined,
-    };
-
-    try {
-      if (editingMemberId) {
-        const res = await fetch('/api/members', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editingMemberId, ...payload }) });
-        if (res.ok) { setMembersList(prev => prev.map(m => m.id === editingMemberId ? { ...m, ...payload, id: editingMemberId } as Member : m)); showMsg('Member updated.', 'success'); resetMemberForm(); }
-        else showMsg('Failed to update.', 'error');
-      } else {
-        const res = await fetch('/api/members', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        if (res.ok) { const created = await res.json(); setMembersList(prev => [...prev, created]); showMsg('Member added.', 'success'); resetMemberForm(); }
-        else showMsg('Failed to add.', 'error');
-      }
-    } catch { showMsg('Network error.', 'error'); }
-  };
-
-  const handleEditMember = (m: Member) => {
-    setMemberForm({
-      name: m.name, role: m.role, department: m.department, bio: m.bio,
-      wing: m.wing || 'Core Leadership', image: m.image, year: m.year,
-      portfolio: m.portfolio || '', linkedin: m.socials.linkedin || '',
-      github: m.socials.github || '', twitter: m.socials.twitter || '',
-      instagram: m.socials.instagram || '', quote: m.quote || '',
-      ecellPerspective: m.ecellPerspective || '', currentProject: m.currentProject || '',
-      whyEcell: m.whyEcell || '', keyMetric: m.keyMetric || '',
-    });
-    setEditingMemberId(m.id);
-    setIsAddingMember(true);
-  };
-
-  const handleDeleteMember = async (id: string, name: string) => {
-    if (!confirm(`Remove "${name}" from the team?`)) return;
-    try {
-      const res = await fetch(`/api/members?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
-      if (res.ok) { setMembersList(prev => prev.filter(m => m.id !== id)); showMsg(`Removed "${name}".`, 'success'); }
-      else showMsg('Failed to remove.', 'error');
-    } catch { showMsg('Network error.', 'error'); }
-  };
-
-  // Loading / Auth gate
-  if (authChecking) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="animate-pulse text-white/30 text-sm font-mono">Verifying access...</div>
-      </div>
-    );
-  }
-
-  if (!authenticated) return null;
-
-  const now = Date.now();
-  const upcomingCount = eventsList.filter(e => new Date(e.date).getTime() >= now && !e.isPast).length;
-  const pastCount = eventsList.filter(e => new Date(e.date).getTime() < now || e.isPast).length;
-
-  const inputClass = "w-full px-4 py-2.5 bg-[#0f0f18] rounded-xl border border-white/10 text-sm text-white/90 placeholder:text-white/20 focus:outline-none focus:border-vermilion/50 focus:ring-1 focus:ring-vermilion/20 transition-all";
-  const labelClass = "text-[11px] font-mono font-semibold text-white/40 uppercase tracking-wider block mb-1.5";
-
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white/90">
-
-      {/* ═══════ TOP HEADER ═══════ */}
-      <header className="border-b border-white/[0.06] bg-[#0e0e16] sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3.5">
-            <Link
-              href="/"
-              className="w-8 h-8 rounded-full border border-white/10 bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"
-              title="Return to Public Site"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 text-white/60" />
-            </Link>
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center p-0.5">
-                <img src="/logo.png" alt="Logo" className="w-full h-full object-contain rounded-full" />
-              </div>
-              <div>
-                <span className="text-sm font-bold text-white/80 block leading-tight">E-Cell Admin</span>
-                <span className="font-mono text-[9px] uppercase tracking-wider text-vermilion/80">VSBCETC</span>
-              </div>
-            </div>
+    <div>
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="font-headline text-xl font-bold text-ink">Site Settings</h2>
+        {notice && (
+          <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-mono">
+            <CheckCircle2Icon size={14} />
+            {notice}
+          </span>
+        )}
+      </div>
+      <div className="divide-y divide-paper-muted">
+        <div className="flex items-center justify-between py-5">
+          <div>
+            <p className="text-sm font-medium text-ink">Animated Background</p>
+            <p className="text-xs text-ink-muted mt-0.5">Toggle the visual canvas animation on the homepage hero</p>
           </div>
-          <div className="flex items-center gap-3">
-            {/* Quick Hero Dynamic Background Toggle */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
-              <span className={`w-2 h-2 rounded-full ${heroBgEnabled ? 'bg-emerald-400 animate-pulse' : 'bg-white/20'}`} />
-              <span className="text-[11px] font-mono text-white/50 hidden sm:inline">Hero Dynamic BG:</span>
-              <button
-                onClick={handleToggleHeroBg}
-                disabled={bgToggling}
-                className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold transition-all ${
-                  heroBgEnabled
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30'
-                    : 'bg-white/10 text-white/40 border border-white/10 hover:bg-white/15'
-                }`}
-                title="Turn Hero Section Dynamic Background ON/OFF"
-              >
-                {bgToggling ? '...' : heroBgEnabled ? 'ON' : 'OFF'}
-              </button>
-            </div>
-
-            <button
-              onClick={handleLogout}
-              className="px-4 py-1.5 rounded-full border border-white/10 text-[11px] font-mono text-white/40 hover:text-white hover:border-white/20 transition-all flex items-center gap-1.5"
-            >
-              <LogOut className="w-3 h-3" />
-              <span>Sign Out</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-8">
-
-        {/* ═══════ METRICS ═══════ */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-          {[
-            { label: 'Events', value: eventsList.length, color: 'text-white/80' },
-            { label: 'Upcoming', value: upcomingCount, color: 'text-emerald-400' },
-            { label: 'Archived', value: pastCount, color: 'text-white/50' },
-            { label: 'Team', value: membersList.length, color: 'text-white/80' },
-          ].map(s => (
-            <div key={s.label} className="bg-white/[0.03] rounded-xl border border-white/[0.06] p-4">
-              <span className="text-[10px] font-mono text-white/30 uppercase">{s.label}</span>
-              <div className={`text-2xl font-bold mt-1 ${s.color}`}>{s.value}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* ═══════ ALERT ═══════ */}
-        <AnimatePresence>
-          {message && (
-            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-              className={`p-3.5 rounded-xl border mb-6 flex items-center justify-between ${
-                message.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' : 'bg-rose-500/10 border-rose-500/20 text-rose-300'
-              }`}
-            >
-              <div className="flex items-center gap-2 text-xs font-medium">
-                {message.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-                <span>{message.text}</span>
-              </div>
-              <button onClick={() => setMessage(null)} className="text-white/30 hover:text-white/60"><X className="w-3.5 h-3.5" /></button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* ═══════ APPEARANCE & HERO BACKGROUND CONTROLLER ═══════ */}
-        <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-vermilion/10 border border-vermilion/20 flex items-center justify-center text-vermilion shrink-0">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-white/90">Hero Section Dynamic Canvas</span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${heroBgEnabled ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-white/10 text-white/40'}`}>
-                  {heroBgEnabled ? 'ACTIVE' : 'DISABLED'}
-                </span>
-              </div>
-              <p className="text-xs text-white/40 font-light mt-0.5">
-                Floating ember particles and interactive constellation lines responding dynamically to user mouse movement.
-              </p>
-            </div>
-          </div>
-
           <button
-            onClick={handleToggleHeroBg}
-            disabled={bgToggling}
-            className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all shadow-sm shrink-0 flex items-center gap-2 self-start sm:self-auto ${
-              heroBgEnabled
-                ? 'bg-rose-500/10 text-rose-300 border border-rose-500/30 hover:bg-rose-500/20'
-                : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30'
+            onClick={toggleBg}
+            disabled={loading || saving}
+            role="switch"
+            aria-checked={bgEnabled}
+            className={`relative w-10 h-5 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-vermilion ${
+              bgEnabled ? 'bg-ink' : 'bg-paper-muted'
             }`}
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${bgToggling ? 'animate-spin' : ''}`} />
-            <span>{bgToggling ? 'Saving...' : heroBgEnabled ? 'Turn OFF Background' : 'Turn ON Background'}</span>
+            <span
+              className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-paper-DEFAULT shadow transition-transform duration-200 ${
+                bgEnabled ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
           </button>
         </div>
-
-        {/* ═══════ TABS ═══════ */}
-        <div className="flex items-center justify-between gap-4 pb-4 mb-6 border-b border-white/[0.06]">
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-white/[0.04] border border-white/[0.06]">
-            <button
-              onClick={() => setActiveTab('events')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === 'events' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/60'}`}
-            >
-              <Calendar className="w-3.5 h-3.5 inline mr-1.5" />Events
-            </button>
-            <button
-              onClick={() => setActiveTab('members')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === 'members' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/60'}`}
-            >
-              <Users className="w-3.5 h-3.5 inline mr-1.5" />Team ({membersList.length})
-            </button>
-          </div>
-
-          <button
-            onClick={() => {
-              if (activeTab === 'events') { resetEventForm(); setIsAddingEvent(true); }
-              else { resetMemberForm(); setIsAddingMember(true); }
-            }}
-            className="px-4 py-2 rounded-full bg-vermilion text-white text-xs font-semibold hover:bg-vermilion/80 transition-all flex items-center gap-1.5"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>{activeTab === 'events' ? 'Add Event' : 'Add Member'}</span>
-          </button>
-        </div>
-
-        {/* ═══════ EVENTS TAB ═══════ */}
-        {activeTab === 'events' && (
-          <div>
-            {/* Event Form */}
-            <AnimatePresence>
-              {isAddingEvent && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden mb-6">
-                  <div className="bg-white/[0.03] rounded-2xl border border-white/[0.08] p-6">
-                    <div className="flex items-center justify-between mb-5">
-                      <h3 className="text-sm font-bold text-white/80">{editingEventId ? 'Edit Event' : 'New Event'}</h3>
-                      <button onClick={resetEventForm} className="text-white/30 hover:text-white/60"><X className="w-4 h-4" /></button>
-                    </div>
-                    <form onSubmit={handleSaveEvent} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className={labelClass}>Event Title *</label>
-                        <input type="text" required value={eventForm.title} onChange={e => setEventForm({...eventForm, title: e.target.value})} className={inputClass} placeholder="e.g. Project Expo '26" />
-                      </div>
-                      <div>
-                        <label className={labelClass}>Short Description</label>
-                        <input type="text" value={eventForm.subtitle} onChange={e => setEventForm({...eventForm, subtitle: e.target.value})} className={inputClass} placeholder="Brief one-liner" />
-                      </div>
-                      <div>
-                        <label className={labelClass}>Date & Time *</label>
-                        <input type="datetime-local" required value={eventForm.date} onChange={e => setEventForm({...eventForm, date: e.target.value})} className={inputClass} />
-                      </div>
-                      <div>
-                        <label className={labelClass}>Location</label>
-                        <input type="text" value={eventForm.location} onChange={e => setEventForm({...eventForm, location: e.target.value})} className={inputClass} />
-                      </div>
-                      <div>
-                        <label className={labelClass}>Fee Type</label>
-                        <select value={eventForm.feeType} onChange={e => setEventForm({...eventForm, feeType: e.target.value as 'Free' | 'Paid'})} className={inputClass}>
-                          <option value="Free">Free</option>
-                          <option value="Paid">Paid</option>
-                        </select>
-                      </div>
-                      {eventForm.feeType === 'Paid' && (
-                        <div>
-                          <label className={labelClass}>Amount</label>
-                          <input type="text" value={eventForm.amountPerTeam} onChange={e => setEventForm({...eventForm, amountPerTeam: e.target.value})} className={inputClass} placeholder="e.g. ₹250 / Team" />
-                        </div>
-                      )}
-                      <div>
-                        <label className={labelClass}>Registration URL (External)</label>
-                        <input type="url" value={eventForm.registrationUrl} onChange={e => setEventForm({...eventForm, registrationUrl: e.target.value})} className={inputClass} placeholder="https://forms.gle/..." />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className={labelClass}>Full Description</label>
-                        <textarea rows={2} value={eventForm.description} onChange={e => setEventForm({...eventForm, description: e.target.value})} className={inputClass} placeholder="Details about the event..." />
-                      </div>
-                      <div className="md:col-span-2 flex justify-end gap-3 pt-3 border-t border-white/[0.06]">
-                        <button type="button" onClick={resetEventForm} className="px-4 py-2 rounded-full border border-white/10 text-xs text-white/50 hover:text-white/80">Cancel</button>
-                        <button type="submit" className="px-6 py-2 rounded-full bg-vermilion text-white text-xs font-semibold hover:bg-vermilion/80 flex items-center gap-1.5">
-                          <Save className="w-3.5 h-3.5" />{editingEventId ? 'Update' : 'Create'}
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Event List */}
-            <div className="space-y-2">
-              {eventsList.map(event => {
-                const isPast = new Date(event.date).getTime() < now || event.isPast;
-                return (
-                  <div key={event.id} className="bg-white/[0.03] rounded-xl border border-white/[0.06] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/[0.05] transition-colors">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${isPast ? 'bg-white/5 text-white/40' : 'bg-emerald-500/15 text-emerald-400'}`}>
-                          {isPast ? 'PAST' : 'UPCOMING'}
-                        </span>
-                        <span className="text-[11px] font-mono text-white/30">
-                          {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </span>
-                        {event.feeType && (
-                          <span className={`text-[10px] font-semibold ${event.feeType === 'Free' ? 'text-emerald-400/70' : 'text-amber-400/70'}`}>
-                            • {event.feeType === 'Free' ? 'Free' : event.amountPerTeam || 'Paid'}
-                          </span>
-                        )}
-                      </div>
-                      <h4 className="text-sm font-bold text-white/80">{event.title}</h4>
-                      <p className="text-xs text-white/30 line-clamp-1 mt-0.5">{event.subtitle || event.description}</p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button onClick={() => handleEditEvent(event)} className="px-3 py-1.5 rounded-lg border border-white/10 text-[11px] text-white/50 hover:text-white hover:border-white/20 transition-all flex items-center gap-1">
-                        <Edit3 className="w-3 h-3" />Edit
-                      </button>
-                      <button onClick={() => handleDeleteEvent(event.id, event.title)} className="px-3 py-1.5 rounded-lg border border-rose-500/20 text-[11px] text-rose-400/60 hover:bg-rose-500/10 hover:text-rose-400 transition-all flex items-center gap-1">
-                        <Trash2 className="w-3 h-3" />Delete
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* ═══════ MEMBERS TAB ═══════ */}
-        {activeTab === 'members' && (
-          <div>
-            {/* Member Form */}
-            <AnimatePresence>
-              {isAddingMember && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden mb-6">
-                  <div className="bg-white/[0.03] rounded-2xl border border-white/[0.08] p-6">
-                    <div className="flex items-center justify-between mb-5">
-                      <h3 className="text-sm font-bold text-white/80">{editingMemberId ? 'Edit Member' : 'Add Member'}</h3>
-                      <button onClick={resetMemberForm} className="text-white/30 hover:text-white/60"><X className="w-4 h-4" /></button>
-                    </div>
-                    <form onSubmit={handleSaveMember} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <div>
-                        <label className={labelClass}>Full Name *</label>
-                        <input type="text" required value={memberForm.name} onChange={e => setMemberForm({...memberForm, name: e.target.value})} className={inputClass} placeholder="e.g. Kaviarasan S." />
-                      </div>
-                      <div>
-                        <label className={labelClass}>Role *</label>
-                        <input type="text" required value={memberForm.role} onChange={e => setMemberForm({...memberForm, role: e.target.value})} className={inputClass} placeholder="e.g. Student President" />
-                      </div>
-                      <div>
-                        <label className={labelClass}>Wing</label>
-                        <select value={memberForm.wing} onChange={e => setMemberForm({...memberForm, wing: e.target.value})} className={inputClass}>
-                          {WINGS.map(w => <option key={w} value={w}>{w}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className={labelClass}>Department</label>
-                        <input type="text" value={memberForm.department} onChange={e => setMemberForm({...memberForm, department: e.target.value})} className={inputClass} placeholder="e.g. Computer Science" />
-                      </div>
-                      <div>
-                        <label className={labelClass}>Year</label>
-                        <select value={memberForm.year} onChange={e => setMemberForm({...memberForm, year: parseInt(e.target.value)})} className={inputClass}>
-                          {[1, 2, 3, 4].map(y => <option key={y} value={y}>Year {y}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className={labelClass}>Photo URL</label>
-                        <input type="url" value={memberForm.image} onChange={e => setMemberForm({...memberForm, image: e.target.value})} className={inputClass} placeholder="https://..." />
-                      </div>
-                      <div>
-                        <label className={labelClass}>Portfolio URL</label>
-                        <input type="url" value={memberForm.portfolio} onChange={e => setMemberForm({...memberForm, portfolio: e.target.value})} className={inputClass} placeholder="https://portfolio.dev/..." />
-                      </div>
-                      <div>
-                        <label className={labelClass}>LinkedIn</label>
-                        <input type="url" value={memberForm.linkedin} onChange={e => setMemberForm({...memberForm, linkedin: e.target.value})} className={inputClass} placeholder="https://linkedin.com/in/..." />
-                      </div>
-                      <div>
-                        <label className={labelClass}>GitHub</label>
-                        <input type="url" value={memberForm.github} onChange={e => setMemberForm({...memberForm, github: e.target.value})} className={inputClass} placeholder="https://github.com/..." />
-                      </div>
-                      <div className="md:col-span-2 lg:col-span-3">
-                        <label className={labelClass}>Short Bio</label>
-                        <textarea rows={2} value={memberForm.bio} onChange={e => setMemberForm({...memberForm, bio: e.target.value})} className={inputClass} placeholder="Brief description..." />
-                      </div>
-                      <div>
-                        <label className={labelClass}>Quote</label>
-                        <input type="text" value={memberForm.quote} onChange={e => setMemberForm({...memberForm, quote: e.target.value})} className={inputClass} placeholder="Personal motto..." />
-                      </div>
-                      <div>
-                        <label className={labelClass}>Key Metric</label>
-                        <input type="text" value={memberForm.keyMetric} onChange={e => setMemberForm({...memberForm, keyMetric: e.target.value})} className={inputClass} placeholder="e.g. 12 Patents Filed" />
-                      </div>
-                      <div>
-                        <label className={labelClass}>Current Project</label>
-                        <input type="text" value={memberForm.currentProject} onChange={e => setMemberForm({...memberForm, currentProject: e.target.value})} className={inputClass} placeholder="Active blueprint..." />
-                      </div>
-                      <div className="md:col-span-2 lg:col-span-3 flex justify-end gap-3 pt-3 border-t border-white/[0.06]">
-                        <button type="button" onClick={resetMemberForm} className="px-4 py-2 rounded-full border border-white/10 text-xs text-white/50 hover:text-white/80">Cancel</button>
-                        <button type="submit" className="px-6 py-2 rounded-full bg-vermilion text-white text-xs font-semibold hover:bg-vermilion/80 flex items-center gap-1.5">
-                          <Save className="w-3.5 h-3.5" />{editingMemberId ? 'Update Member' : 'Add Member'}
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Members List */}
-            <div className="space-y-2">
-              {membersList.map(member => (
-                <div key={member.id} className="bg-white/[0.03] rounded-xl border border-white/[0.06] p-4 flex items-center gap-4 hover:bg-white/[0.05] transition-colors">
-                  <div className="w-11 h-11 rounded-full overflow-hidden bg-white/5 shrink-0 border border-white/10">
-                    <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-bold text-white/80 truncate">{member.name}</h4>
-                      <span className="text-[10px] font-mono text-vermilion/70 shrink-0">{member.wing || 'Team'}</span>
-                    </div>
-                    <p className="text-xs text-white/40">{member.role} · {member.department}</p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {member.portfolio && (
-                      <a href={member.portfolio} target="_blank" rel="noopener noreferrer" className="px-2.5 py-1.5 rounded-lg border border-white/10 text-[11px] text-white/40 hover:text-white transition-all" title="Portfolio">
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    )}
-                    <button onClick={() => handleEditMember(member)} className="px-3 py-1.5 rounded-lg border border-white/10 text-[11px] text-white/50 hover:text-white hover:border-white/20 transition-all flex items-center gap-1">
-                      <Edit3 className="w-3 h-3" />Edit
-                    </button>
-                    <button onClick={() => handleDeleteMember(member.id, member.name)} className="px-3 py-1.5 rounded-lg border border-rose-500/20 text-[11px] text-rose-400/60 hover:bg-rose-500/10 hover:text-rose-400 transition-all flex items-center gap-1">
-                      <Trash2 className="w-3 h-3" />Remove
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
+    </div>
+  );
+}
+
+// ─── Shared Input ─────────────────────────────────────────
+function AdminInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <div>
+      <label className="block font-mono text-[10px] tracking-widest uppercase text-ink-light mb-1.5">
+        {label}
+      </label>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full border border-paper-muted bg-paper rounded-sm px-3 py-2 text-sm text-ink placeholder:text-ink-light focus:outline-none focus:border-ink transition-colors duration-150"
+      />
     </div>
   );
 }

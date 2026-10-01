@@ -1,44 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllEvents, insertEvent, deleteEvent } from '@/lib/db';
-import { eventSchema } from '@/lib/validators';
+import { getStoredEvents, saveStoredEvent, deleteStoredEvent, StoredEvent } from '@/lib/dataStoreServer';
 import { randomBytes } from 'crypto';
 
-// GET /api/events — returns all events with automatic past event migration
+// GET /api/events — returns all events
 export async function GET() {
   try {
-    const events = await getAllEvents();
+    const events = await getStoredEvents();
     return NextResponse.json(events);
   } catch (error) {
     console.error('Failed to fetch events:', error);
-    const { events } = await import('@/data/seed');
-    return NextResponse.json(events);
+    return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 });
   }
 }
 
-// POST /api/events — create event
+// POST /api/events — create or update event
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const parsed = eventSchema.safeParse(body);
 
-    if (!parsed.success) {
+    if (!body.name || !body.date) {
       return NextResponse.json(
-        { error: 'Validation failed', details: parsed.error.flatten() },
+        { error: 'Event name and date are required' },
         { status: 400 }
       );
     }
 
-    const event = await insertEvent({
-      id: randomBytes(12).toString('hex'),
-      ...parsed.data,
-      is_active: true,
-    });
+    const event: StoredEvent = {
+      id: body.id || `evt-${randomBytes(6).toString('hex')}`,
+      name: body.name.trim(),
+      shortDescription: body.shortDescription || '',
+      isFree: body.isFree ?? true,
+      date: body.date.trim(),
+      time: body.time?.trim() || 'TBA',
+      registrationUrl: body.registrationUrl?.trim() || undefined,
+    };
 
-    return NextResponse.json(event, { status: 201 });
+    const saved = await saveStoredEvent(event);
+    return NextResponse.json(saved, { status: 200 });
   } catch (error) {
-    console.error('Failed to create event:', error);
+    console.error('Failed to save event:', error);
     return NextResponse.json(
-      { error: 'Failed to create event' },
+      { error: 'Failed to save event' },
       { status: 500 }
     );
   }
@@ -57,7 +59,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    await deleteEvent(id);
+    await deleteStoredEvent(id);
     return NextResponse.json({ success: true, deletedId: id });
   } catch (error) {
     console.error('Failed to delete event:', error);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   CalendarIcon,
   UsersIcon,
@@ -12,6 +12,7 @@ import {
   CheckCircle2Icon,
   Loader2Icon,
   SendIcon,
+  UploadIcon,
 } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────
@@ -443,8 +444,13 @@ function TeamManager() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <AdminInput label="Full Name *" value={form.name} onChange={(v) => setForm((f) => ({ ...f, name: v }))} />
             <AdminInput label="Role / Title *" value={form.role} onChange={(v) => setForm((f) => ({ ...f, role: v }))} />
-            <AdminInput label="Avatar Image URL (optional)" value={form.avatarUrl ?? ''} onChange={(v) => setForm((f) => ({ ...f, avatarUrl: v }))} placeholder="https://..." />
-            <AdminInput label="Portfolio / LinkedIn URL (optional)" value={form.portfolioUrl ?? ''} onChange={(v) => setForm((f) => ({ ...f, portfolioUrl: v }))} placeholder="https://..." />
+            <ImageUploadField
+              value={form.avatarUrl ?? ''}
+              onChange={(v) => setForm((f) => ({ ...f, avatarUrl: v }))}
+            />
+            <div className="sm:col-span-2">
+              <AdminInput label="Portfolio / LinkedIn URL (optional)" value={form.portfolioUrl ?? ''} onChange={(v) => setForm((f) => ({ ...f, portfolioUrl: v }))} placeholder="https://..." />
+            </div>
           </div>
           <div className="flex gap-3 mt-5">
             <button
@@ -721,6 +727,136 @@ function AdminInput({
         placeholder={placeholder}
         className="w-full border border-paper-muted bg-paper rounded-sm px-3 py-2 text-sm text-ink placeholder:text-ink-light focus:outline-none focus:border-ink transition-colors duration-150"
       />
+    </div>
+  );
+}
+
+// ─── Image Upload Field ───────────────────────────────────
+function ImageUploadField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (url: string) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+
+    try {
+      // First attempt: Server file upload via /api/upload
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          onChange(data.url);
+          setUploading(false);
+          return;
+        }
+      }
+
+      // Fallback: Client-side compressed Web-optimized Base64 Data URL
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxDim = 500;
+          let w = img.width;
+          let h = img.height;
+          if (w > h && w > maxDim) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else if (h > maxDim) {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, w, h);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            onChange(dataUrl);
+          }
+          setUploading(false);
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('Image upload failed:', err);
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="sm:col-span-2">
+      <label className="block font-mono text-[10px] tracking-widest uppercase text-ink-light mb-1.5">
+        Member Photo / Avatar
+      </label>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-3.5 bg-paper rounded-sm border border-paper-muted">
+        {/* Preview Thumbnail */}
+        <div className="w-14 h-14 rounded-sm bg-paper-muted border border-paper-muted flex items-center justify-center shrink-0 overflow-hidden">
+          {value ? (
+            <img src={value} alt="Preview" className="w-full h-full object-cover grayscale" />
+          ) : (
+            <UsersIcon size={22} className="text-ink-light" />
+          )}
+        </div>
+
+        {/* Upload Controls */}
+        <div className="flex-1 w-full space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept="image/png, image/jpeg, image/webp, image/gif"
+              className="hidden"
+            />
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 px-3 py-1.5 bg-ink text-paper-DEFAULT text-xs font-semibold rounded-sm hover:bg-ink/80 transition-colors disabled:opacity-50"
+            >
+              {uploading ? <Loader2Icon size={12} className="animate-spin" /> : <UploadIcon size={12} />}
+              {uploading ? 'Processing Image...' : 'Upload Photo File'}
+            </button>
+            {value && (
+              <button
+                type="button"
+                onClick={() => onChange('')}
+                className="text-xs text-ink-muted hover:text-vermilion transition-colors px-2 py-1"
+              >
+                Clear Photo
+              </button>
+            )}
+            <span className="text-[11px] text-ink-light">JPG, PNG, or WebP</span>
+          </div>
+
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="Or paste an image URL (https://...)"
+            className="w-full border border-paper-muted bg-paper-dim rounded-sm px-3 py-1.5 text-xs text-ink placeholder:text-ink-light focus:outline-none focus:border-ink transition-colors font-mono"
+          />
+        </div>
+      </div>
     </div>
   );
 }

@@ -36,7 +36,7 @@ export default function LoadingScreen() {
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-[#FAF8F4] select-none preloader-overlay transition-opacity duration-400 ease-out ${
+      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-[#FAF9F6] select-none preloader-overlay transition-opacity duration-400 ease-out ${
         isFading ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
       }`}
     >

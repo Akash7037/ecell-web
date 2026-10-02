@@ -1,17 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import Button from '@/components/ui/Button';
-import { SectionLabel } from '@/components/ui/Atoms';
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.55, delay: i * 0.1, ease: [0.25, 0.46, 0.45, 0.94] },
-  }),
-};
 
 interface HeroProps {
   watermarkEnabled?: boolean;
@@ -28,7 +17,7 @@ export default function Hero({
     <section className="relative min-h-[88vh] flex items-center pt-20 md:pt-24 pb-16 overflow-hidden">
       {/* Background Watermark Image & Ambient Palette Aura */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
-        {/* Soft atmospheric radial gradients using user brand palette (#DBFFFD, #C4FEFF, #FFD0C4, #FFEEDB) */}
+        {/* Soft atmospheric radial gradients */}
         <div className="absolute top-1/4 right-1/4 w-[520px] h-[520px] bg-[#DBFFFD]/40 rounded-full blur-3xl -z-10" />
         <div className="absolute bottom-1/4 left-1/4 w-[460px] h-[460px] bg-[#C4FEFF]/30 rounded-full blur-3xl -z-10" />
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[580px] h-[580px] bg-[#FFEEDB]/60 rounded-full blur-3xl -z-10" />
@@ -70,6 +59,8 @@ export default function Hero({
         {/* Subtle gradient wash to keep text crystal clear without hiding the photo */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#FAF8F2] via-transparent to-[#FAF8F2]/50" />
         <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-[#FAF8F2]/90 via-[#FAF8F2]/45 to-transparent" />
+        {/* Soft mobile gradient wash to ensure text readability across moving photo */}
+        <div className="md:hidden absolute inset-0 bg-gradient-to-b from-[#FAF8F2]/70 via-[#FAF8F2]/40 to-[#FAF8F2]/80" />
       </div>
 
       <div className="relative mx-auto max-w-7xl w-full px-6 py-10 sm:py-12 md:py-20 z-10">
@@ -82,7 +73,7 @@ export default function Hero({
             of founders.
           </h1>
 
-          <p className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-[#1C1917] font-medium sm:font-normal sm:text-ink-muted leading-relaxed max-w-2xl">
+          <p className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-[#1E293B] sm:text-[#57534E] font-medium leading-relaxed max-w-2xl">
             The official Entrepreneurship Cell of VSB CETC Coimbatore. Empowering student innovators, supporting hands-on projects, and fostering the entrepreneurial ecosystem on campus.
           </p>
 

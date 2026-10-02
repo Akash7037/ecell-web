@@ -72,8 +72,8 @@ export function EventCard({ event, onClick }: EventCardProps) {
             ) : event.isFree ? (
               <span className="text-[#268C48]">Free Entry</span>
             ) : (
-              <span className="text-[#8C3A26] flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#8C3A26]" />
+              <span className="text-[#C2410C] flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#C2410C]" />
                 Paid Event
               </span>
             )}
@@ -88,7 +88,7 @@ export function EventCard({ event, onClick }: EventCardProps) {
                 variant="ghost"
                 size="sm"
                 aria-label={`Register for ${event.name}`}
-                className="hover:bg-[#DBFFFD]/60 hover:border-[#268B8C] text-[#268B8C] border-[#268B8C]/40 text-xs"
+                className="hover:bg-[#FFF7ED] hover:border-[#C2410C] text-[#C2410C] border-[#FED7AA] text-xs font-medium"
               >
                 Register ↗
               </Button>

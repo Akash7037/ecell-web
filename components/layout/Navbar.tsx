@@ -39,7 +39,7 @@ export default function Navbar() {
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled || isOpen ? 'bg-[#FAF8F2]/90 backdrop-blur-md border-b border-paper-muted/80 shadow-sm' : 'bg-transparent'
+          scrolled || isOpen ? 'bg-[#FAF9F6]/95 backdrop-blur-md border-b border-[#E7E5E4] shadow-xs' : 'bg-[#FAF9F6]/80 backdrop-blur-sm border-b border-[#E7E5E4]/50'
         }`}
       >
         <nav

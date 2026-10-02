@@ -95,14 +95,14 @@ export function SubscribeSection({ variant = 'section' }: SubscribeSectionProps)
   }
 
   return (
-    <section className="bg-[#FFEEDB]/40 border-t border-[#FFD0C4]/70 py-16 md:py-20">
+    <section className="bg-[#FAF9F6] border-t border-[#E7E5E4] py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-6">
         <div className="max-w-2xl">
           <SectionLabel>Dispatch</SectionLabel>
-          <h2 className="font-headline text-2xl md:text-3xl font-bold text-ink mb-3">
+          <h2 className="font-headline text-2xl md:text-3xl font-bold text-[#1C1917] mb-3">
             Never miss an event announcement.
           </h2>
-          <p className="text-sm text-ink-muted leading-relaxed mb-6">
+          <p className="text-sm text-[#57534E] leading-relaxed mb-6">
             Get direct alerts for Project Expo '26 registration dates, hackathons, and investor rounds. No spam, only calendar updates.
           </p>
 
@@ -113,14 +113,14 @@ export function SubscribeSection({ variant = 'section' }: SubscribeSectionProps)
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
-                className="w-full border border-paper-muted bg-paper rounded-sm px-4 py-3 text-sm text-ink placeholder:text-ink-light focus:outline-none focus:border-[#268B8C] transition-colors duration-150 shadow-sm"
+                className="w-full border border-[#E7E5E4] bg-white rounded-md px-4 py-3 text-sm text-[#1C1917] placeholder:text-[#A8A29E] focus:outline-none focus:border-[#C2410C] focus:ring-1 focus:ring-[#C2410C] transition-colors duration-150 shadow-xs"
                 required
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center justify-center gap-2 bg-[#8C3A26] hover:bg-[#824539] text-white text-xs uppercase tracking-wider font-bold px-6 py-3 rounded-sm transition-all duration-150 shrink-0 shadow-sm disabled:opacity-50 cursor-pointer"
+              className="flex items-center justify-center gap-2 bg-[#C2410C] hover:bg-[#9A3412] text-white text-xs uppercase tracking-wider font-bold px-6 py-3 rounded-md transition-all duration-150 shrink-0 shadow-xs disabled:opacity-50 cursor-pointer"
             >
               {loading ? (
                 <Loader2Icon size={14} className="animate-spin text-white" />

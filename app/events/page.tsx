@@ -4,6 +4,7 @@ import Footer from '@/components/layout/Footer';
 import EventsPageClient from '@/components/sections/EventsPageClient';
 import SubscribeSection from '@/components/ui/SubscribeSection';
 import { getStoredEvents } from '@/lib/dataStoreServer';
+import { isEventConcluded } from '@/lib/eventUtils';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,14 +16,8 @@ export const metadata: Metadata = {
 export default async function EventsPage() {
   const events = await getStoredEvents();
 
-  const isFinished = (e: any) => {
-    const d = (e.date || '').toLowerCase();
-    const s = (e.shortDescription || '').toLowerCase();
-    return d.includes('completed') || d.includes('archive') || d.includes('concluded') || s.includes('completed') || s.includes('archived');
-  };
-
-  const upcomingEvents = events.filter((e) => !isFinished(e));
-  const pastEvents = events.filter((e) => isFinished(e));
+  const upcomingEvents = events.filter((e) => !isEventConcluded(e));
+  const pastEvents = events.filter((e) => isEventConcluded(e));
 
   return (
     <>

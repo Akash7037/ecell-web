@@ -9,6 +9,8 @@ import SubscribeSection from '@/components/ui/SubscribeSection';
 import { getStoredEvents, getStoredMembers } from '@/lib/dataStoreServer';
 import { getSiteSettings } from '@/lib/siteSettingsServer';
 
+import { isEventConcluded } from '@/lib/eventUtils';
+
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
@@ -16,14 +18,8 @@ export default async function HomePage() {
   const members = await getStoredMembers();
   const settings = getSiteSettings();
 
-  // Only display active & upcoming events on the homepage (filter out finished/archived)
-  const upcomingEvents = events.filter((e) => {
-    const d = (e.date || '').toLowerCase();
-    const s = (e.shortDescription || '').toLowerCase();
-    if (d.includes('completed') || d.includes('archive') || d.includes('concluded')) return false;
-    if (s.includes('completed') || s.includes('archived')) return false;
-    return true;
-  });
+  // Only display active & upcoming events on the homepage (filter out finished/concluded)
+  const upcomingEvents = events.filter((e) => !isEventConcluded(e));
 
   return (
     <>

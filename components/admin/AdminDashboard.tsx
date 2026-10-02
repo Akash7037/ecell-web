@@ -14,6 +14,7 @@ import {
   SendIcon,
   UploadIcon,
 } from 'lucide-react';
+import { isEventConcluded } from '@/lib/eventUtils';
 
 // ─── Types ───────────────────────────────────────────────
 interface AdminEvent {
@@ -28,6 +29,7 @@ interface AdminEvent {
   registrationUrl?: string;
   imageUrl?: string;
   gallery?: string[];
+  isConcluded?: boolean;
 }
 
 interface AdminMember {
@@ -285,7 +287,7 @@ function EventsManager() {
             />
             <div className="sm:col-span-2">
               <label className="block font-mono text-[10px] tracking-widest uppercase text-ink-light mb-1.5">
-                Gallery Photos (comma separated URLs or paste links)
+                Archive Gallery Photos (Only shown for concluded/past events)
               </label>
               <input
                 type="text"
@@ -303,18 +305,45 @@ function EventsManager() {
                 className="w-full border border-paper-muted bg-paper rounded-sm px-3 py-2 text-xs text-ink placeholder:text-ink-light focus:outline-none focus:border-ink font-mono"
               />
               <span className="text-[11px] text-ink-light mt-1 block">
-                Additional event photos shown in the modal gallery grid with zoom viewer.
+                Photos from the actual event. These are only displayed once the event concludes. New / upcoming events only show the Header / Cover photo above.
               </span>
             </div>
-            <div className="flex items-center gap-3 sm:col-span-2">
-              <input
-                type="checkbox"
-                id="isFree"
-                checked={form.isFree}
-                onChange={(e) => setForm((f) => ({ ...f, isFree: e.target.checked }))}
-                className="accent-vermilion w-4 h-4 cursor-pointer"
-              />
-              <label htmlFor="isFree" className="text-sm text-ink cursor-pointer select-none">Free event</label>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:col-span-2 pt-2 border-t border-paper-muted">
+              <div className="flex items-center gap-2.5">
+                <input
+                  type="checkbox"
+                  id="isFree"
+                  checked={form.isFree}
+                  onChange={(e) => setForm((f) => ({ ...f, isFree: e.target.checked }))}
+                  className="accent-vermilion w-4 h-4 cursor-pointer"
+                />
+                <label htmlFor="isFree" className="text-sm text-ink cursor-pointer select-none">Free event</label>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <input
+                  type="checkbox"
+                  id="isConcludedManual"
+                  checked={isEventConcluded(form)}
+                  onChange={(e) => {
+                    const isChecked = e.target.checked;
+                    setForm((f) => {
+                      let newDate = f.date;
+                      if (isChecked && !newDate.toLowerCase().includes('completed') && !newDate.toLowerCase().includes('concluded')) {
+                        newDate = newDate ? `${newDate} · Concluded` : 'Completed · Archived';
+                      } else if (!isChecked) {
+                        newDate = newDate.replace(/\s*·\s*(?:Concluded|Completed|Archived)/gi, '').replace(/\b(?:Completed|Archived|Concluded)\b/gi, '').trim();
+                        if (!newDate) newDate = 'Dates Announcing Soon';
+                      }
+                      return { ...f, date: newDate };
+                    });
+                  }}
+                  className="accent-amber-600 w-4 h-4 cursor-pointer"
+                />
+                <label htmlFor="isConcludedManual" className="text-sm text-ink cursor-pointer select-none">
+                  Mark as Concluded / Completed (or auto-concludes when scheduled date/time finishes)
+                </label>
+              </div>
             </div>
           </div>
           <div className="flex gap-3 mt-5">
@@ -341,15 +370,20 @@ function EventsManager() {
         <p className="py-12 text-sm text-ink-light">No events found. Click "Add Event" to create one.</p>
       ) : (
         <div className="divide-y divide-paper-muted">
-          {events.map((ev) => (
-            <div key={ev.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-5">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={`font-mono text-[9px] tracking-widest uppercase px-1.5 py-0.5 rounded-sm ${ev.isFree ? 'bg-paper-muted text-ink-muted' : 'bg-vermilion/10 text-vermilion'}`}>
-                    {ev.isFree ? 'Free' : 'Paid'}
-                  </span>
-                </div>
-                <p className="font-semibold text-sm text-ink">{ev.name}</p>
+          {events.map((ev) => {
+            const concluded = isEventConcluded(ev);
+            return (
+              <div key={ev.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-5">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`font-mono text-[9px] tracking-widest uppercase px-1.5 py-0.5 rounded-sm ${ev.isFree ? 'bg-paper-muted text-ink-muted' : 'bg-vermilion/10 text-vermilion'}`}>
+                      {ev.isFree ? 'Free' : 'Paid'}
+                    </span>
+                    <span className={`font-mono text-[9px] tracking-widest uppercase px-1.5 py-0.5 rounded-sm ${concluded ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                      {concluded ? 'Concluded / Past' : 'Upcoming / Scheduled'}
+                    </span>
+                  </div>
+                  <p className="font-semibold text-sm text-ink">{ev.name}</p>
                 <p className="text-xs text-ink-muted mt-0.5">{ev.shortDescription}</p>
                 <p className="text-xs text-ink-light mt-1 font-mono">{ev.date} · {ev.time}</p>
               </div>
@@ -375,8 +409,9 @@ function EventsManager() {
                 </button>
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
+      </div>
       )}
     </div>
   );

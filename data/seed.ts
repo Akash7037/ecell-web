@@ -207,10 +207,7 @@ export const events: Event[] = [
     registrationUrl: 'https://forms.gle/vsbcetc-expo-26-registration',
     feeType: 'Paid',
     amountPerTeam: '₹250 / Team',
-    gallery: [
-      'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80',
-    ],
+    gallery: [],
     clips: [],
   },
   {

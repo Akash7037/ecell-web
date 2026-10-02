@@ -15,6 +15,7 @@ export interface StoredEvent {
   registrationUrl?: string;
   imageUrl?: string;
   gallery?: string[];
+  isConcluded?: boolean;
 }
 
 export interface StoredMember {
@@ -38,10 +39,7 @@ const defaultEvents: StoredEvent[] = [
     location: "Central Auditorium & Innovation Labs, VSBCETC Coimbatore",
     registrationUrl: "https://forms.gle/vsbcetc-expo-26-registration",
     imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
-    gallery: [
-      "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80",
-    ],
+    gallery: [],
   },
   {
     id: 'evt-hackathon',

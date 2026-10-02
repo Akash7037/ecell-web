@@ -2,6 +2,7 @@
 
 import Button from './Button';
 import { CalendarIcon, ClockIcon } from 'lucide-react';
+import { isEventConcluded } from '@/lib/eventUtils';
 
 export interface Event {
   id: string;
@@ -15,6 +16,7 @@ export interface Event {
   registrationUrl?: string;
   imageUrl?: string;
   gallery?: string[];
+  isConcluded?: boolean;
 }
 
 interface EventCardProps {
@@ -23,10 +25,7 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, onClick }: EventCardProps) {
-  const isConcluded =
-    (event.date || '').toLowerCase().includes('completed') ||
-    (event.date || '').toLowerCase().includes('archive') ||
-    (event.shortDescription || '').toLowerCase().includes('concluded');
+  const isConcluded = isEventConcluded(event);
 
   return (
     <article
@@ -58,7 +57,7 @@ export function EventCard({ event, onClick }: EventCardProps) {
               </span>
             )}
             <span className="text-[#268B8C] group-hover:text-[#8C3A26] text-[11px] font-sans font-medium flex items-center gap-0.5 ml-auto sm:ml-0 transition-colors">
-              View details & photos &rarr;
+              {isConcluded ? 'View archive & photos →' : 'View event details →'}
             </span>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { XIcon, CalendarIcon, ClockIcon, MapPinIcon, ExternalLinkIcon, ImageIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/Atoms';
 import Button from '@/components/ui/Button';
+import { isEventConcluded } from '@/lib/eventUtils';
 
 export interface EventModalData {
   id: string;
@@ -17,6 +18,7 @@ export interface EventModalData {
   registrationUrl?: string;
   imageUrl?: string;
   gallery?: string[];
+  isConcluded?: boolean;
 }
 
 interface EventModalProps {
@@ -49,11 +51,9 @@ export function EventModal({ event, onClose }: EventModalProps) {
 
   if (!event) return null;
 
-  const isConcluded = event.date.toLowerCase().includes('completed') || event.date.toLowerCase().includes('archive');
-  const allImages = [
-    ...(event.imageUrl ? [event.imageUrl] : []),
-    ...(event.gallery || []),
-  ].filter((img, idx, arr) => arr.indexOf(img) === idx);
+  const isConcluded = isEventConcluded(event);
+  // Only actual event gallery photos (separate from header cover banner)
+  const galleryPhotos = (event.gallery || []).filter(Boolean);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-ink/75 backdrop-blur-sm animate-in fade-in duration-200">
@@ -147,17 +147,17 @@ export function EventModal({ event, onClose }: EventModalProps) {
             </div>
           </div>
 
-          {/* Event Photo Gallery */}
-          {allImages.length > 0 && (
+          {/* Event Photo Gallery — Only displayed for past / concluded events with actual archive photos */}
+          {isConcluded && galleryPhotos.length > 0 && (
             <div className="pt-2">
               <div className="flex items-center gap-2 mb-3">
                 <ImageIcon size={15} className="text-ink" />
                 <h3 className="font-headline text-sm font-bold text-ink uppercase tracking-wider">
-                  Event Photos & Gallery ({allImages.length})
+                  Event Archive & Gallery ({galleryPhotos.length})
                 </h3>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {allImages.map((photoUrl, idx) => (
+                {galleryPhotos.map((photoUrl, idx) => (
                   <div
                     key={idx}
                     onClick={() => setSelectedPhoto(photoUrl)}

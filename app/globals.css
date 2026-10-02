@@ -112,3 +112,17 @@
   backface-visibility: hidden;
   animation: heroTilePan 45s linear infinite;
 }
+
+/* ─── Preloader Staggered Blur Text ─────────────────────── */
+@keyframes blur-text {
+  0% {
+    filter: blur(0px);
+  }
+  100% {
+    filter: blur(4px);
+  }
+}
+
+.font-quattrocento {
+  font-family: 'Quattrocento Sans', sans-serif;
+}

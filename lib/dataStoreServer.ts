@@ -116,34 +116,16 @@ function writeJsonFile<T>(filePath: string, data: T): void {
 
 // ─── Events Store ─────────────────────────────────────────────────────────────
 export async function getStoredEvents(): Promise<StoredEvent[]> {
-  const localEvents: StoredEvent[] = fs.existsSync(eventsFilePath)
-    ? readJsonFile<StoredEvent[]>(eventsFilePath, defaultEvents)
-    : defaultEvents;
-
   if (supabase) {
     try {
       const { data, error } = await supabase.from('events').select('*').order('created_at', { ascending: false });
       if (!error && data) {
-        const supaEvents: StoredEvent[] = data.map((d: any) => ({
-          id: d.id,
-          name: d.name,
-          shortDescription: d.short_description || d.shortDescription || '',
-          description: d.description || '',
-          isFree: d.is_free ?? d.isFree ?? true,
-          date: d.date,
-          time: d.time,
-          location: d.location || '',
-          registrationUrl: d.registration_url || d.registrationUrl || '',
-          imageUrl: d.image_url || d.imageUrl || '',
-          gallery: Array.isArray(d.gallery) ? d.gallery : [],
-        }));
-
-        // Check if there are default or file events missing in Supabase (e.g. past/outdated events)
-        const supaIds = new Set(supaEvents.map((e) => e.id));
-        const missing = localEvents.filter((e) => !supaIds.has(e.id));
-        if (missing.length > 0) {
-          // Auto-sync missing events into Supabase so they are permanently editable in admin
-          for (const ev of missing) {
+        // If Supabase is completely empty (fresh setup), seed with defaultEvents once
+        if (data.length === 0) {
+          const seeds = fs.existsSync(eventsFilePath)
+            ? readJsonFile<StoredEvent[]>(eventsFilePath, defaultEvents)
+            : defaultEvents;
+          for (const ev of seeds) {
             try {
               await supabase.from('events').upsert({
                 id: ev.id,
@@ -159,13 +141,26 @@ export async function getStoredEvents(): Promise<StoredEvent[]> {
                 gallery: ev.gallery || [],
               });
             } catch (err) {
-              console.warn('Error syncing missing event to Supabase:', err);
+              console.warn('Error seeding event to Supabase:', err);
             }
           }
-          return [...supaEvents, ...missing];
+          return seeds;
         }
 
-        return supaEvents;
+        // Return current events directly from Supabase
+        return data.map((d: any) => ({
+          id: d.id,
+          name: d.name,
+          shortDescription: d.short_description || d.shortDescription || '',
+          description: d.description || '',
+          isFree: d.is_free ?? d.isFree ?? true,
+          date: d.date,
+          time: d.time,
+          location: d.location || '',
+          registrationUrl: d.registration_url || d.registrationUrl || '',
+          imageUrl: d.image_url || d.imageUrl || '',
+          gallery: Array.isArray(d.gallery) ? d.gallery : [],
+        }));
       }
     } catch (err) {
       console.warn('Supabase getStoredEvents error, using file store:', err);
@@ -177,7 +172,7 @@ export async function getStoredEvents(): Promise<StoredEvent[]> {
     writeJsonFile(eventsFilePath, defaultEvents);
     return defaultEvents;
   }
-  return localEvents;
+  return readJsonFile<StoredEvent[]>(eventsFilePath, defaultEvents);
 }
 
 export async function saveStoredEvent(event: StoredEvent): Promise<StoredEvent> {
@@ -201,31 +196,50 @@ export async function saveStoredEvent(event: StoredEvent): Promise<StoredEvent> 
     }
   }
 
-  // Always save to file store — newest events at the top!
-  const current = await getStoredEvents();
-  const index = current.findIndex((e) => e.id === event.id);
-  let updated: StoredEvent[];
-  if (index >= 0) {
-    updated = current.map((e) => (e.id === event.id ? event : e));
-  } else {
-    updated = [event, ...current];
+  // Save directly to file store without circular getStoredEvents call
+  try {
+    let current: StoredEvent[] = [];
+    if (fs.existsSync(eventsFilePath)) {
+      current = readJsonFile<StoredEvent[]>(eventsFilePath, []);
+    }
+    const index = current.findIndex((e) => e.id === event.id);
+    let updated: StoredEvent[];
+    if (index >= 0) {
+      updated = current.map((e) => (e.id === event.id ? event : e));
+    } else {
+      updated = [event, ...current];
+    }
+    writeJsonFile(eventsFilePath, updated);
+  } catch (err) {
+    console.warn('File store save error:', err);
   }
-  writeJsonFile(eventsFilePath, updated);
+
   return event;
 }
 
 export async function deleteStoredEvent(id: string): Promise<boolean> {
   if (supabase) {
     try {
-      await supabase.from('events').delete().eq('id', id);
+      const { error } = await supabase.from('events').delete().eq('id', id);
+      if (error) {
+        console.error('Supabase deleteStoredEvent error:', error);
+      }
     } catch (err) {
       console.warn('Supabase deleteStoredEvent error:', err);
     }
   }
 
-  const current = await getStoredEvents();
-  const filtered = current.filter((e) => e.id !== id);
-  writeJsonFile(eventsFilePath, filtered);
+  // Delete directly from local file store without circular getStoredEvents call
+  try {
+    if (fs.existsSync(eventsFilePath)) {
+      const current = readJsonFile<StoredEvent[]>(eventsFilePath, []);
+      const filtered = current.filter((e) => e.id !== id);
+      writeJsonFile(eventsFilePath, filtered);
+    }
+  } catch (err) {
+    console.warn('File store delete error:', err);
+  }
+
   return true;
 }
 
@@ -271,30 +285,48 @@ export async function saveStoredMember(member: StoredMember): Promise<StoredMemb
     }
   }
 
-  const current = await getStoredMembers();
-  const index = current.findIndex((m) => m.id === member.id);
-  let updated: StoredMember[];
-  if (index >= 0) {
-    updated = current.map((m) => (m.id === member.id ? member : m));
-  } else {
-    updated = [...current, member];
+  try {
+    let current: StoredMember[] = [];
+    if (fs.existsSync(membersFilePath)) {
+      current = readJsonFile<StoredMember[]>(membersFilePath, defaultMembers);
+    }
+    const index = current.findIndex((m) => m.id === member.id);
+    let updated: StoredMember[];
+    if (index >= 0) {
+      updated = current.map((m) => (m.id === member.id ? member : m));
+    } else {
+      updated = [...current, member];
+    }
+    writeJsonFile(membersFilePath, updated);
+  } catch (err) {
+    console.warn('File store member save error:', err);
   }
-  writeJsonFile(membersFilePath, updated);
+
   return member;
 }
 
 export async function deleteStoredMember(id: string): Promise<boolean> {
   if (supabase) {
     try {
-      await supabase.from('members').delete().eq('id', id);
+      const { error } = await supabase.from('members').delete().eq('id', id);
+      if (error) {
+        console.error('Supabase deleteStoredMember error:', error);
+      }
     } catch (err) {
       console.warn('Supabase deleteStoredMember error:', err);
     }
   }
 
-  const current = await getStoredMembers();
-  const filtered = current.filter((m) => m.id !== id);
-  writeJsonFile(membersFilePath, filtered);
+  try {
+    if (fs.existsSync(membersFilePath)) {
+      const current = readJsonFile<StoredMember[]>(membersFilePath, []);
+      const filtered = current.filter((m) => m.id !== id);
+      writeJsonFile(membersFilePath, filtered);
+    }
+  } catch (err) {
+    console.warn('File store member delete error:', err);
+  }
+
   return true;
 }
 

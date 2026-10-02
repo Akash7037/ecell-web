@@ -21,8 +21,8 @@ export default function Footer() {
               Entrepreneurship Cell
             </p>
             <p className="mt-3 text-sm text-ink-muted max-w-xs leading-relaxed">
-              VSB College of Engineering &amp; Technical Campus,
-              Pollachi Main Road, Coimbatore, Tamil Nadu.
+              VSB College of Engineering &amp; Technical Campus (VSBCETC),
+              Pollachi Main Road, Coimbatore (Kovai), Tamil Nadu.
             </p>
           </div>
 

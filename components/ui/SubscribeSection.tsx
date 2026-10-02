@@ -52,8 +52,8 @@ export function SubscribeSection({ variant = 'section' }: SubscribeSectionProps)
 
   if (variant === 'card') {
     return (
-      <div className="border border-paper-muted bg-paper-dim rounded-sm p-6 sm:p-8">
-        <div className="flex items-center gap-2 mb-2 text-vermilion">
+      <div className="border border-[#FFD0C4] bg-[#FFEEDB]/50 rounded-sm p-6 sm:p-8">
+        <div className="flex items-center gap-2 mb-2 text-[#8C3A26]">
           <MailIcon size={14} />
           <SectionLabel>Event Alerts</SectionLabel>
         </div>
@@ -69,24 +69,24 @@ export function SubscribeSection({ variant = 'section' }: SubscribeSectionProps)
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email"
-            className="flex-1 border border-paper-muted bg-paper rounded-sm px-3.5 py-2.5 text-xs text-ink placeholder:text-ink-light focus:outline-none focus:border-ink transition-colors"
+            className="flex-1 border border-paper-muted bg-paper rounded-sm px-3.5 py-2.5 text-xs text-ink placeholder:text-ink-light focus:outline-none focus:border-[#268B8C] transition-colors"
             required
           />
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center justify-center gap-2 bg-ink hover:bg-vermilion text-white text-xs font-semibold px-5 py-2.5 rounded-sm transition-all duration-150 shrink-0 shadow-sm disabled:opacity-50"
+            className="flex items-center justify-center gap-2 bg-[#8C3A26] hover:bg-[#824539] text-white text-xs font-semibold px-5 py-2.5 rounded-sm transition-all duration-150 shrink-0 shadow-sm disabled:opacity-50"
           >
             {loading ? <Loader2Icon size={13} className="animate-spin text-white" /> : 'Notify Me'}
           </button>
         </form>
         {status === 'success' && (
-          <p className="mt-3 flex items-center gap-1.5 text-xs text-emerald-600 font-mono">
+          <p className="mt-3 flex items-center gap-1.5 text-xs text-[#268C48] font-mono">
             <CheckCircle2Icon size={13} /> {message}
           </p>
         )}
         {status === 'error' && (
-          <p className="mt-3 text-xs text-vermilion font-mono">
+          <p className="mt-3 text-xs text-[#8C3A26] font-mono">
             {message}
           </p>
         )}
@@ -95,7 +95,7 @@ export function SubscribeSection({ variant = 'section' }: SubscribeSectionProps)
   }
 
   return (
-    <section className="bg-paper-dim border-t border-paper-muted py-16 md:py-20">
+    <section className="bg-[#FFEEDB]/40 border-t border-[#FFD0C4]/70 py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-6">
         <div className="max-w-2xl">
           <SectionLabel>Dispatch</SectionLabel>
@@ -113,14 +113,14 @@ export function SubscribeSection({ variant = 'section' }: SubscribeSectionProps)
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
-                className="w-full border border-paper-muted bg-paper rounded-sm px-4 py-3 text-sm text-ink placeholder:text-ink-light focus:outline-none focus:border-ink transition-colors duration-150 shadow-sm"
+                className="w-full border border-paper-muted bg-paper rounded-sm px-4 py-3 text-sm text-ink placeholder:text-ink-light focus:outline-none focus:border-[#268B8C] transition-colors duration-150 shadow-sm"
                 required
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center justify-center gap-2 bg-ink hover:bg-vermilion text-white text-xs uppercase tracking-wider font-bold px-6 py-3 rounded-sm transition-all duration-150 shrink-0 shadow-sm disabled:opacity-50 cursor-pointer"
+              className="flex items-center justify-center gap-2 bg-[#8C3A26] hover:bg-[#824539] text-white text-xs uppercase tracking-wider font-bold px-6 py-3 rounded-sm transition-all duration-150 shrink-0 shadow-sm disabled:opacity-50 cursor-pointer"
             >
               {loading ? (
                 <Loader2Icon size={14} className="animate-spin text-white" />
@@ -134,12 +134,12 @@ export function SubscribeSection({ variant = 'section' }: SubscribeSectionProps)
           </form>
 
           {status === 'success' && (
-            <p className="mt-3.5 flex items-center gap-1.5 text-xs text-emerald-600 font-mono">
+            <p className="mt-3.5 flex items-center gap-1.5 text-xs text-[#268C48] font-mono">
               <CheckCircle2Icon size={14} /> {message}
             </p>
           )}
           {status === 'error' && (
-            <p className="mt-3.5 text-xs text-vermilion font-mono">
+            <p className="mt-3.5 text-xs text-[#8C3A26] font-mono">
               {message}
             </p>
           )}

@@ -17,11 +17,11 @@
   body {
     background-color: #FAF8F2;
     background-image: 
-      radial-gradient(at 10% 12%, rgba(208, 228, 237, 0.45) 0px, transparent 45%),
-      radial-gradient(at 90% 18%, rgba(218, 208, 237, 0.4) 0px, transparent 50%),
-      radial-gradient(at 50% 55%, rgba(237, 232, 208, 0.55) 0px, transparent 60%),
-      radial-gradient(at 15% 85%, rgba(218, 208, 237, 0.35) 0px, transparent 50%),
-      radial-gradient(at 85% 90%, rgba(208, 228, 237, 0.4) 0px, transparent 55%);
+      radial-gradient(at 10% 12%, rgba(219, 255, 253, 0.5) 0px, transparent 48%),
+      radial-gradient(at 90% 18%, rgba(255, 208, 196, 0.45) 0px, transparent 50%),
+      radial-gradient(at 50% 50%, rgba(255, 238, 219, 0.65) 0px, transparent 60%),
+      radial-gradient(at 15% 85%, rgba(196, 254, 255, 0.4) 0px, transparent 52%),
+      radial-gradient(at 85% 90%, rgba(38, 139, 140, 0.12) 0px, transparent 55%);
     background-attachment: fixed;
     color: #121316;
     font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
@@ -46,7 +46,7 @@
   }
 
   ::selection {
-    background-color: #FF4D2E;
+    background-color: #8C3A26;
     color: white;
   }
 }
@@ -81,5 +81,34 @@
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #FF4D2E;
+  background: #8C3A26;
+}
+
+/* ─── Seamless 2-Tile Infinite Hero Pan ─────────────────── */
+@keyframes heroFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes heroTilePan {
+  0% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0%, 0, 0);
+  }
+}
+
+.hero-tile-container {
+  animation: heroFadeIn 2s ease-out forwards;
+}
+
+.hero-tile-track {
+  will-change: transform;
+  backface-visibility: hidden;
+  animation: heroTilePan 45s linear infinite;
 }

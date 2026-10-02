@@ -31,21 +31,5 @@
       "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80"
     ]
-  },
-  {
-    "id": "evt-patent",
-    "name": "Patent & Utility Specification Drafting",
-    "shortDescription": "Turning Final-Year Capstone Projects into IP with registered patent attorneys.",
-    "description": "Expert-led workshop by registered patent attorneys on prior-art search methodology and provisional patent filing for student inventors.",
-    "isFree": true,
-    "date": "Completed · Archived",
-    "time": "Full Day Workshop",
-    "location": "Seminar Hall 1, VSBCETC Coimbatore",
-    "registrationUrl": "",
-    "imageUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80",
-    "gallery": [
-      "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80"
-    ]
   }
 ]

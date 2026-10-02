@@ -82,7 +82,7 @@ export default function Hero({
             of founders.
           </h1>
 
-          <p className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-ink-muted leading-relaxed max-w-2xl">
+          <p className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-ink font-medium sm:font-normal sm:text-ink-muted [text-shadow:_0_1px_2px_rgba(250,248,242,0.95)] sm:[text-shadow:none] leading-relaxed max-w-2xl">
             The official Entrepreneurship Cell of VSB CETC Coimbatore. Empowering student innovators, supporting hands-on projects, and fostering the entrepreneurial ecosystem on campus.
           </p>
 

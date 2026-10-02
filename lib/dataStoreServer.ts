@@ -113,11 +113,15 @@ function writeJsonFile<T>(filePath: string, data: T): void {
 
 // ─── Events Store ─────────────────────────────────────────────────────────────
 export async function getStoredEvents(): Promise<StoredEvent[]> {
+  const localEvents: StoredEvent[] = fs.existsSync(eventsFilePath)
+    ? readJsonFile<StoredEvent[]>(eventsFilePath, defaultEvents)
+    : defaultEvents;
+
   if (supabase) {
     try {
       const { data, error } = await supabase.from('events').select('*').order('created_at', { ascending: false });
-      if (!error && data && data.length > 0) {
-        return data.map((d: any) => ({
+      if (!error && data) {
+        const supaEvents: StoredEvent[] = data.map((d: any) => ({
           id: d.id,
           name: d.name,
           shortDescription: d.short_description || d.shortDescription || '',
@@ -130,6 +134,35 @@ export async function getStoredEvents(): Promise<StoredEvent[]> {
           imageUrl: d.image_url || d.imageUrl || '',
           gallery: Array.isArray(d.gallery) ? d.gallery : [],
         }));
+
+        // Check if there are default or file events missing in Supabase (e.g. past/outdated events)
+        const supaIds = new Set(supaEvents.map((e) => e.id));
+        const missing = localEvents.filter((e) => !supaIds.has(e.id));
+        if (missing.length > 0) {
+          // Auto-sync missing events into Supabase so they are permanently editable in admin
+          for (const ev of missing) {
+            try {
+              await supabase.from('events').upsert({
+                id: ev.id,
+                name: ev.name,
+                short_description: ev.shortDescription,
+                description: ev.description || '',
+                is_free: ev.isFree,
+                date: ev.date,
+                time: ev.time,
+                location: ev.location || '',
+                registration_url: ev.registrationUrl || '',
+                image_url: ev.imageUrl || '',
+                gallery: ev.gallery || [],
+              });
+            } catch (err) {
+              console.warn('Error syncing missing event to Supabase:', err);
+            }
+          }
+          return [...supaEvents, ...missing];
+        }
+
+        return supaEvents;
       }
     } catch (err) {
       console.warn('Supabase getStoredEvents error, using file store:', err);
@@ -141,7 +174,7 @@ export async function getStoredEvents(): Promise<StoredEvent[]> {
     writeJsonFile(eventsFilePath, defaultEvents);
     return defaultEvents;
   }
-  return readJsonFile<StoredEvent[]>(eventsFilePath, defaultEvents);
+  return localEvents;
 }
 
 export async function saveStoredEvent(event: StoredEvent): Promise<StoredEvent> {

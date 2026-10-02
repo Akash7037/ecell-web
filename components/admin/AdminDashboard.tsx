@@ -132,6 +132,8 @@ function EventsManager() {
     gallery: [],
   };
   const [form, setForm] = useState(empty);
+  const [eventFilter, setEventFilter] = useState<'all' | 'upcoming' | 'concluded'>('all');
+  const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchEvents();
@@ -157,8 +159,22 @@ function EventsManager() {
     setTimeout(() => setNotice(''), 4000);
   };
 
-  const openAdd = () => { setForm(empty); setAdding(true); setEditing(null); };
-  const openEdit = (ev: AdminEvent) => { setForm(ev); setEditing(ev); setAdding(false); };
+  const openAdd = () => {
+    setForm(empty);
+    setAdding(true);
+    setEditing(null);
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
+  const openEdit = (ev: AdminEvent) => {
+    setForm(ev);
+    setEditing(ev);
+    setAdding(false);
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
   const close = () => { setAdding(false); setEditing(null); };
 
   const save = async () => {
@@ -253,9 +269,14 @@ function EventsManager() {
       </div>
 
       {(adding || editing) && (
-        <div className="mb-8 border border-paper-muted rounded-sm p-6 bg-paper-dim">
-          <h3 className="font-semibold text-sm text-ink mb-4">
-            {adding ? 'New Event' : 'Edit Event'}
+        <div ref={formRef} className="mb-8 border border-paper-muted rounded-sm p-6 bg-paper-dim">
+          <h3 className="font-semibold text-sm text-ink mb-4 flex items-center justify-between">
+            <span>{adding ? 'New Event' : `Editing Event: ${editing?.name}`}</span>
+            {editing && (
+              <span className={`font-mono text-[10px] uppercase px-2 py-0.5 rounded-sm ${isEventConcluded(form) ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                {isEventConcluded(form) ? 'Concluded / Outdated' : 'Upcoming / Scheduled'}
+              </span>
+            )}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <AdminInput label="Event Name *" value={form.name} onChange={(v) => setForm((f) => ({ ...f, name: v }))} />
@@ -362,28 +383,76 @@ function EventsManager() {
         </div>
       )}
 
+      {/* Filter Tabs for Events */}
+      {!loading && events.length > 0 && (
+        <div className="flex items-center gap-2 mb-4 border-b border-paper-muted pb-3">
+          <button
+            onClick={() => setEventFilter('all')}
+            className={`px-3 py-1 rounded-sm text-xs font-mono transition-colors ${
+              eventFilter === 'all'
+                ? 'bg-ink text-paper-DEFAULT font-semibold'
+                : 'text-ink-muted hover:text-ink bg-paper-dim border border-paper-muted'
+            }`}
+          >
+            All Events ({events.length})
+          </button>
+          <button
+            onClick={() => setEventFilter('upcoming')}
+            className={`px-3 py-1 rounded-sm text-xs font-mono transition-colors ${
+              eventFilter === 'upcoming'
+                ? 'bg-emerald-700 text-white font-semibold'
+                : 'text-ink-muted hover:text-ink bg-paper-dim border border-paper-muted'
+            }`}
+          >
+            Upcoming ({events.filter((e) => !isEventConcluded(e)).length})
+          </button>
+          <button
+            onClick={() => setEventFilter('concluded')}
+            className={`px-3 py-1 rounded-sm text-xs font-mono transition-colors ${
+              eventFilter === 'concluded'
+                ? 'bg-amber-700 text-white font-semibold'
+                : 'text-ink-muted hover:text-ink bg-paper-dim border border-paper-muted'
+            }`}
+          >
+            Concluded / Outdated ({events.filter((e) => isEventConcluded(e)).length})
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <div className="py-12 flex items-center justify-center text-xs text-ink-light gap-2">
           <Loader2Icon size={16} className="animate-spin" /> Loading events...
         </div>
       ) : events.length === 0 ? (
         <p className="py-12 text-sm text-ink-light">No events found. Click "Add Event" to create one.</p>
+      ) : events.filter((e) => {
+          if (eventFilter === 'upcoming') return !isEventConcluded(e);
+          if (eventFilter === 'concluded') return isEventConcluded(e);
+          return true;
+        }).length === 0 ? (
+        <p className="py-12 text-sm text-ink-light">No events found under "{eventFilter}" category.</p>
       ) : (
         <div className="divide-y divide-paper-muted">
-          {events.map((ev) => {
-            const concluded = isEventConcluded(ev);
-            return (
-              <div key={ev.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-5">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`font-mono text-[9px] tracking-widest uppercase px-1.5 py-0.5 rounded-sm ${ev.isFree ? 'bg-paper-muted text-ink-muted' : 'bg-vermilion/10 text-vermilion'}`}>
-                      {ev.isFree ? 'Free' : 'Paid'}
-                    </span>
-                    <span className={`font-mono text-[9px] tracking-widest uppercase px-1.5 py-0.5 rounded-sm ${concluded ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
-                      {concluded ? 'Concluded / Past' : 'Upcoming / Scheduled'}
-                    </span>
-                  </div>
-                  <p className="font-semibold text-sm text-ink">{ev.name}</p>
+          {events
+            .filter((e) => {
+              if (eventFilter === 'upcoming') return !isEventConcluded(e);
+              if (eventFilter === 'concluded') return isEventConcluded(e);
+              return true;
+            })
+            .map((ev) => {
+              const concluded = isEventConcluded(ev);
+              return (
+                <div key={ev.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-5">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`font-mono text-[9px] tracking-widest uppercase px-1.5 py-0.5 rounded-sm ${ev.isFree ? 'bg-paper-muted text-ink-muted' : 'bg-vermilion/10 text-vermilion'}`}>
+                        {ev.isFree ? 'Free' : 'Paid'}
+                      </span>
+                      <span className={`font-mono text-[9px] tracking-widest uppercase px-1.5 py-0.5 rounded-sm ${concluded ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                        {concluded ? 'Concluded / Past' : 'Upcoming / Scheduled'}
+                      </span>
+                    </div>
+                    <p className="font-semibold text-sm text-ink">{ev.name}</p>
                 <p className="text-xs text-ink-muted mt-0.5">{ev.shortDescription}</p>
                 <p className="text-xs text-ink-light mt-1 font-mono">{ev.date} · {ev.time}</p>
               </div>

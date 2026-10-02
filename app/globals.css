@@ -111,7 +111,7 @@
   transform: translate3d(0%, 0, 0);
   will-change: transform;
   backface-visibility: hidden;
-  animation: heroTilePan 24s linear infinite;
+  animation: heroTilePan 32s linear infinite;
   animation-delay: 1s;
   animation-fill-mode: backwards;
 }

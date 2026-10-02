@@ -20,8 +20,10 @@ interface HeroProps {
 
 export default function Hero({
   watermarkEnabled = true,
-  watermarkOpacity = 0.08,
+  watermarkOpacity = 0.15,
 }: HeroProps) {
+  const displayOpacity = Math.max(watermarkOpacity ?? 0.15, 0.14);
+
   return (
     <section className="relative min-h-[88vh] flex items-center pt-20 md:pt-24 pb-16 overflow-hidden">
       {/* Background Watermark Image & Ambient Palette Aura */}
@@ -36,11 +38,11 @@ export default function Hero({
         {watermarkEnabled && (
           <div
             className="hero-tile-container absolute inset-0 w-full h-full overflow-hidden pointer-events-none"
-            style={{ opacity: watermarkOpacity }}
+            style={{ opacity: displayOpacity }}
           >
             <div className="hero-tile-track flex w-[200%] h-full">
               {/* Tile 1 */}
-              <div className="w-1/2 h-full shrink-0 relative">
+              <div className="w-1/2 h-full shrink-0 relative overflow-hidden">
                 <img
                   src="/images/hero-team.jpg"
                   alt=""
@@ -49,7 +51,7 @@ export default function Hero({
                 />
               </div>
               {/* Tile 2 (Seamless Adjacent Clone) */}
-              <div className="w-1/2 h-full shrink-0 relative">
+              <div className="w-1/2 h-full shrink-0 relative overflow-hidden">
                 <img
                   src="/images/hero-team.jpg"
                   alt=""
@@ -60,19 +62,20 @@ export default function Hero({
             </div>
           </div>
         )}
-        {/* Subtle gradient wash to keep text crystal clear */}
+
+        {/* Subtle gradient wash to keep text crystal clear without hiding the photo */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#FAF8F2] via-transparent to-[#FAF8F2]/60" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#FAF8F2]/90 via-[#FAF8F2]/45 to-transparent" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl w-full px-6 py-12 md:py-20 z-10">
+      <div className="relative mx-auto max-w-7xl w-full px-6 py-10 sm:py-12 md:py-20 z-10">
         <div className="max-w-3xl lg:max-w-4xl">
           <motion.h1
             custom={0}
             variants={fadeUp}
             initial="hidden"
             animate="visible"
-            className="font-headline text-[2.75rem] sm:text-[3.5rem] md:text-[4.25rem] lg:text-[4.75rem] font-bold text-ink leading-[1.03] tracking-tight"
+            className="font-headline text-[2.15rem] xs:text-[2.5rem] sm:text-[3.25rem] md:text-[4rem] lg:text-[4.5rem] font-bold text-ink leading-[1.08] sm:leading-[1.04] tracking-tight"
           >
             Building the<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#8C3A26] via-[#824539] to-[#268B8C]">
@@ -86,7 +89,7 @@ export default function Hero({
             variants={fadeUp}
             initial="hidden"
             animate="visible"
-            className="mt-6 text-lg sm:text-xl text-ink-muted leading-relaxed max-w-2xl"
+            className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-ink-muted leading-relaxed max-w-2xl"
           >
             The official Entrepreneurship Cell of VSB CETC Coimbatore. Empowering student innovators, supporting hands-on projects, and fostering the entrepreneurial ecosystem on campus.
           </motion.p>
@@ -96,16 +99,16 @@ export default function Hero({
             variants={fadeUp}
             initial="hidden"
             animate="visible"
-            className="mt-8 flex flex-wrap items-center gap-4"
+            className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 max-w-xs sm:max-w-none"
           >
-            <Button href="/events" size="lg">
+            <Button href="/events" size="lg" className="justify-center text-center">
               Explore Events &rarr;
             </Button>
             <Button
               href="/team"
               variant="ghost"
               size="lg"
-              className="border-[#268B8C]/40 text-[#268B8C] hover:bg-[#DBFFFD]/40 hover:border-[#268B8C]"
+              className="border-[#268B8C]/40 text-[#268B8C] hover:bg-[#DBFFFD]/40 hover:border-[#268B8C] justify-center text-center"
             >
               Meet the Team
             </Button>

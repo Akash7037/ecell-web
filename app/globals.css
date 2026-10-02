@@ -95,22 +95,25 @@
 }
 
 @keyframes heroTilePan {
-  0% {
-    transform: translate3d(-50%, 0, 0);
+  0%, 2.5% {
+    transform: translate3d(0%, 0, 0);
   }
   100% {
-    transform: translate3d(0%, 0, 0);
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
 .hero-tile-container {
-  animation: heroFadeIn 2s ease-out forwards;
+  animation: heroFadeIn 1.5s ease-out forwards;
 }
 
 .hero-tile-track {
+  transform: translate3d(0%, 0, 0);
   will-change: transform;
   backface-visibility: hidden;
   animation: heroTilePan 45s linear infinite;
+  animation-delay: 1s;
+  animation-fill-mode: backwards;
 }
 
 /* ─── Preloader Staggered Blur Text ─────────────────────── */

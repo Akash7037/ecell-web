@@ -34,42 +34,60 @@ export default function Hero({
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[580px] h-[580px] bg-[#FFEEDB]/60 rounded-full blur-3xl -z-10" />
         <div className="absolute top-2/3 right-1/3 w-[380px] h-[380px] bg-[#FFD0C4]/35 rounded-full blur-3xl -z-10" />
 
-        {/* Adjacent 2-Tile Seamless Infinite Moving Backdrop */}
+        {/* Backdrop: On desktop, seamless 2-tile infinite pan. On mobile, full static image showing 100% of all team members without cropping */}
         {watermarkEnabled && (
-          <div
-            className="hero-tile-container absolute inset-0 w-full h-full overflow-hidden pointer-events-none"
-            style={{ opacity: displayOpacity }}
-          >
-            <div className="hero-tile-track flex w-[200%] h-full">
-              {/* Tile 1 */}
-              <div className="w-1/2 h-full shrink-0 relative overflow-hidden">
-                <img
-                  src="/images/hero-team.jpg"
-                  alt=""
-                  aria-hidden="true"
-                  width={2800}
-                  height={1292}
-                  className="absolute inset-0 w-full h-full object-cover object-center filter grayscale contrast-110 mix-blend-multiply pointer-events-none"
-                />
-              </div>
-              {/* Tile 2 (Seamless Adjacent Clone) */}
-              <div className="w-1/2 h-full shrink-0 relative overflow-hidden">
-                <img
-                  src="/images/hero-team.jpg"
-                  alt=""
-                  aria-hidden="true"
-                  width={2800}
-                  height={1292}
-                  className="absolute inset-0 w-full h-full object-cover object-center filter grayscale contrast-110 mix-blend-multiply pointer-events-none"
-                />
+          <>
+            {/* Desktop & Tablet: Seamless 2-Tile Pan */}
+            <div
+              className="hero-tile-container hidden md:block absolute inset-0 w-full h-full overflow-hidden pointer-events-none"
+              style={{ opacity: displayOpacity }}
+            >
+              <div className="hero-tile-track flex w-[200%] h-full">
+                {/* Tile 1 */}
+                <div className="w-1/2 h-full shrink-0 relative overflow-hidden">
+                  <img
+                    src="/images/hero-team.jpg"
+                    alt=""
+                    aria-hidden="true"
+                    width={2800}
+                    height={1292}
+                    className="absolute inset-0 w-full h-full object-cover object-center filter grayscale contrast-110 mix-blend-multiply pointer-events-none"
+                  />
+                </div>
+                {/* Tile 2 */}
+                <div className="w-1/2 h-full shrink-0 relative overflow-hidden">
+                  <img
+                    src="/images/hero-team.jpg"
+                    alt=""
+                    aria-hidden="true"
+                    width={2800}
+                    height={1292}
+                    className="absolute inset-0 w-full h-full object-cover object-center filter grayscale contrast-110 mix-blend-multiply pointer-events-none"
+                  />
+                </div>
               </div>
             </div>
-          </div>
+
+            {/* Mobile View: Full Static Photo showing EVERY person from edge to edge without any cropping or scrolling */}
+            <div
+              className="md:hidden absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden"
+              style={{ opacity: Math.max(displayOpacity, 0.22) }}
+            >
+              <img
+                src="/images/hero-team.jpg"
+                alt=""
+                aria-hidden="true"
+                width={2800}
+                height={1292}
+                className="w-full h-auto object-contain filter grayscale contrast-110 mix-blend-multiply pointer-events-none"
+              />
+            </div>
+          </>
         )}
 
         {/* Subtle gradient wash to keep text crystal clear without hiding the photo */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#FAF8F2] via-transparent to-[#FAF8F2]/60" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#FAF8F2]/90 via-[#FAF8F2]/45 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#FAF8F2] via-transparent to-[#FAF8F2]/50" />
+        <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-[#FAF8F2]/90 via-[#FAF8F2]/45 to-transparent" />
       </div>
 
       <div className="relative mx-auto max-w-7xl w-full px-6 py-10 sm:py-12 md:py-20 z-10">

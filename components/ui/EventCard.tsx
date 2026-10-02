@@ -42,7 +42,7 @@ export function EventCard({ event, onClick }: EventCardProps) {
           </h3>
 
           <p className="mt-1.5 text-sm text-ink-muted leading-relaxed max-w-2xl line-clamp-2">
-            {event.shortDescription}
+            {event.shortDescription || event.description || 'Details coming soon.'}
           </p>
 
           <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-ink-light font-mono">

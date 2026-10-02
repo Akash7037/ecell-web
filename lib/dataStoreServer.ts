@@ -81,6 +81,9 @@ if (supabaseUrl && supabaseKey) {
   try {
     supabase = createClient(supabaseUrl, supabaseKey, {
       auth: { persistSession: false },
+      global: {
+        fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' }),
+      },
     });
   } catch (err) {
     console.warn('Supabase client initialization warning:', err);

@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getStoredEvents, saveStoredEvent, deleteStoredEvent, StoredEvent } from '@/lib/dataStoreServer';
 import { randomBytes } from 'crypto';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 // GET /api/events — returns all events
 export async function GET() {
   try {
     const events = await getStoredEvents();
-    return NextResponse.json(events);
+    return NextResponse.json(events, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      },
+    });
   } catch (error) {
     console.error('Failed to fetch events:', error);
     return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 });
@@ -40,6 +49,13 @@ export async function POST(request: NextRequest) {
     };
 
     const saved = await saveStoredEvent(event);
+    try {
+      revalidatePath('/', 'page');
+      revalidatePath('/events', 'page');
+      revalidatePath('/admin', 'page');
+    } catch (e) {
+      console.warn('Revalidation warning:', e);
+    }
     return NextResponse.json(saved, { status: 200 });
   } catch (error) {
     console.error('Failed to save event:', error);
@@ -64,6 +80,13 @@ export async function DELETE(request: NextRequest) {
     }
 
     await deleteStoredEvent(id);
+    try {
+      revalidatePath('/', 'page');
+      revalidatePath('/events', 'page');
+      revalidatePath('/admin', 'page');
+    } catch (e) {
+      console.warn('Revalidation warning:', e);
+    }
     return NextResponse.json({ success: true, deletedId: id });
   } catch (error) {
     console.error('Failed to delete event:', error);

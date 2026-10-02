@@ -74,37 +74,19 @@ export default function Hero({
 
       <div className="relative mx-auto max-w-7xl w-full px-6 py-10 sm:py-12 md:py-20 z-10">
         <div className="max-w-3xl lg:max-w-4xl">
-          <motion.h1
-            custom={0}
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            className="font-headline text-[2.15rem] xs:text-[2.5rem] sm:text-[3.25rem] md:text-[4rem] lg:text-[4.5rem] font-bold text-ink leading-[1.08] sm:leading-[1.04] tracking-tight"
-          >
+          <h1 className="font-headline text-[2.15rem] xs:text-[2.5rem] sm:text-[3.25rem] md:text-[4rem] lg:text-[4.5rem] font-bold text-ink leading-[1.08] sm:leading-[1.04] tracking-tight">
             Building the<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#8C3A26] via-[#824539] to-[#268B8C]">
               next generation
             </span><br />
             of founders.
-          </motion.h1>
+          </h1>
 
-          <motion.p
-            custom={1}
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-ink-muted leading-relaxed max-w-2xl"
-          >
+          <p className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-ink-muted leading-relaxed max-w-2xl">
             The official Entrepreneurship Cell of VSB CETC Coimbatore. Empowering student innovators, supporting hands-on projects, and fostering the entrepreneurial ecosystem on campus.
-          </motion.p>
+          </p>
 
-          <motion.div
-            custom={2}
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 max-w-xs sm:max-w-none"
-          >
+          <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 max-w-xs sm:max-w-none">
             <Button href="/events" size="lg" className="justify-center text-center">
               Explore Events &rarr;
             </Button>
@@ -116,7 +98,7 @@ export default function Hero({
             >
               Meet the Team
             </Button>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

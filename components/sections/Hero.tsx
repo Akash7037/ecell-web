@@ -47,7 +47,9 @@ export default function Hero({
                   src="/images/hero-team.jpg"
                   alt=""
                   aria-hidden="true"
-                  className="w-full h-full object-cover object-center filter grayscale contrast-110 mix-blend-multiply pointer-events-none"
+                  width={2800}
+                  height={1292}
+                  className="absolute inset-0 w-full h-full object-cover object-center filter grayscale contrast-110 mix-blend-multiply pointer-events-none"
                 />
               </div>
               {/* Tile 2 (Seamless Adjacent Clone) */}
@@ -56,7 +58,9 @@ export default function Hero({
                   src="/images/hero-team.jpg"
                   alt=""
                   aria-hidden="true"
-                  className="w-full h-full object-cover object-center filter grayscale contrast-110 mix-blend-multiply pointer-events-none"
+                  width={2800}
+                  height={1292}
+                  className="absolute inset-0 w-full h-full object-cover object-center filter grayscale contrast-110 mix-blend-multiply pointer-events-none"
                 />
               </div>
             </div>

@@ -95,7 +95,7 @@
 }
 
 @keyframes heroTilePan {
-  0%, 2.5% {
+  0%, 5% {
     transform: translate3d(0%, 0, 0);
   }
   100% {
@@ -111,7 +111,7 @@
   transform: translate3d(0%, 0, 0);
   will-change: transform;
   backface-visibility: hidden;
-  animation: heroTilePan 45s linear infinite;
+  animation: heroTilePan 20s linear infinite;
   animation-delay: 1s;
   animation-fill-mode: backwards;
 }

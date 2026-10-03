@@ -157,9 +157,81 @@ function EventsManager() {
     }
   };
 
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const [reordering, setReordering] = useState(false);
+
   const flashNotice = (msg: string) => {
     setNotice(msg);
     setTimeout(() => setNotice(''), 4000);
+  };
+
+  const persistOrder = async (orderedList: AdminEvent[]) => {
+    setReordering(true);
+    try {
+      const orderedIds = orderedList.map((e) => e.id);
+      const res = await fetch('/api/events/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderedIds }),
+      });
+      if (res.ok) {
+        flashNotice('Events queue order saved & updated live');
+      } else {
+        console.error('Failed to save events order');
+      }
+    } catch (err) {
+      console.error('Reorder error:', err);
+    } finally {
+      setReordering(false);
+    }
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index.toString());
+    setDraggedIdx(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverIdx !== index) {
+      setDragOverIdx(index);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === targetIndex) {
+      setDraggedIdx(null);
+      setDragOverIdx(null);
+      return;
+    }
+
+    const updated = [...events];
+    const [draggedItem] = updated.splice(draggedIdx, 1);
+    updated.splice(targetIndex, 0, draggedItem);
+    setEvents(updated);
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+    persistOrder(updated);
+  };
+
+  const moveEvent = (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= events.length) return;
+
+    const updated = [...events];
+    const [movedItem] = updated.splice(index, 1);
+    updated.splice(targetIndex, 0, movedItem);
+    setEvents(updated);
+    persistOrder(updated);
   };
 
   const openAdd = () => {
@@ -248,7 +320,7 @@ function EventsManager() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="font-headline text-xl font-bold text-ink">Events</h2>
           <p className="text-xs text-ink-muted mt-1">
@@ -256,7 +328,12 @@ function EventsManager() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {notice && (
+          {reordering && (
+            <span className="flex items-center gap-1.5 text-xs text-vermilion font-mono animate-pulse">
+              <Loader2Icon size={13} className="animate-spin" /> Saving order...
+            </span>
+          )}
+          {notice && !reordering && (
             <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-mono">
               <CheckCircle2Icon size={14} />
               {notice}
@@ -268,6 +345,16 @@ function EventsManager() {
           >
             <PlusIcon size={12} /> Add Event
           </button>
+        </div>
+      </div>
+
+      {/* Helpful queue reorder explanation card */}
+      <div className="flex items-center justify-between gap-3 mb-6 p-3 bg-paper-dim border border-paper-muted rounded-sm text-xs text-ink-muted">
+        <div className="flex items-center gap-2.5">
+          <GripVerticalIcon size={16} className="text-ink-light shrink-0" />
+          <span>
+            <strong className="text-ink font-semibold">Queue Order:</strong> Drag &amp; drop cards or use the <span className="font-mono bg-paper px-1 py-0.5 rounded border border-paper-muted">↑</span> <span className="font-mono bg-paper px-1 py-0.5 rounded border border-paper-muted">↓</span> arrows to reorder which events display first on the homepage and events page (like Spotify queue).
+          </span>
         </div>
       </div>
 
@@ -435,7 +522,7 @@ function EventsManager() {
         }).length === 0 ? (
         <p className="py-12 text-sm text-ink-light">No events found under "{eventFilter}" category.</p>
       ) : (
-        <div className="divide-y divide-paper-muted">
+        <div className="divide-y divide-paper-muted border border-paper-muted rounded-sm overflow-hidden bg-paper">
           {events
             .filter((e) => {
               if (eventFilter === 'upcoming') return !isEventConcluded(e);
@@ -444,46 +531,117 @@ function EventsManager() {
             })
             .map((ev) => {
               const concluded = isEventConcluded(ev);
+              const realIndex = events.findIndex((e) => e.id === ev.id);
+              const isDragging = draggedIdx === realIndex;
+              const isOver = dragOverIdx === realIndex && draggedIdx !== realIndex;
+
               return (
-                <div key={ev.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-5">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`font-mono text-[9px] tracking-widest uppercase px-1.5 py-0.5 rounded-sm ${ev.isFree ? 'bg-paper-muted text-ink-muted' : 'bg-vermilion/10 text-vermilion'}`}>
-                        {ev.isFree ? 'Free' : 'Paid'}
-                      </span>
-                      <span className={`font-mono text-[9px] tracking-widest uppercase px-1.5 py-0.5 rounded-sm ${concluded ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
-                        {concluded ? 'Concluded / Past' : 'Upcoming / Scheduled'}
-                      </span>
-                    </div>
-                    <p className="font-semibold text-sm text-ink">{ev.name}</p>
-                <p className="text-xs text-ink-muted mt-0.5">{ev.shortDescription}</p>
-                <p className="text-xs text-ink-light mt-1 font-mono">{ev.date} · {ev.time}</p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => broadcastEvent(ev)}
-                  disabled={broadcastingId === ev.id}
-                  title="Notify subscribers via Brevo email"
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-ink border border-paper-muted hover:border-vermilion hover:text-vermilion transition-colors rounded-sm"
+                <div
+                  key={ev.id}
+                  draggable={!adding && !editing && eventFilter === 'all'}
+                  onDragStart={(e) => handleDragStart(e, realIndex)}
+                  onDragOver={(e) => handleDragOver(e, realIndex)}
+                  onDragEnd={handleDragEnd}
+                  onDrop={(e) => handleDrop(e, realIndex)}
+                  className={`group flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 px-3.5 transition-all duration-150 select-none ${
+                    isDragging
+                      ? 'opacity-30 bg-paper-muted border-dashed border-2 border-vermilion scale-[0.99]'
+                      : isOver
+                      ? 'bg-vermilion/10 border-t-2 border-vermilion'
+                      : 'hover:bg-paper-dim/80 bg-paper'
+                  }`}
                 >
-                  {broadcastingId === ev.id ? (
-                    <Loader2Icon size={12} className="animate-spin text-vermilion" />
-                  ) : (
-                    <SendIcon size={12} />
-                  )}
-                  <span>{broadcastingId === ev.id ? 'Sending...' : 'Notify Email'}</span>
-                </button>
-                <button onClick={() => openEdit(ev)} aria-label="Edit" className="p-2 text-ink-muted hover:text-ink transition-colors rounded-sm hover:bg-paper-muted">
-                  <PencilIcon size={14} />
-                </button>
-                <button onClick={() => remove(ev.id)} aria-label="Delete" className="p-2 text-ink-muted hover:text-vermilion transition-colors rounded-sm hover:bg-vermilion/10">
-                  <Trash2Icon size={14} />
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    {/* Left Controls: Queue Number, Drag Handle, Arrow Buttons */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="font-mono text-[11px] font-bold text-ink-light/80 w-5 text-center">
+                        {realIndex + 1}
+                      </span>
+
+                      <div
+                        title={eventFilter === 'all' ? 'Drag to reorder' : 'Switch to All Events to reorder'}
+                        className={`p-1 rounded transition-colors ${
+                          eventFilter === 'all'
+                            ? 'cursor-grab active:cursor-grabbing text-ink-light hover:text-ink hover:bg-paper-muted'
+                            : 'opacity-30 cursor-not-allowed text-ink-light'
+                        }`}
+                      >
+                        <GripVerticalIcon size={16} />
+                      </div>
+
+                      <div className="flex flex-col -space-y-0.5 opacity-60 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                        <button
+                          type="button"
+                          disabled={realIndex === 0 || eventFilter !== 'all'}
+                          onClick={() => moveEvent(realIndex, 'up')}
+                          title="Move up in queue"
+                          className="p-0.5 text-ink-light hover:text-ink disabled:opacity-20 disabled:cursor-not-allowed"
+                        >
+                          <ChevronUpIcon size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={realIndex === events.length - 1 || eventFilter !== 'all'}
+                          onClick={() => moveEvent(realIndex, 'down')}
+                          title="Move down in queue"
+                          className="p-0.5 text-ink-light hover:text-ink disabled:opacity-20 disabled:cursor-not-allowed"
+                        >
+                          <ChevronDownIcon size={12} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Event Thumbnail */}
+                    <div className="w-12 h-12 rounded-sm bg-paper-muted flex items-center justify-center shrink-0 overflow-hidden border border-paper-muted">
+                      {ev.imageUrl ? (
+                        <img src={ev.imageUrl} alt={ev.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <CalendarIcon size={18} className="text-ink-light" />
+                      )}
+                    </div>
+
+                    {/* Event Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`font-mono text-[9px] tracking-widest uppercase px-1.5 py-0.5 rounded-sm ${ev.isFree ? 'bg-paper-muted text-ink-muted' : 'bg-vermilion/10 text-vermilion'}`}>
+                          {ev.isFree ? 'Free' : 'Paid'}
+                        </span>
+                        <span className={`font-mono text-[9px] tracking-widest uppercase px-1.5 py-0.5 rounded-sm ${concluded ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                          {concluded ? 'Concluded / Past' : 'Upcoming / Scheduled'}
+                        </span>
+                      </div>
+                      <p className="font-semibold text-sm text-ink truncate">{ev.name}</p>
+                      <p className="text-xs text-ink-muted mt-0.5 truncate">{ev.shortDescription}</p>
+                      <p className="text-xs text-ink-light mt-1 font-mono">{ev.date} · {ev.time}</p>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => broadcastEvent(ev)}
+                      disabled={broadcastingId === ev.id}
+                      title="Notify subscribers via Brevo email"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-ink border border-paper-muted hover:border-vermilion hover:text-vermilion transition-colors rounded-sm"
+                    >
+                      {broadcastingId === ev.id ? (
+                        <Loader2Icon size={12} className="animate-spin text-vermilion" />
+                      ) : (
+                        <SendIcon size={12} />
+                      )}
+                      <span>{broadcastingId === ev.id ? 'Sending...' : 'Notify Email'}</span>
+                    </button>
+                    <button onClick={() => openEdit(ev)} aria-label="Edit" className="p-2 text-ink-muted hover:text-ink transition-colors rounded-sm hover:bg-paper-muted">
+                      <PencilIcon size={14} />
+                    </button>
+                    <button onClick={() => remove(ev.id)} aria-label="Delete" className="p-2 text-ink-muted hover:text-vermilion transition-colors rounded-sm hover:bg-vermilion/10">
+                      <Trash2Icon size={14} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+        </div>
       )}
     </div>
   );

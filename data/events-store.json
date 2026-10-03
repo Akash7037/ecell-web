@@ -1,32 +1,62 @@
 [
   {
+    "id": "evt-f28290d83dd3",
+    "name": "Gambit's Glitch",
+    "shortDescription": "Break the system , Build the future",
+    "description": "A high-intensity build challenge for exactly 40 teams prepared to question assumptions, prototype rapidly, and turn unstable ideas into working technology.\nProblem statements revealed live on-spot ",
+    "isFree": false,
+    "date": "13 Oct 2026",
+    "time": "9:00 am- 6:30pm",
+    "location": "Auditorium, Vsbcetc",
+    "registrationUrl": "https://gambit-s-glich.onrender.com/",
+    "imageUrl": "https://cdn.phototourl.com/member/2026-10-03-5a902f4f-4cd7-4aff-947f-4f7d22b81e98.png",
+    "gallery": []
+  },
+  {
+    "id": "evt-2919b88051bc",
+    "name": "THE 2047",
+    "shortDescription": "Prompting Completion ",
+    "description": "The 2047 was a prompting competition that challenges participants re-creating images and use there creativity to enchant the prompt and testing there prompt engineering  skills ",
+    "isFree": true,
+    "date": "Dates Announcing Soon · Concluded",
+    "time": "9:00am-12:30pm",
+    "location": "Project Lab(IT lab)",
+    "registrationUrl": "",
+    "imageUrl": "https://cdn.phototourl.com/member/2026-10-02-43baf295-23c3-4d7a-afdd-bc199435d092.jpg",
+    "gallery": [
+      "https://cdn.phototourl.com/member/2026-10-02-ad026c4d-1279-4dc8-bd83-383f73fac2ec.jpg",
+      "https://cdn.phototourl.com/member/2026-10-02-ebfc23ff-8ae5-463e-8293-4ef165e75cea.jpg",
+      "https://cdn.phototourl.com/member/2026-10-02-878e6a0d-dfea-4e52-8ceb-990d0a95f0de.jpg"
+    ]
+  },
+  {
     "id": "expo-26",
     "name": "Project Expo '26",
     "shortDescription": "Flagship Inter-Collegiate Engineering Prototype & Innovation Summit",
     "description": "Flagship hardware prototype competition hosted at VSBCETC Coimbatore. Teams present functional engineering prototypes before angel syndicates and patent mentors.",
-    "isFree": false,
+    "isFree": true,
     "date": "Dates Announcing Soon",
     "time": "9:00 AM – 5:00 PM",
     "location": "Central Auditorium & Innovation Labs, VSBCETC Coimbatore",
-    "registrationUrl": "https://forms.gle/vsbcetc-expo-26-registration",
-    "imageUrl": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+    "registrationUrl": "https://project-expo-2k26.onrender.com/index.html",
+    "imageUrl": "https://hnlwmaovaopnghvmifof.supabase.co/storage/v1/object/public/ecell-media/media-1790959076254-bf8dd333.jpg",
     "gallery": []
   },
   {
     "id": "evt-hackathon",
     "name": "Eureka'26",
-    "shortDescription": "48-Hour Rapid Embedded Prototyping Sprint where student teams build working IoT devices and sensor rigs.",
-    "description": "Intense 48-hour hardware design sprint where student teams build working IoT devices, sensors, and microcontroller rigs.",
+    "shortDescription": "Intra-College Startup Pitching Competition ",
+    "description": "Intra-College Startup Pitching Competition\nOrganized by Entrepreneurship Development Cell (E-Cell). Turn your revolutionary idea into reality and compete for prize pools & mentorship.",
     "isFree": true,
     "date": "Completed · Archived",
-    "time": "48 Hours",
+    "time": "9:00am - 4:30pm",
     "location": "IoT & Mechatronics Foundry Labs, VSBCETC Coimbatore",
     "registrationUrl": "",
-    "imageUrl": "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?auto=format&fit=crop&w=1200&q=80",
+    "imageUrl": "https://www.image2url.com/r2/default/images/1790948766982-47d0de0a-5c64-4592-89c0-c3a32e095b22.jpg",
     "gallery": [
-      "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80"
+      "https://www.image2url.com/r2/default/images/1790951125070-c9ef10f2-b47c-4859-9bbd-39cababec5de.jpeg",
+      "https://www.image2url.com/r2/default/images/1790951332887-aaabdc81-10ac-4c58-bca4-3bf872d5c91c.jpg",
+      "https://www.image2url.com/r2/default/images/1790951394479-e3b71368-5201-499e-a53c-e31da88ee492.jpg"
     ]
   }
 ]

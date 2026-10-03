@@ -149,7 +149,7 @@ export async function getStoredEvents(): Promise<StoredEvent[]> {
         }
 
         // Return current events directly from Supabase
-        return data.map((d: any) => ({
+        const eventsList: StoredEvent[] = data.map((d: any) => ({
           id: d.id,
           name: d.name,
           shortDescription: d.short_description || d.shortDescription || '',
@@ -162,6 +162,28 @@ export async function getStoredEvents(): Promise<StoredEvent[]> {
           imageUrl: d.image_url || d.imageUrl || '',
           gallery: Array.isArray(d.gallery) ? d.gallery : [],
         }));
+
+        // Apply custom event queue order from site_settings if available
+        try {
+          const { data: orderData } = await supabase
+            .from('site_settings')
+            .select('value')
+            .eq('key', 'events_order')
+            .maybeSingle();
+
+          if (orderData?.value?.order && Array.isArray(orderData.value.order)) {
+            const orderMap = new Map(orderData.value.order.map((id: string, index: number) => [id, index]));
+            return [...eventsList].sort((a, b) => {
+              const orderA = orderMap.has(a.id) ? (orderMap.get(a.id) as number) : 9999;
+              const orderB = orderMap.has(b.id) ? (orderMap.get(b.id) as number) : 9999;
+              return orderA - orderB;
+            });
+          }
+        } catch (orderErr) {
+          console.warn('Could not read events_order from site_settings:', orderErr);
+        }
+
+        return eventsList;
       }
     } catch (err) {
       console.warn('Supabase getStoredEvents error, using file store:', err);
@@ -239,6 +261,50 @@ export async function deleteStoredEvent(id: string): Promise<boolean> {
     }
   } catch (err) {
     console.warn('File store delete error:', err);
+  }
+
+  return true;
+}
+
+export async function reorderStoredEvents(orderedIds: string[]): Promise<boolean> {
+  if (supabase) {
+    try {
+      await supabase
+        .from('site_settings')
+        .upsert({
+          key: 'events_order',
+          value: { order: orderedIds },
+          updated_at: new Date().toISOString(),
+        });
+    } catch (err) {
+      console.warn('Supabase reorderStoredEvents error:', err);
+    }
+  }
+
+  try {
+    let current: StoredEvent[] = [];
+    if (fs.existsSync(eventsFilePath)) {
+      current = readJsonFile<StoredEvent[]>(eventsFilePath, defaultEvents);
+    }
+    const eventMap = new Map(current.map((e) => [e.id, e]));
+    const reordered: StoredEvent[] = [];
+
+    orderedIds.forEach((id) => {
+      const e = eventMap.get(id);
+      if (e) {
+        reordered.push(e);
+        eventMap.delete(id);
+      }
+    });
+
+    // Append any events not explicitly in orderedIds
+    eventMap.forEach((e) => {
+      reordered.push(e);
+    });
+
+    writeJsonFile(eventsFilePath, reordered);
+  } catch (err) {
+    console.warn('File store reorderStoredEvents error:', err);
   }
 
   return true;

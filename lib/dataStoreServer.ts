@@ -369,6 +369,47 @@ export async function deleteStoredMember(id: string): Promise<boolean> {
   return true;
 }
 
+export async function reorderStoredMembers(orderedIds: string[]): Promise<boolean> {
+  if (supabase) {
+    try {
+      const updates = orderedIds.map((id, index) =>
+        supabase!.from('members').update({ sort_order: index + 1 }).eq('id', id)
+      );
+      await Promise.all(updates);
+    } catch (err) {
+      console.warn('Supabase reorderStoredMembers error:', err);
+    }
+  }
+
+  try {
+    let current: StoredMember[] = [];
+    if (fs.existsSync(membersFilePath)) {
+      current = readJsonFile<StoredMember[]>(membersFilePath, defaultMembers);
+    }
+    const memberMap = new Map(current.map((m) => [m.id, m]));
+    const reordered: StoredMember[] = [];
+
+    orderedIds.forEach((id, index) => {
+      const m = memberMap.get(id);
+      if (m) {
+        reordered.push({ ...m, sortOrder: index + 1 });
+        memberMap.delete(id);
+      }
+    });
+
+    // Append any members not explicitly in orderedIds to prevent data loss
+    memberMap.forEach((m) => {
+      reordered.push({ ...m, sortOrder: reordered.length + 1 });
+    });
+
+    writeJsonFile(membersFilePath, reordered);
+  } catch (err) {
+    console.warn('File store reorderStoredMembers error:', err);
+  }
+
+  return true;
+}
+
 // ─── Subscribers Store ─────────────────────────────────────────────────────────
 export async function getSubscribers(): Promise<string[]> {
   if (supabase) {

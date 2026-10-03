@@ -13,6 +13,9 @@ import {
   Loader2Icon,
   SendIcon,
   UploadIcon,
+  GripVerticalIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
 } from 'lucide-react';
 import { isEventConcluded } from '@/lib/eventUtils';
 
@@ -491,9 +494,12 @@ function TeamManager() {
   const [members, setMembers] = useState<AdminMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [reordering, setReordering] = useState(false);
   const [notice, setNotice] = useState('');
   const [editing, setEditing] = useState<AdminMember | null>(null);
   const [adding, setAdding] = useState(false);
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
   const empty: Omit<AdminMember, 'id'> = { name: '', role: '', avatarUrl: '', portfolioUrl: '' };
   const [form, setForm] = useState(empty);
 
@@ -524,6 +530,74 @@ function TeamManager() {
   const openAdd = () => { setForm(empty); setAdding(true); setEditing(null); };
   const openEdit = (m: AdminMember) => { setForm(m); setEditing(m); setAdding(false); };
   const close = () => { setAdding(false); setEditing(null); };
+
+  const persistOrder = async (orderedList: AdminMember[]) => {
+    setReordering(true);
+    try {
+      const orderedIds = orderedList.map((m) => m.id);
+      const res = await fetch('/api/members/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderedIds }),
+      });
+      if (res.ok) {
+        flashNotice('Queue order saved & updated live');
+      } else {
+        console.error('Failed to save order');
+      }
+    } catch (err) {
+      console.error('Reorder error:', err);
+    } finally {
+      setReordering(false);
+    }
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index.toString());
+    setDraggedIdx(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverIdx !== index) {
+      setDragOverIdx(index);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === targetIndex) {
+      setDraggedIdx(null);
+      setDragOverIdx(null);
+      return;
+    }
+
+    const updated = [...members];
+    const [draggedItem] = updated.splice(draggedIdx, 1);
+    updated.splice(targetIndex, 0, draggedItem);
+    setMembers(updated);
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+    persistOrder(updated);
+  };
+
+  const moveMember = (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= members.length) return;
+
+    const updated = [...members];
+    const [movedItem] = updated.splice(index, 1);
+    updated.splice(targetIndex, 0, movedItem);
+    setMembers(updated);
+    persistOrder(updated);
+  };
 
   const save = async () => {
     if (!form.name.trim() || !form.role.trim()) return;
@@ -568,7 +642,7 @@ function TeamManager() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="font-headline text-xl font-bold text-ink">Team</h2>
           <p className="text-xs text-ink-muted mt-1">
@@ -576,7 +650,12 @@ function TeamManager() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {notice && (
+          {reordering && (
+            <span className="flex items-center gap-1.5 text-xs text-vermilion font-mono animate-pulse">
+              <Loader2Icon size={13} className="animate-spin" /> Saving order...
+            </span>
+          )}
+          {notice && !reordering && (
             <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-mono">
               <CheckCircle2Icon size={14} />
               {notice}
@@ -588,6 +667,16 @@ function TeamManager() {
           >
             <PlusIcon size={12} /> Add Member
           </button>
+        </div>
+      </div>
+
+      {/* Helpful queue reorder explanation card */}
+      <div className="flex items-center justify-between gap-3 mb-6 p-3 bg-paper-dim border border-paper-muted rounded-sm text-xs text-ink-muted">
+        <div className="flex items-center gap-2.5">
+          <GripVerticalIcon size={16} className="text-ink-light shrink-0" />
+          <span>
+            <strong className="text-ink font-semibold">Queue Order:</strong> Drag &amp; drop items or use the <span className="font-mono bg-paper px-1 py-0.5 rounded border border-paper-muted">↑</span> <span className="font-mono bg-paper px-1 py-0.5 rounded border border-paper-muted">↓</span> arrows to reorder members (like Spotify queue). Order updates live across the site.
+          </span>
         </div>
       </div>
 
@@ -630,32 +719,99 @@ function TeamManager() {
       ) : members.length === 0 ? (
         <p className="py-12 text-sm text-ink-light">No members found. Click "Add Member" to add one.</p>
       ) : (
-        <div className="divide-y divide-paper-muted">
-          {members.map((m) => (
-            <div key={m.id} className="flex items-center justify-between gap-4 py-4">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="w-8 h-8 rounded-sm bg-paper-muted flex items-center justify-center shrink-0 overflow-hidden">
-                  {m.avatarUrl ? (
-                    <img src={m.avatarUrl} alt={m.name} className="w-full h-full object-cover grayscale" />
-                  ) : (
-                    <span className="font-headline text-xs font-bold text-ink-muted">{m.name.charAt(0)}</span>
-                  )}
+        <div className="divide-y divide-paper-muted border border-paper-muted rounded-sm overflow-hidden bg-paper">
+          {members.map((m, index) => {
+            const isDragging = draggedIdx === index;
+            const isOver = dragOverIdx === index && draggedIdx !== index;
+
+            return (
+              <div
+                key={m.id}
+                draggable={!adding && !editing}
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragEnd={handleDragEnd}
+                onDrop={(e) => handleDrop(e, index)}
+                className={`group flex items-center justify-between gap-3 py-3 px-3.5 transition-all duration-150 select-none ${
+                  isDragging
+                    ? 'opacity-30 bg-paper-muted border-dashed border-2 border-vermilion scale-[0.99]'
+                    : isOver
+                    ? 'bg-vermilion/10 border-t-2 border-vermilion'
+                    : 'hover:bg-paper-dim/80 bg-paper'
+                }`}
+              >
+                {/* Left Controls: Queue Number, Drag Handle, Arrow Buttons */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="font-mono text-[11px] font-bold text-ink-light/80 w-5 text-center">
+                    {index + 1}
+                  </span>
+
+                  <div
+                    title="Drag to reorder"
+                    className="p-1 rounded cursor-grab active:cursor-grabbing text-ink-light hover:text-ink hover:bg-paper-muted transition-colors"
+                  >
+                    <GripVerticalIcon size={16} />
+                  </div>
+
+                  <div className="flex flex-col -space-y-0.5 opacity-60 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    <button
+                      type="button"
+                      disabled={index === 0}
+                      onClick={() => moveMember(index, 'up')}
+                      title="Move up"
+                      className="p-0.5 text-ink-light hover:text-ink disabled:opacity-20 disabled:cursor-not-allowed"
+                    >
+                      <ChevronUpIcon size={12} />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={index === members.length - 1}
+                      onClick={() => moveMember(index, 'down')}
+                      title="Move down"
+                      className="p-0.5 text-ink-light hover:text-ink disabled:opacity-20 disabled:cursor-not-allowed"
+                    >
+                      <ChevronDownIcon size={12} />
+                    </button>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-ink truncate">{m.name}</p>
-                  <p className="text-xs text-ink-muted font-mono truncate">{m.role}</p>
+
+                {/* Member Info */}
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="w-8 h-8 rounded-sm bg-paper-muted flex items-center justify-center shrink-0 overflow-hidden border border-paper-muted">
+                    {m.avatarUrl ? (
+                      <img src={m.avatarUrl} alt={m.name} className="w-full h-full object-cover grayscale" />
+                    ) : (
+                      <span className="font-headline text-xs font-bold text-ink-muted">{m.name.charAt(0)}</span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-ink truncate leading-tight">{m.name}</p>
+                    <p className="text-xs text-ink-muted font-mono truncate mt-0.5">{m.role}</p>
+                  </div>
+                </div>
+
+                {/* Edit & Delete Action Buttons */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    onClick={() => openEdit(m)}
+                    aria-label="Edit"
+                    title="Edit member"
+                    className="p-2 text-ink-muted hover:text-ink transition-colors rounded-sm hover:bg-paper-muted"
+                  >
+                    <PencilIcon size={14} />
+                  </button>
+                  <button
+                    onClick={() => remove(m.id)}
+                    aria-label="Delete"
+                    title="Delete member"
+                    className="p-2 text-ink-muted hover:text-vermilion transition-colors rounded-sm hover:bg-vermilion/10"
+                  >
+                    <Trash2Icon size={14} />
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button onClick={() => openEdit(m)} aria-label="Edit" className="p-2 text-ink-muted hover:text-ink transition-colors rounded-sm hover:bg-paper-muted">
-                  <PencilIcon size={14} />
-                </button>
-                <button onClick={() => remove(m.id)} aria-label="Delete" className="p-2 text-ink-muted hover:text-vermilion transition-colors rounded-sm hover:bg-vermilion/10">
-                  <Trash2Icon size={14} />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

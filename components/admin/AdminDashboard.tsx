@@ -33,6 +33,7 @@ interface AdminEvent {
   imageUrl?: string;
   gallery?: string[];
   isConcluded?: boolean;
+  isComingSoon?: boolean;
 }
 
 interface AdminMember {
@@ -127,6 +128,7 @@ function EventsManager() {
     shortDescription: '',
     description: '',
     isFree: true,
+    isComingSoon: false,
     date: '',
     time: '',
     location: '',
@@ -318,6 +320,28 @@ function EventsManager() {
     }
   };
 
+  const toggleComingSoon = async (ev: AdminEvent) => {
+    const updatedStatus = !ev.isComingSoon;
+    const updatedEvent = { ...ev, isComingSoon: updatedStatus };
+    setEvents((prev) => prev.map((e) => (e.id === ev.id ? updatedEvent : e)));
+    try {
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedEvent),
+      });
+      if (res.ok) {
+        flashNotice(`"${ev.name}" is now marked as ${updatedStatus ? 'Coming Soon' : 'Registration Open'}`);
+      } else {
+        setEvents((prev) => prev.map((e) => (e.id === ev.id ? ev : e)));
+        alert('Failed to update event status');
+      }
+    } catch (err) {
+      setEvents((prev) => prev.map((e) => (e.id === ev.id ? ev : e)));
+      alert('Error updating event status');
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -429,6 +453,19 @@ function EventsManager() {
                   className="accent-vermilion w-4 h-4 cursor-pointer"
                 />
                 <label htmlFor="isFree" className="text-sm text-ink cursor-pointer select-none">Free event</label>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <input
+                  type="checkbox"
+                  id="isComingSoon"
+                  checked={Boolean(form.isComingSoon)}
+                  onChange={(e) => setForm((f) => ({ ...f, isComingSoon: e.target.checked }))}
+                  className="accent-amber-600 w-4 h-4 cursor-pointer"
+                />
+                <label htmlFor="isComingSoon" className="text-sm font-medium text-amber-900 cursor-pointer select-none">
+                  Show "Coming Soon" instead of Register button
+                </label>
               </div>
 
               <div className="flex items-center gap-2.5">
@@ -609,6 +646,11 @@ function EventsManager() {
                         <span className={`font-mono text-[9px] tracking-widest uppercase px-1.5 py-0.5 rounded-sm ${concluded ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
                           {concluded ? 'Concluded / Past' : 'Upcoming / Scheduled'}
                         </span>
+                        {ev.isComingSoon && !concluded && (
+                          <span className="font-mono text-[9px] tracking-widest uppercase px-1.5 py-0.5 rounded-sm bg-amber-100 text-amber-900 border border-amber-300 font-semibold">
+                            Coming Soon
+                          </span>
+                        )}
                       </div>
                       <p className="font-semibold text-sm text-ink truncate">{ev.name}</p>
                       <p className="text-xs text-ink-muted mt-0.5 truncate">{ev.shortDescription}</p>
@@ -618,6 +660,21 @@ function EventsManager() {
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => toggleComingSoon(ev)}
+                      disabled={concluded}
+                      title={concluded ? 'Event concluded' : ev.isComingSoon ? 'Click to show Register button' : 'Click to show Coming Soon'}
+                      className={`px-2 py-1 text-[11px] font-mono rounded-sm border transition-colors ${
+                        concluded
+                          ? 'opacity-30 cursor-not-allowed border-paper-muted text-ink-light'
+                          : ev.isComingSoon
+                          ? 'bg-amber-100 border-amber-300 text-amber-900 hover:bg-amber-200'
+                          : 'border-paper-muted text-ink-muted hover:text-ink hover:border-ink'
+                      }`}
+                    >
+                      {ev.isComingSoon ? 'Coming Soon: ON' : 'Coming Soon: OFF'}
+                    </button>
                     <button
                       onClick={() => broadcastEvent(ev)}
                       disabled={broadcastingId === ev.id}

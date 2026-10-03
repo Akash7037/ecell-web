@@ -17,6 +17,7 @@ export interface Event {
   imageUrl?: string;
   gallery?: string[];
   isConcluded?: boolean;
+  isComingSoon?: boolean;
 }
 
 interface EventCardProps {
@@ -78,20 +79,26 @@ export function EventCard({ event, onClick }: EventCardProps) {
             )}
           </div>
 
-          {/* Registration Button */}
-          {event.registrationUrl && !isConcluded && (
-            <div onClick={(e) => e.stopPropagation()}>
-              <Button
-                href={event.registrationUrl}
-                external
-                variant="ghost"
-                size="sm"
-                aria-label={`Register for ${event.name}`}
-                className="hover:bg-[#FFF7ED] hover:border-[#C2410C] text-[#C2410C] border-[#FED7AA] text-xs font-medium"
-              >
-                Register ↗
-              </Button>
-            </div>
+          {/* Registration Button or Coming Soon Badge */}
+          {!isConcluded && (
+            event.isComingSoon ? (
+              <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-mono font-medium bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A] whitespace-nowrap">
+                Coming Soon
+              </span>
+            ) : event.registrationUrl ? (
+              <div onClick={(e) => e.stopPropagation()}>
+                <Button
+                  href={event.registrationUrl}
+                  external
+                  variant="ghost"
+                  size="sm"
+                  aria-label={`Register for ${event.name}`}
+                  className="hover:bg-[#FFF7ED] hover:border-[#C2410C] text-[#C2410C] border-[#FED7AA] text-xs font-medium"
+                >
+                  Register ↗
+                </Button>
+              </div>
+            ) : null
           )}
         </div>
       </div>

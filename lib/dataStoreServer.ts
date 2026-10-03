@@ -16,6 +16,7 @@ export interface StoredEvent {
   imageUrl?: string;
   gallery?: string[];
   isConcluded?: boolean;
+  isComingSoon?: boolean;
 }
 
 export interface StoredMember {
@@ -35,6 +36,7 @@ const defaultEvents: StoredEvent[] = [
     shortDescription: "Flagship Inter-Collegiate Engineering Prototype & Innovation Summit",
     description: "Flagship hardware prototype competition hosted at VSBCETC Coimbatore. Teams present functional engineering prototypes before angel syndicates and patent mentors.",
     isFree: false,
+    isComingSoon: true,
     date: "Dates Announcing Soon",
     time: "9:00 AM – 5:00 PM",
     location: "Central Auditorium & Innovation Labs, VSBCETC Coimbatore",
@@ -48,6 +50,7 @@ const defaultEvents: StoredEvent[] = [
     shortDescription: "48-Hour Rapid Embedded Prototyping Sprint where student teams build working IoT devices and sensor rigs.",
     description: "Intense 48-hour hardware design sprint where student teams build working IoT devices, sensors, and microcontroller rigs.",
     isFree: true,
+    isComingSoon: false,
     date: "Completed · Archived",
     time: "48 Hours",
     location: "IoT & Mechatronics Foundry Labs, VSBCETC Coimbatore",
@@ -148,6 +151,22 @@ export async function getStoredEvents(): Promise<StoredEvent[]> {
           return seeds;
         }
 
+        // Fetch coming_soon_events from site_settings
+        let comingSoonSet = new Set<string>();
+        try {
+          const { data: csData } = await supabase
+            .from('site_settings')
+            .select('value')
+            .eq('key', 'coming_soon_events')
+            .maybeSingle();
+
+          if (csData?.value?.eventIds && Array.isArray(csData.value.eventIds)) {
+            comingSoonSet = new Set(csData.value.eventIds);
+          }
+        } catch (csErr) {
+          console.warn('Could not read coming_soon_events from site_settings:', csErr);
+        }
+
         // Return current events directly from Supabase
         const eventsList: StoredEvent[] = data.map((d: any) => ({
           id: d.id,
@@ -161,6 +180,7 @@ export async function getStoredEvents(): Promise<StoredEvent[]> {
           registrationUrl: d.registration_url || d.registrationUrl || '',
           imageUrl: d.image_url || d.imageUrl || '',
           gallery: Array.isArray(d.gallery) ? d.gallery : [],
+          isComingSoon: comingSoonSet.has(d.id),
         }));
 
         // Apply custom event queue order from site_settings if available
@@ -214,6 +234,33 @@ export async function saveStoredEvent(event: StoredEvent): Promise<StoredEvent> 
         image_url: event.imageUrl || '',
         gallery: event.gallery || [],
       });
+
+      if (event.isComingSoon !== undefined) {
+        try {
+          const { data: csData } = await supabase
+            .from('site_settings')
+            .select('value')
+            .eq('key', 'coming_soon_events')
+            .maybeSingle();
+
+          let currentIds: string[] = Array.isArray(csData?.value?.eventIds) ? csData.value.eventIds : [];
+          if (event.isComingSoon) {
+            if (!currentIds.includes(event.id)) {
+              currentIds.push(event.id);
+            }
+          } else {
+            currentIds = currentIds.filter((id) => id !== event.id);
+          }
+
+          await supabase.from('site_settings').upsert({
+            key: 'coming_soon_events',
+            value: { eventIds: currentIds },
+            updated_at: new Date().toISOString(),
+          });
+        } catch (csErr) {
+          console.warn('Could not update coming_soon_events:', csErr);
+        }
+      }
     } catch (err) {
       console.warn('Supabase saveStoredEvent error, saved to file:', err);
     }
@@ -247,6 +294,25 @@ export async function deleteStoredEvent(id: string): Promise<boolean> {
       if (error) {
         console.error('Supabase deleteStoredEvent error:', error);
       }
+
+      // Clean up coming_soon_events in site_settings
+      try {
+        const { data: csData } = await supabase
+          .from('site_settings')
+          .select('value')
+          .eq('key', 'coming_soon_events')
+          .maybeSingle();
+        if (csData?.value?.eventIds && Array.isArray(csData.value.eventIds)) {
+          const updatedIds = csData.value.eventIds.filter((eid: string) => eid !== id);
+          await supabase.from('site_settings').upsert({
+            key: 'coming_soon_events',
+            value: { eventIds: updatedIds },
+            updated_at: new Date().toISOString(),
+          });
+        }
+      } catch (csErr) {
+        console.warn('Could not clean up coming_soon_events on delete:', csErr);
+      }
     } catch (err) {
       console.warn('Supabase deleteStoredEvent error:', err);
     }
@@ -265,6 +331,7 @@ export async function deleteStoredEvent(id: string): Promise<boolean> {
 
   return true;
 }
+
 
 export async function reorderStoredEvents(orderedIds: string[]): Promise<boolean> {
   if (supabase) {

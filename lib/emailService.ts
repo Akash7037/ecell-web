@@ -32,9 +32,14 @@ export function getMailTransporter() {
  * Builds a minimalist, Swiss-editorial HTML email template matching the website aesthetic.
  * Strict rule: NO EMOJIS — clean geometric line icons only.
  */
-export function buildEventAnnouncementEmailHtml(event: StoredEvent, siteUrl: string = 'https://ecell-vsbcetc.vercel.app'): string {
+export function buildEventAnnouncementEmailHtml(
+  event: StoredEvent,
+  siteUrl: string = process.env.NEXT_PUBLIC_SITE_URL || 'https://ecell-vsbcetc.vercel.app',
+  recipientEmail?: string
+): string {
   const regUrl = event.registrationUrl || `${siteUrl}/events`;
   const eventBadge = event.isFree ? 'FREE ENTRY' : 'REGISTRATION OPEN';
+  const unsubUrl = `${siteUrl}/unsubscribe?email=${encodeURIComponent(recipientEmail || '')}`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -199,6 +204,10 @@ export function buildEventAnnouncementEmailHtml(event: StoredEvent, siteUrl: str
                 <tr>
                   <td style="padding-top: 14px; font-size: 10px; color: #A6A298;">
                     You received this notification because you subscribed to event updates from E-Cell VSBCETC.
+                    <br>
+                    <a href="${unsubUrl}" style="color: #C2410C; text-decoration: underline; font-weight: 500; display: inline-block; margin-top: 6px;">
+                      Unsubscribe from notifications
+                    </a>
                   </td>
                 </tr>
               </table>
@@ -216,7 +225,12 @@ export function buildEventAnnouncementEmailHtml(event: StoredEvent, siteUrl: str
 /**
  * Builds a welcome confirmation email for new subscribers.
  */
-export function buildWelcomeSubscriptionEmailHtml(siteUrl: string = 'https://ecell-vsbcetc.vercel.app'): string {
+export function buildWelcomeSubscriptionEmailHtml(
+  siteUrl: string = process.env.NEXT_PUBLIC_SITE_URL || 'https://ecell-vsbcetc.vercel.app',
+  recipientEmail?: string
+): string {
+  const unsubUrl = `${siteUrl}/unsubscribe?email=${encodeURIComponent(recipientEmail || '')}`;
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -260,6 +274,10 @@ export function buildWelcomeSubscriptionEmailHtml(siteUrl: string = 'https://ece
           <tr>
             <td style="padding: 20px 36px; background-color: #FAF9F6; border-top: 1px solid #EFECE6; font-size: 11px; color: #8A857A;">
               VSB College of Engineering & Technical Campus &bull; Coimbatore, Tamil Nadu
+              <br>
+              <a href="${unsubUrl}" style="color: #C2410C; text-decoration: underline; font-size: 10px; display: inline-block; margin-top: 6px;">
+                Unsubscribe
+              </a>
             </td>
           </tr>
         </table>
@@ -310,7 +328,6 @@ export async function sendEventToSubscribers(
   }
 
   const transporter = getMailTransporter();
-  const htmlContent = buildEventAnnouncementEmailHtml(event);
   const { fromEmail, fromName } = resolveSender(senderOptions?.senderEmail, senderOptions?.senderName);
 
   let sentCount = 0;
@@ -319,6 +336,7 @@ export async function sendEventToSubscribers(
   // Sequential delivery with 350ms delay between sends to respect Google SMTP rate limits
   for (let i = 0; i < subscribers.length; i++) {
     const recipient = subscribers[i];
+    const htmlContent = buildEventAnnouncementEmailHtml(event, undefined, recipient);
     try {
       await transporter.sendMail({
         from: `"${fromName}" <${fromEmail}>`,
@@ -363,7 +381,7 @@ export async function sendWelcomeEmail(
       replyTo: fromEmail,
       to: email,
       subject: `Confirmed: E-Cell VSBCETC Event Notifications`,
-      html: buildWelcomeSubscriptionEmailHtml(),
+      html: buildWelcomeSubscriptionEmailHtml(undefined, email),
     });
     return true;
   } catch (err) {

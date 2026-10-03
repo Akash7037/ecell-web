@@ -19,6 +19,7 @@ export interface EventModalData {
   imageUrl?: string;
   gallery?: string[];
   isConcluded?: boolean;
+  isComingSoon?: boolean;
 }
 
 interface EventModalProps {
@@ -83,16 +84,16 @@ export function EventModal({ event, onClose }: EventModalProps) {
             {/* Badge overlay bottom left */}
             <div className="absolute bottom-4 left-6">
               <Badge
-                label={event.isFree ? 'Free Entry' : isConcluded ? 'Archived Event' : 'Paid Event'}
-                variant={event.isFree ? 'muted' : 'accent'}
+                label={!isConcluded && event.isComingSoon ? 'Coming Soon' : event.isFree ? 'Free Entry' : isConcluded ? 'Archived Event' : 'Paid Event'}
+                variant={!isConcluded && event.isComingSoon ? 'accent' : event.isFree ? 'muted' : 'accent'}
               />
             </div>
           </div>
         ) : (
           <div className="p-6 pb-0 flex items-center justify-between border-b border-paper-muted">
             <Badge
-              label={event.isFree ? 'Free Entry' : isConcluded ? 'Archived Event' : 'Paid Event'}
-              variant={event.isFree ? 'muted' : 'accent'}
+              label={!isConcluded && event.isComingSoon ? 'Coming Soon' : event.isFree ? 'Free Entry' : isConcluded ? 'Archived Event' : 'Paid Event'}
+              variant={!isConcluded && event.isComingSoon ? 'accent' : event.isFree ? 'muted' : 'accent'}
             />
             <button
               onClick={onClose}
@@ -181,7 +182,11 @@ export function EventModal({ event, onClose }: EventModalProps) {
 
           {/* Action Row */}
           <div className="pt-4 border-t border-paper-muted flex flex-col sm:flex-row items-center justify-between gap-4">
-            {event.registrationUrl && !isConcluded ? (
+            {!isConcluded && event.isComingSoon ? (
+              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-sm text-xs font-mono font-semibold bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A]">
+                Registration Coming Soon
+              </span>
+            ) : event.registrationUrl && !isConcluded ? (
               <Button href={event.registrationUrl} external size="md">
                 Register for Event <ExternalLinkIcon size={14} className="ml-1.5" />
               </Button>

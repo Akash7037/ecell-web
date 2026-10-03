@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import LoadingScreen from '@/components/ui/LoadingScreen';
+import SubscribeModal from '@/components/ui/SubscribeModal';
 import './globals.css';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ecell-vsbcetc.vercel.app';
@@ -9,6 +10,12 @@ export const metadata: Metadata = {
   title: {
     default: 'E-Cell VSBCETC | E-Cell VSB Coimbatore (Kovai)',
     template: '%s | E-Cell VSBCETC',
+  },
+  applicationName: 'E-Cell VSBCETC',
+  appleWebApp: {
+    capable: true,
+    title: 'E-Cell VSBCETC',
+    statusBarStyle: 'default',
   },
   description:
     'Official Entrepreneurship Cell of VSB College of Engineering & Technical Campus (VSBCETC), Coimbatore (Kovai). E-Cell VSB empowers student innovators, hosts Project Expo 2026, hackathons, and nurtures student startup founders.',
@@ -49,7 +56,7 @@ export const metadata: Metadata = {
     siteName: 'E-Cell VSBCETC',
     images: [
       {
-        url: '/logo.png',
+        url: '/logo-round.png',
         width: 600,
         height: 600,
         alt: 'E-Cell VSBCETC Official Logo',
@@ -61,12 +68,15 @@ export const metadata: Metadata = {
     title: 'E-Cell VSBCETC | Entrepreneurship Cell',
     description:
       'Official Entrepreneurship Cell of VSB College of Engineering & Technical Campus, Coimbatore.',
-    images: ['/logo.png'],
+    images: ['/logo-round.png'],
   },
   icons: {
-    icon: '/logo.png',
-    shortcut: '/logo.png',
-    apple: '/logo.png',
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/logo-round.png', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/logo-round.png',
   },
   robots: {
     index: true,
@@ -109,7 +119,7 @@ const jsonLd = {
         'VSB College Entrepreneurship Cell',
       ],
       url: SITE_URL,
-      logo: `${SITE_URL}/logo.png`,
+      logo: `${SITE_URL}/logo-round.png`,
       description:
         'Official Entrepreneurship Cell of VSB College of Engineering & Technical Campus, Coimbatore (Kovai), Tamil Nadu.',
       address: {
@@ -135,6 +145,13 @@ const jsonLd = {
       '@id': `${SITE_URL}/#website`,
       url: SITE_URL,
       name: 'E-Cell VSBCETC',
+      alternateName: [
+        'E-Cell VSBCETC',
+        'VSB E-Cell',
+        'E-Cell VSB',
+        'ecell vsb',
+        'ecell vsbcetc',
+      ],
       publisher: {
         '@id': `${SITE_URL}/#organization`,
       },
@@ -163,6 +180,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to main content
         </a>
         <main id="main-content">{children}</main>
+        <SubscribeModal />
       </body>
     </html>
   );

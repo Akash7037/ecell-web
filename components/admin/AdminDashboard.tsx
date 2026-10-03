@@ -34,6 +34,7 @@ interface AdminEvent {
   gallery?: string[];
   isConcluded?: boolean;
   isComingSoon?: boolean;
+  isRegistrationClosed?: boolean;
 }
 
 interface AdminMember {
@@ -129,6 +130,7 @@ function EventsManager() {
     description: '',
     isFree: true,
     isComingSoon: false,
+    isRegistrationClosed: false,
     date: '',
     time: '',
     location: '',
@@ -322,7 +324,11 @@ function EventsManager() {
 
   const toggleComingSoon = async (ev: AdminEvent) => {
     const updatedStatus = !ev.isComingSoon;
-    const updatedEvent = { ...ev, isComingSoon: updatedStatus };
+    const updatedEvent: AdminEvent = {
+      ...ev,
+      isComingSoon: updatedStatus,
+      isRegistrationClosed: updatedStatus ? false : ev.isRegistrationClosed,
+    };
     setEvents((prev) => prev.map((e) => (e.id === ev.id ? updatedEvent : e)));
     try {
       const res = await fetch('/api/events', {
@@ -332,6 +338,32 @@ function EventsManager() {
       });
       if (res.ok) {
         flashNotice(`"${ev.name}" is now marked as ${updatedStatus ? 'Coming Soon' : 'Registration Open'}`);
+      } else {
+        setEvents((prev) => prev.map((e) => (e.id === ev.id ? ev : e)));
+        alert('Failed to update event status');
+      }
+    } catch (err) {
+      setEvents((prev) => prev.map((e) => (e.id === ev.id ? ev : e)));
+      alert('Error updating event status');
+    }
+  };
+
+  const toggleRegistrationClosed = async (ev: AdminEvent) => {
+    const updatedStatus = !ev.isRegistrationClosed;
+    const updatedEvent: AdminEvent = {
+      ...ev,
+      isRegistrationClosed: updatedStatus,
+      isComingSoon: updatedStatus ? false : ev.isComingSoon,
+    };
+    setEvents((prev) => prev.map((e) => (e.id === ev.id ? updatedEvent : e)));
+    try {
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedEvent),
+      });
+      if (res.ok) {
+        flashNotice(`"${ev.name}" registration is now ${updatedStatus ? 'CLOSED' : 'OPEN'}`);
       } else {
         setEvents((prev) => prev.map((e) => (e.id === ev.id ? ev : e)));
         alert('Failed to update event status');
@@ -460,11 +492,36 @@ function EventsManager() {
                   type="checkbox"
                   id="isComingSoon"
                   checked={Boolean(form.isComingSoon)}
-                  onChange={(e) => setForm((f) => ({ ...f, isComingSoon: e.target.checked }))}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      isComingSoon: e.target.checked,
+                      isRegistrationClosed: e.target.checked ? false : f.isRegistrationClosed,
+                    }))
+                  }
                   className="accent-amber-600 w-4 h-4 cursor-pointer"
                 />
                 <label htmlFor="isComingSoon" className="text-sm font-medium text-amber-900 cursor-pointer select-none">
-                  Show "Coming Soon" instead of Register button
+                  Show "Coming Soon" badge
+                </label>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <input
+                  type="checkbox"
+                  id="isRegistrationClosed"
+                  checked={Boolean(form.isRegistrationClosed)}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      isRegistrationClosed: e.target.checked,
+                      isComingSoon: e.target.checked ? false : f.isComingSoon,
+                    }))
+                  }
+                  className="accent-red-600 w-4 h-4 cursor-pointer"
+                />
+                <label htmlFor="isRegistrationClosed" className="text-sm font-medium text-red-900 cursor-pointer select-none">
+                  Show "Registration Closed" (Red button)
                 </label>
               </div>
 
@@ -651,6 +708,11 @@ function EventsManager() {
                             Coming Soon
                           </span>
                         )}
+                        {ev.isRegistrationClosed && !concluded && (
+                          <span className="font-mono text-[9px] tracking-widest uppercase px-1.5 py-0.5 rounded-sm bg-red-100 text-red-800 border border-red-300 font-semibold">
+                            Reg Closed
+                          </span>
+                        )}
                       </div>
                       <p className="font-semibold text-sm text-ink truncate">{ev.name}</p>
                       <p className="text-xs text-ink-muted mt-0.5 truncate">{ev.shortDescription}</p>
@@ -674,6 +736,21 @@ function EventsManager() {
                       }`}
                     >
                       {ev.isComingSoon ? 'Coming Soon: ON' : 'Coming Soon: OFF'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toggleRegistrationClosed(ev)}
+                      disabled={concluded}
+                      title={concluded ? 'Event concluded' : ev.isRegistrationClosed ? 'Click to open registration' : 'Click to close registration'}
+                      className={`px-2 py-1 text-[11px] font-mono rounded-sm border transition-colors ${
+                        concluded
+                          ? 'opacity-30 cursor-not-allowed border-paper-muted text-ink-light'
+                          : ev.isRegistrationClosed
+                          ? 'bg-red-100 border-red-300 text-red-900 hover:bg-red-200 font-semibold'
+                          : 'border-paper-muted text-ink-muted hover:text-ink hover:border-ink'
+                      }`}
+                    >
+                      {ev.isRegistrationClosed ? 'Reg: CLOSED' : 'Reg: OPEN'}
                     </button>
                     <button
                       onClick={() => broadcastEvent(ev)}

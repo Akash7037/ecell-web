@@ -20,6 +20,7 @@ export interface EventModalData {
   gallery?: string[];
   isConcluded?: boolean;
   isComingSoon?: boolean;
+  isRegistrationClosed?: boolean;
 }
 
 interface EventModalProps {
@@ -84,16 +85,16 @@ export function EventModal({ event, onClose }: EventModalProps) {
             {/* Badge overlay bottom left */}
             <div className="absolute bottom-4 left-6">
               <Badge
-                label={!isConcluded && event.isComingSoon ? 'Coming Soon' : event.isFree ? 'Free Entry' : isConcluded ? 'Archived Event' : 'Paid Event'}
-                variant={!isConcluded && event.isComingSoon ? 'accent' : event.isFree ? 'muted' : 'accent'}
+                label={!isConcluded && event.isRegistrationClosed ? 'Registration Closed' : !isConcluded && event.isComingSoon ? 'Coming Soon' : event.isFree ? 'Free Entry' : isConcluded ? 'Archived Event' : 'Paid Event'}
+                variant={!isConcluded && (event.isRegistrationClosed || event.isComingSoon) ? 'accent' : event.isFree ? 'muted' : 'accent'}
               />
             </div>
           </div>
         ) : (
           <div className="p-6 pb-0 flex items-center justify-between border-b border-paper-muted">
             <Badge
-              label={!isConcluded && event.isComingSoon ? 'Coming Soon' : event.isFree ? 'Free Entry' : isConcluded ? 'Archived Event' : 'Paid Event'}
-              variant={!isConcluded && event.isComingSoon ? 'accent' : event.isFree ? 'muted' : 'accent'}
+              label={!isConcluded && event.isRegistrationClosed ? 'Registration Closed' : !isConcluded && event.isComingSoon ? 'Coming Soon' : event.isFree ? 'Free Entry' : isConcluded ? 'Archived Event' : 'Paid Event'}
+              variant={!isConcluded && (event.isRegistrationClosed || event.isComingSoon) ? 'accent' : event.isFree ? 'muted' : 'accent'}
             />
             <button
               onClick={onClose}
@@ -182,7 +183,11 @@ export function EventModal({ event, onClose }: EventModalProps) {
 
           {/* Action Row */}
           <div className="pt-4 border-t border-paper-muted flex flex-col sm:flex-row items-center justify-between gap-4">
-            {!isConcluded && event.isComingSoon ? (
+            {!isConcluded && event.isRegistrationClosed ? (
+              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-sm text-xs font-mono font-semibold bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA]">
+                Registration Closed
+              </span>
+            ) : !isConcluded && event.isComingSoon ? (
               <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-sm text-xs font-mono font-semibold bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A]">
                 Registration Coming Soon
               </span>

@@ -17,6 +17,7 @@ export interface StoredEvent {
   gallery?: string[];
   isConcluded?: boolean;
   isComingSoon?: boolean;
+  isRegistrationClosed?: boolean;
 }
 
 export interface StoredMember {
@@ -151,8 +152,9 @@ export async function getStoredEvents(): Promise<StoredEvent[]> {
           return seeds;
         }
 
-        // Fetch coming_soon_events from site_settings
+        // Fetch coming_soon_events and closed_registration_events from site_settings
         let comingSoonSet = new Set<string>();
+        let closedRegSet = new Set<string>();
         try {
           const { data: csData } = await supabase
             .from('site_settings')
@@ -163,8 +165,18 @@ export async function getStoredEvents(): Promise<StoredEvent[]> {
           if (csData?.value?.eventIds && Array.isArray(csData.value.eventIds)) {
             comingSoonSet = new Set(csData.value.eventIds);
           }
+
+          const { data: crData } = await supabase
+            .from('site_settings')
+            .select('value')
+            .eq('key', 'closed_registration_events')
+            .maybeSingle();
+
+          if (crData?.value?.eventIds && Array.isArray(crData.value.eventIds)) {
+            closedRegSet = new Set(crData.value.eventIds);
+          }
         } catch (csErr) {
-          console.warn('Could not read coming_soon_events from site_settings:', csErr);
+          console.warn('Could not read event status settings from site_settings:', csErr);
         }
 
         // Return current events directly from Supabase
@@ -181,6 +193,7 @@ export async function getStoredEvents(): Promise<StoredEvent[]> {
           imageUrl: d.image_url || d.imageUrl || '',
           gallery: Array.isArray(d.gallery) ? d.gallery : [],
           isComingSoon: comingSoonSet.has(d.id),
+          isRegistrationClosed: closedRegSet.has(d.id),
         }));
 
         // Apply custom event queue order from site_settings if available
@@ -261,6 +274,33 @@ export async function saveStoredEvent(event: StoredEvent): Promise<StoredEvent> 
           console.warn('Could not update coming_soon_events:', csErr);
         }
       }
+
+      if (event.isRegistrationClosed !== undefined) {
+        try {
+          const { data: crData } = await supabase
+            .from('site_settings')
+            .select('value')
+            .eq('key', 'closed_registration_events')
+            .maybeSingle();
+
+          let currentIds: string[] = Array.isArray(crData?.value?.eventIds) ? crData.value.eventIds : [];
+          if (event.isRegistrationClosed) {
+            if (!currentIds.includes(event.id)) {
+              currentIds.push(event.id);
+            }
+          } else {
+            currentIds = currentIds.filter((id) => id !== event.id);
+          }
+
+          await supabase.from('site_settings').upsert({
+            key: 'closed_registration_events',
+            value: { eventIds: currentIds },
+            updated_at: new Date().toISOString(),
+          });
+        } catch (crErr) {
+          console.warn('Could not update closed_registration_events:', crErr);
+        }
+      }
     } catch (err) {
       console.warn('Supabase saveStoredEvent error, saved to file:', err);
     }
@@ -295,7 +335,7 @@ export async function deleteStoredEvent(id: string): Promise<boolean> {
         console.error('Supabase deleteStoredEvent error:', error);
       }
 
-      // Clean up coming_soon_events in site_settings
+      // Clean up coming_soon_events and closed_registration_events in site_settings
       try {
         const { data: csData } = await supabase
           .from('site_settings')
@@ -310,8 +350,22 @@ export async function deleteStoredEvent(id: string): Promise<boolean> {
             updated_at: new Date().toISOString(),
           });
         }
+
+        const { data: crData } = await supabase
+          .from('site_settings')
+          .select('value')
+          .eq('key', 'closed_registration_events')
+          .maybeSingle();
+        if (crData?.value?.eventIds && Array.isArray(crData.value.eventIds)) {
+          const updatedIds = crData.value.eventIds.filter((eid: string) => eid !== id);
+          await supabase.from('site_settings').upsert({
+            key: 'closed_registration_events',
+            value: { eventIds: updatedIds },
+            updated_at: new Date().toISOString(),
+          });
+        }
       } catch (csErr) {
-        console.warn('Could not clean up coming_soon_events on delete:', csErr);
+        console.warn('Could not clean up event status settings on delete:', csErr);
       }
     } catch (err) {
       console.warn('Supabase deleteStoredEvent error:', err);

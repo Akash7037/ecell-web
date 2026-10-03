@@ -18,6 +18,7 @@ export interface Event {
   gallery?: string[];
   isConcluded?: boolean;
   isComingSoon?: boolean;
+  isRegistrationClosed?: boolean;
 }
 
 interface EventCardProps {
@@ -79,9 +80,13 @@ export function EventCard({ event, onClick }: EventCardProps) {
             )}
           </div>
 
-          {/* Registration Button or Coming Soon Badge */}
+          {/* Registration Button, Coming Soon Badge, or Registration Closed Badge */}
           {!isConcluded && (
-            event.isComingSoon ? (
+            event.isRegistrationClosed ? (
+              <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-mono font-medium bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA] whitespace-nowrap">
+                Registration Closed
+              </span>
+            ) : event.isComingSoon ? (
               <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-mono font-medium bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A] whitespace-nowrap">
                 Coming Soon
               </span>

@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
       imageUrl: body.imageUrl?.trim() || undefined,
       gallery: Array.isArray(body.gallery) ? body.gallery : undefined,
       isComingSoon: Boolean(body.isComingSoon),
+      isRegistrationClosed: Boolean(body.isRegistrationClosed),
     };
 
     const saved = await saveStoredEvent(event);

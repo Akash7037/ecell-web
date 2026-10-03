@@ -541,8 +541,8 @@ function TeamManager() {
           setMembers((prev) => prev.map((m) => (m.id === savedMember.id ? savedMember : m)));
           flashNotice('Member updated successfully');
         } else {
-          setMembers((prev) => [savedMember, ...prev.filter((m) => m.id !== savedMember.id)]);
-          flashNotice('Member created successfully (showing at top)');
+          setMembers((prev) => [...prev.filter((m) => m.id !== savedMember.id), savedMember]);
+          flashNotice('Member added to the end of the team list');
         }
         close();
       }

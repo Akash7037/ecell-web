@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
       role: body.role.trim(),
       avatarUrl: body.avatarUrl?.trim() || undefined,
       portfolioUrl: body.portfolioUrl?.trim() || undefined,
+      sortOrder: typeof body.sortOrder === 'number' ? body.sortOrder : undefined,
     };
 
     const saved = await saveStoredMember(member);

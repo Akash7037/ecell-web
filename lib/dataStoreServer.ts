@@ -24,6 +24,7 @@ export interface StoredMember {
   role: string;
   avatarUrl?: string;
   portfolioUrl?: string;
+  sortOrder?: number;
 }
 
 // ─── Default Seeds ─────────────────────────────────────────────────────────────
@@ -247,7 +248,11 @@ export async function deleteStoredEvent(id: string): Promise<boolean> {
 export async function getStoredMembers(): Promise<StoredMember[]> {
   if (supabase) {
     try {
-      const { data, error } = await supabase.from('members').select('*').order('sort_order', { ascending: true });
+      const { data, error } = await supabase
+        .from('members')
+        .select('*')
+        .order('sort_order', { ascending: true, nullsFirst: false })
+        .order('created_at', { ascending: true });
       if (!error && data && data.length > 0) {
         return data.map((d: any) => ({
           id: d.id,
@@ -255,6 +260,7 @@ export async function getStoredMembers(): Promise<StoredMember[]> {
           role: d.role,
           avatarUrl: d.avatar_url || d.avatarUrl || '',
           portfolioUrl: d.portfolio_url || d.portfolioUrl || '',
+          sortOrder: d.sort_order ?? 0,
         }));
       }
     } catch (err) {
@@ -267,18 +273,44 @@ export async function getStoredMembers(): Promise<StoredMember[]> {
     writeJsonFile(membersFilePath, defaultMembers);
     return defaultMembers;
   }
-  return readJsonFile<StoredMember[]>(membersFilePath, defaultMembers);
+  const fileMembers = readJsonFile<StoredMember[]>(membersFilePath, defaultMembers);
+  return [...fileMembers].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 }
 
 export async function saveStoredMember(member: StoredMember): Promise<StoredMember> {
+  let nextSortOrder = member.sortOrder;
+
   if (supabase) {
     try {
+      if (nextSortOrder === undefined || nextSortOrder === null) {
+        // Check if member already has a sort_order
+        const { data: existing } = await supabase
+          .from('members')
+          .select('sort_order')
+          .eq('id', member.id)
+          .maybeSingle();
+
+        if (existing?.sort_order !== undefined && existing?.sort_order !== null) {
+          nextSortOrder = existing.sort_order;
+        } else {
+          // New member: find max sort_order and append to the end (LAST)
+          const { data: maxRows } = await supabase
+            .from('members')
+            .select('sort_order')
+            .order('sort_order', { ascending: false })
+            .limit(1);
+          const maxOrder = maxRows && maxRows.length > 0 ? (maxRows[0].sort_order || 0) : 0;
+          nextSortOrder = maxOrder + 1;
+        }
+      }
+
       await supabase.from('members').upsert({
         id: member.id,
         name: member.name,
         role: member.role,
         avatar_url: member.avatarUrl || '',
         portfolio_url: member.portfolioUrl || '',
+        sort_order: nextSortOrder,
       });
     } catch (err) {
       console.warn('Supabase saveStoredMember error, saved to file:', err);
@@ -293,16 +325,23 @@ export async function saveStoredMember(member: StoredMember): Promise<StoredMemb
     const index = current.findIndex((m) => m.id === member.id);
     let updated: StoredMember[];
     if (index >= 0) {
-      updated = current.map((m) => (m.id === member.id ? member : m));
+      updated = current.map((m) =>
+        m.id === member.id
+          ? { ...member, sortOrder: nextSortOrder ?? m.sortOrder }
+          : m
+      );
     } else {
-      updated = [...current, member];
+      const maxOrder = current.reduce((max, m) => Math.max(max, m.sortOrder || 0), 0);
+      const assignedOrder = nextSortOrder ?? maxOrder + 1;
+      // Add new member to the end of the array (LAST)
+      updated = [...current, { ...member, sortOrder: assignedOrder }];
     }
     writeJsonFile(membersFilePath, updated);
   } catch (err) {
     console.warn('File store member save error:', err);
   }
 
-  return member;
+  return { ...member, sortOrder: nextSortOrder };
 }
 
 export async function deleteStoredMember(id: string): Promise<boolean> {

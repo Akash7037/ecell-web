@@ -69,7 +69,7 @@ export function EventModal({ event, onClose }: EventModalProps) {
             <img
               src={event.imageUrl}
               alt={event.name}
-              className="w-full h-full object-cover grayscale contrast-125"
+              className="w-full h-full object-cover grayscale-0 md:grayscale md:contrast-125"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-paper via-transparent to-black/30" />
             
@@ -168,7 +168,7 @@ export function EventModal({ event, onClose }: EventModalProps) {
                     <img
                       src={photoUrl}
                       alt={`${event.name} photo ${idx + 1}`}
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-300"
+                      className="w-full h-full object-cover grayscale-0 md:grayscale md:group-hover:grayscale-0 md:group-hover:scale-105 transition-all duration-300"
                     />
                     <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/10 transition-colors flex items-center justify-center">
                       <span className="opacity-0 group-hover:opacity-100 font-mono text-[10px] bg-ink/80 text-white px-2 py-0.5 rounded-sm transition-opacity">

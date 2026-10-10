@@ -18,16 +18,17 @@
     "shortDescription": "Prompting Completion ",
     "description": "The 2047 was a prompting competition that challenges participants re-creating images and use there creativity to enchant the prompt and testing there prompt engineering  skills ",
     "isFree": true,
-    "date": "Dates Announcing Soon · Concluded",
+    "date": "Concluded",
     "time": "9:00am-12:30pm",
     "location": "Project Lab(IT lab)",
-    "registrationUrl": "",
     "imageUrl": "https://cdn.phototourl.com/member/2026-10-02-43baf295-23c3-4d7a-afdd-bc199435d092.jpg",
     "gallery": [
       "https://cdn.phototourl.com/member/2026-10-02-ad026c4d-1279-4dc8-bd83-383f73fac2ec.jpg",
       "https://cdn.phototourl.com/member/2026-10-02-ebfc23ff-8ae5-463e-8293-4ef165e75cea.jpg",
       "https://cdn.phototourl.com/member/2026-10-02-878e6a0d-dfea-4e52-8ceb-990d0a95f0de.jpg"
-    ]
+    ],
+    "isComingSoon": false,
+    "isRegistrationClosed": false
   },
   {
     "id": "expo-26",

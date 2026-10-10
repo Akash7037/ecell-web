@@ -18,14 +18,14 @@ export default async function TeamPage() {
     <>
       <Navbar />
       <div className="pt-16 md:pt-[72px]">
-        <div className="mx-auto max-w-7xl px-6 py-16 md:py-24">
+        <div className="mx-auto max-w-7xl px-6 py-16 md:py-24 text-center md:text-left">
           <p className="font-mono text-xs tracking-widest uppercase text-ink-light mb-4">
             E-Cell VSBCETC
           </p>
           <h1 className="font-headline text-3xl md:text-5xl font-bold text-ink mb-2">
             The Team
           </h1>
-          <p className="text-base text-ink-muted max-w-lg">
+          <p className="text-base text-ink-muted max-w-lg mx-auto md:mx-0">
             The people building E-Cell VSBCETC — students, faculty mentors, and advisors.
           </p>
         </div>

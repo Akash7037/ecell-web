@@ -32,11 +32,10 @@ export function EventCard({ event, onClick }: EventCardProps) {
   return (
     <article
       onClick={onClick}
-      className={`group border-t border-paper-muted py-6 md:py-7 transition-colors duration-150 hover:bg-[#FFEEDB]/50 px-3 -mx-3 rounded-sm cursor-pointer ${
-        onClick ? 'select-none' : ''
-      }`}
+      className={`group cursor-pointer transition-colors duration-150 select-none border-t border-[#E7E5E4] py-6 px-1 hover:bg-[#FFEEDB]/30 md:py-7 md:px-3 md:-mx-3 md:rounded-sm md:hover:bg-[#FFEEDB]/50`}
     >
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+      {/* ================= DESKTOP VIEW (md:flex, hidden on mobile) ================= */}
+      <div className="hidden md:flex md:flex-row md:items-start justify-between gap-4">
         {/* Info */}
         <div className="flex-1 min-w-0">
           <h3 className="font-headline text-lg md:text-xl font-bold text-ink leading-tight group-hover:text-[#8C3A26] transition-colors">
@@ -64,9 +63,8 @@ export function EventCard({ event, onClick }: EventCardProps) {
           </div>
         </div>
 
-        {/* Rightmost Middle: Simple Text Fee Indicator & CTA */}
-        <div className="shrink-0 self-start sm:self-center flex flex-row sm:flex-col items-center sm:items-end gap-2.5 sm:gap-2">
-          {/* Simple text fee label */}
+        {/* Rightmost Middle: Fee Indicator & Status CTA */}
+        <div className="shrink-0 flex flex-col items-end gap-2">
           <div className="font-mono text-xs tracking-wider uppercase font-semibold">
             {isConcluded ? (
               <span className="text-ink-light/60">Concluded</span>
@@ -80,7 +78,6 @@ export function EventCard({ event, onClick }: EventCardProps) {
             )}
           </div>
 
-          {/* Registration Button, Coming Soon Badge, or Registration Closed Badge */}
           {!isConcluded && (
             event.isRegistrationClosed ? (
               <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-mono font-medium bg-[#FEF2F2] text-[#B91C1C] border border-[#FECACA] whitespace-nowrap">
@@ -105,6 +102,64 @@ export function EventCard({ event, onClick }: EventCardProps) {
               </div>
             ) : null
           )}
+        </div>
+      </div>
+
+      {/* ================= MOBILE VIEW (Minimalistic, open, less suffocated, NO boxes, NO pills, NO dots) ================= */}
+      <div className="flex md:hidden flex-col gap-2.5">
+        {/* Top Minimal Text Row */}
+        <div className="flex items-center justify-between font-mono text-xs tracking-wider uppercase">
+          <div>
+            {isConcluded ? (
+              <span className="text-ink-light/70 text-[11px]">Concluded</span>
+            ) : event.isFree ? (
+              <span className="text-[#268C48] font-semibold text-[11px]">Free Entry</span>
+            ) : (
+              <span className="text-[#C2410C] font-semibold text-[11px]">Paid Event</span>
+            )}
+          </div>
+
+          <div className="text-[11px] font-medium">
+            {!isConcluded && (
+              event.isRegistrationClosed ? (
+                <span className="text-[#B91C1C]">Registration Closed</span>
+              ) : event.isComingSoon ? (
+                <span className="text-[#92400E]">Coming Soon</span>
+              ) : (
+                <span className="text-[#166534]">Registration Open</span>
+              )
+            )}
+          </div>
+        </div>
+
+        {/* Title */}
+        <h3 className="font-headline text-xl font-bold text-ink leading-tight">
+          {event.name}
+        </h3>
+
+        {/* Description */}
+        <p className="text-sm text-ink-muted leading-relaxed">
+          {event.shortDescription || event.description || 'Details coming soon.'}
+        </p>
+
+        {/* Date, Time & Action Link with generous breathing room */}
+        <div className="mt-1 pt-2 flex items-center justify-between text-xs font-mono text-ink-light">
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1.5 text-[#825E39]">
+              <CalendarIcon size={13} className="text-[#825E39]" />
+              {event.date}
+            </span>
+            {event.time && (
+              <span className="flex items-center gap-1.5 text-ink-muted">
+                <ClockIcon size={13} />
+                {event.time}
+              </span>
+            )}
+          </div>
+
+          <span className="text-[#268B8C] group-hover:text-[#8C3A26] font-sans font-medium text-xs">
+            {isConcluded ? 'Archive →' : 'Details →'}
+          </span>
         </div>
       </div>
     </article>

@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+
 export interface ExpoTrack {
   code: string;
   name: string;
@@ -21,8 +24,8 @@ export const defaultExpoConfig: ExpoConfig = {
   title: "Project Expo '26",
   subtitle: "Flagship Inter-Collegiate Engineering Prototype & Innovation Summit",
   dateStatus: "Dates Announcing Soon",
+  prizePool: "",
   location: "Main Auditorium & Innovation Labs, VSBCETC, Coimbatore",
-  prizePool: "₹3.5L+",
   description: "Project Expo '26 is the premier engineering prototype and venture showcase hosted by VSB College of Engineering Technical Campus (VSBCETC), Coimbatore. Students present tangible hardware innovations, functional software platforms, and patentable inventions before industrial leaders, angel investors, and evaluators.",
   eligibility: "Open to all Undergraduate & Postgraduate engineering teams (1 to 4 members). Working physical model or functional software demo required.",
   tracks: [
@@ -56,3 +59,31 @@ export const defaultExpoConfig: ExpoConfig = {
     },
   ],
 };
+
+const filePath = path.join(process.cwd(), 'data', 'expo-config.json');
+
+export function getExpoConfig(): ExpoConfig {
+  try {
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf-8');
+      return JSON.parse(data);
+    }
+  } catch (err) {
+    console.error('Error reading expo-config.json:', err);
+  }
+  return defaultExpoConfig;
+}
+
+export function saveExpoConfig(config: ExpoConfig): boolean {
+  try {
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(filePath, JSON.stringify(config, null, 2), 'utf-8');
+    return true;
+  } catch (err) {
+    console.error('Error writing expo-config.json:', err);
+    return false;
+  }
+}

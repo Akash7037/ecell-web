@@ -97,23 +97,23 @@ export function SubscribeSection({ variant = 'section' }: SubscribeSectionProps)
   return (
     <section className="bg-[#FAF9F6] border-t border-[#E7E5E4] py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="max-w-2xl">
+        <div className="max-w-2xl text-center md:text-left mx-auto md:mx-0">
           <SectionLabel>Dispatch</SectionLabel>
           <h2 className="font-headline text-2xl md:text-3xl font-bold text-[#1C1917] mb-3">
             Never miss an event announcement.
           </h2>
-          <p className="text-sm text-[#57534E] leading-relaxed mb-6">
-            Get direct alerts for Project Expo '26 registration dates, hackathons, and investor rounds. No spam, only calendar updates.
+          <p className="text-sm text-[#57534E] leading-relaxed mb-6 max-w-lg mx-auto md:mx-0">
+            Get direct alerts for upcoming events, 48-hr hackathons, and founder summits. No spam, only calendar updates.
           </p>
 
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md">
+          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto md:mx-0">
             <div className="relative flex-1">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
-                className="w-full border border-[#E7E5E4] bg-white rounded-md px-4 py-3 text-sm text-[#1C1917] placeholder:text-[#A8A29E] focus:outline-none focus:border-[#C2410C] focus:ring-1 focus:ring-[#C2410C] transition-colors duration-150 shadow-xs"
+                className="w-full border border-[#E7E5E4] bg-white rounded-md px-4 py-3 text-sm text-[#1C1917] placeholder:text-[#A8A29E] focus:outline-none focus:border-[#C2410C] focus:ring-1 focus:ring-[#C2410C] transition-colors duration-150 shadow-xs text-center sm:text-left"
                 required
               />
             </div>
@@ -134,7 +134,7 @@ export function SubscribeSection({ variant = 'section' }: SubscribeSectionProps)
           </form>
 
           {status === 'success' && (
-            <p className="mt-3.5 flex items-center gap-1.5 text-xs text-[#268C48] font-mono">
+            <p className="mt-3.5 flex items-center justify-center md:justify-start gap-1.5 text-xs text-[#268C48] font-mono">
               <CheckCircle2Icon size={14} /> {message}
             </p>
           )}

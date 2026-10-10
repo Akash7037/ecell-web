@@ -40,10 +40,10 @@ export default function AboutStrip() {
           initial={{ opacity: 0, y: 16 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5 }}
-          className="mb-12"
+          className="mb-10 sm:mb-12 text-center md:text-left"
         >
           <SectionLabel>What We Do</SectionLabel>
-          <h2 className="font-headline text-2xl md:text-3xl font-bold text-[#1C1917] max-w-xl">
+          <h2 className="font-headline text-2xl md:text-3xl font-bold text-[#1C1917] max-w-xl mx-auto md:mx-0">
             From engineering ideas to enduring enterprises.
           </h2>
         </motion.div>
@@ -57,13 +57,13 @@ export default function AboutStrip() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: 0.1 + i * 0.1 }}
-                className="py-8 md:py-0 md:px-8 first:pl-0 last:pr-0 border-b md:border-b-0 md:border-l border-[#E7E5E4] first:border-l-0 last:border-b-0"
+                className="py-8 md:py-0 md:px-8 first:pt-0 md:first:pt-0 first:pl-0 last:pr-0 border-t md:border-t-0 md:border-l border-[#E7E5E4] first:border-t-0 md:first:border-l-0 flex flex-col items-center md:items-start text-center md:text-left"
               >
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4 bg-[#FFF7ED] text-[#C2410C] border border-[#FFEDD5] shadow-xs">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4 bg-[#FFF7ED] text-[#C2410C] border border-[#FFEDD5] mx-auto md:mx-0">
                   <Icon size={20} strokeWidth={1.75} />
                 </div>
                 <h3 className="font-headline text-base font-bold text-[#1C1917] mb-2">{pillar.title}</h3>
-                <p className="text-sm text-[#57534E] leading-relaxed">{pillar.body}</p>
+                <p className="text-sm text-[#57534E] leading-relaxed max-w-sm md:max-w-none">{pillar.body}</p>
               </motion.div>
             );
           })}

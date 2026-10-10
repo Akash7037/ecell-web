@@ -57,35 +57,35 @@ export default function Hero({
         )}
 
         {/* Subtle gradient wash to keep text crystal clear without hiding the photo */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#FAF8F2] via-transparent to-[#FAF8F2]/50" />
-        <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-[#FAF8F2]/90 via-[#FAF8F2]/45 to-transparent" />
-        {/* Soft mobile gradient wash to ensure text readability across moving photo */}
-        <div className="md:hidden absolute inset-0 bg-gradient-to-b from-[#FAF8F2]/70 via-[#FAF8F2]/40 to-[#FAF8F2]/80" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#FAF8F2] via-transparent to-[#FAF8F2]/60" />
+        <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-[#FAF8F2]/90 via-[#FAF8F2]/50 to-transparent" />
+        {/* Mobile wash to guarantee absolute text contrast over moving team photo */}
+        <div className="md:hidden absolute inset-0 bg-[#FAF8F2]/75 backdrop-blur-[1.5px]" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl w-full px-6 py-10 sm:py-12 md:py-20 z-10">
-        <div className="max-w-3xl lg:max-w-4xl">
-          <h1 className="font-headline text-[2.15rem] xs:text-[2.5rem] sm:text-[3.25rem] md:text-[4rem] lg:text-[4.5rem] font-bold text-ink leading-[1.08] sm:leading-[1.04] tracking-tight">
-            Building the<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#8C3A26] via-[#824539] to-[#268B8C]">
+      <div className="relative mx-auto max-w-7xl w-full px-5 sm:px-6 py-8 sm:py-12 md:py-20 z-10">
+        <div className="max-w-3xl lg:max-w-4xl text-center md:text-left mx-auto md:mx-0">
+          <h1 className="font-headline text-[2.15rem] xs:text-[2.5rem] sm:text-[3.25rem] md:text-[4rem] lg:text-[4.5rem] font-bold text-ink leading-[1.1] sm:leading-[1.04] tracking-tight">
+            Building the<br className="hidden md:inline" />{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#8C3A26] via-[#824539] to-[#268B8C] inline-block">
               next generation
-            </span><br />
+            </span><br className="hidden md:inline" />{' '}
             of founders.
           </h1>
 
-          <p className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-[#1E293B] sm:text-[#57534E] font-medium leading-relaxed max-w-2xl">
+          <p className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-[#1E293B] sm:text-[#57534E] font-medium leading-relaxed max-w-xl md:max-w-2xl mx-auto md:mx-0">
             The official Entrepreneurship Cell of VSB CETC Coimbatore. Empowering student innovators, supporting hands-on projects, and fostering the entrepreneurial ecosystem on campus.
           </p>
 
-          <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 max-w-xs sm:max-w-none">
-            <Button href="/events" size="lg" className="justify-center text-center">
+          <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center md:justify-start gap-3 sm:gap-4 max-w-xs sm:max-w-none mx-auto md:mx-0">
+            <Button href="/events" size="lg" className="w-full sm:w-auto justify-center text-center">
               Explore Events &rarr;
             </Button>
             <Button
               href="/team"
               variant="ghost"
               size="lg"
-              className="border-[#268B8C]/40 text-[#268B8C] hover:bg-[#DBFFFD]/40 hover:border-[#268B8C] justify-center text-center"
+              className="w-full sm:w-auto border-[#268B8C]/40 text-[#268B8C] hover:bg-[#DBFFFD]/40 hover:border-[#268B8C] justify-center text-center"
             >
               Meet the Team
             </Button>

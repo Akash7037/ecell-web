@@ -41,15 +41,17 @@ export default function ContactPage() {
       <Navbar />
       <div className="pt-16 md:pt-[72px] min-h-screen flex flex-col">
         <div className="mx-auto max-w-7xl w-full px-6 py-16 md:py-24 flex-1">
-          <p className="font-mono text-xs tracking-widest uppercase text-ink-light mb-4">
-            Get in Touch
-          </p>
-          <h1 className="font-headline text-3xl md:text-5xl font-bold text-ink mb-6">
-            Contact
-          </h1>
-          <p className="text-base text-ink-muted max-w-md mb-16">
-            Reach out for event queries, team partnerships, or sponsorship discussions.
-          </p>
+          <div className="text-center md:text-left">
+            <p className="font-mono text-xs tracking-widest uppercase text-ink-light mb-4">
+              Get in Touch
+            </p>
+            <h1 className="font-headline text-3xl md:text-5xl font-bold text-ink mb-6">
+              Contact
+            </h1>
+            <p className="text-base text-ink-muted max-w-md mx-auto md:mx-0 mb-16">
+              Reach out for event queries, team partnerships, or sponsorship discussions.
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-0">
             {contacts.map(({ icon: Icon, label, value, href }, i) => (

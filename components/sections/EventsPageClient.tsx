@@ -18,13 +18,13 @@ export default function EventsPageClient({ upcomingEvents, pastEvents }: EventsP
       {/* Upcoming Section */}
       <section className="bg-paper-dim py-16 md:py-24 border-t border-paper-muted">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="mb-6">
+          <div className="mb-6 text-center md:text-left">
             <SectionLabel>Scheduled</SectionLabel>
             <h2 className="font-headline text-2xl md:text-3xl font-bold text-ink">Upcoming Events</h2>
           </div>
 
           {upcomingEvents.length === 0 ? (
-            <p className="py-12 text-sm text-ink-light border-t border-paper-muted">
+            <p className="py-12 text-sm text-ink-light border-t border-paper-muted text-center md:text-left">
               No upcoming events scheduled right now. Check back soon.
             </p>
           ) : (
@@ -45,10 +45,10 @@ export default function EventsPageClient({ upcomingEvents, pastEvents }: EventsP
       {pastEvents.length > 0 && (
         <section className="bg-paper py-16 md:py-20 border-t border-paper-muted">
           <div className="mx-auto max-w-7xl px-6">
-            <div className="mb-8">
+            <div className="mb-8 text-center md:text-left">
               <SectionLabel>Archive & Past Summits</SectionLabel>
               <h2 className="font-headline text-2xl md:text-3xl font-bold text-ink">Past & Concluded Events</h2>
-              <p className="text-xs text-ink-muted mt-1">
+              <p className="text-xs text-ink-muted mt-1 max-w-md mx-auto md:mx-0">
                 Click any concluded event to view the header photos, highlights, and hardware prototypes.
               </p>
             </div>

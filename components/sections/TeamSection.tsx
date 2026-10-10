@@ -25,9 +25,9 @@ export default function TeamSection({ members, showViewAll = true, limit = 6 }: 
           initial={{ opacity: 0, y: 16 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5 }}
-          className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10"
+          className="flex flex-col sm:flex-row sm:items-end justify-between items-center sm:items-end text-center sm:text-left gap-3 sm:gap-4 mb-8 sm:mb-10"
         >
-          <div>
+          <div className="text-center sm:text-left">
             <SectionLabel>People</SectionLabel>
             <h2 className="font-headline text-2xl md:text-3xl font-bold text-ink">The Team</h2>
           </div>

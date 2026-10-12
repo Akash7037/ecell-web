@@ -93,20 +93,6 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
         {/* Article Header */}
         <header className="mx-auto max-w-4xl px-7 sm:px-8 md:px-6 pt-10 md:pt-16 text-center md:text-left">
-          {/* Tags */}
-          {post.tags && post.tags.length > 0 && (
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-1.5 md:gap-2 mb-3.5 md:mb-4">
-              {post.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="font-mono text-[10px] md:text-[11px] tracking-wider uppercase text-rust px-2 py-0.5 rounded bg-rust/5 border border-rust/20"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-
           {/* Article Title: Slightly reduced font size on mobile, untouched on desktop */}
           <h1 className="font-headline text-[1.4rem] sm:text-2xl md:text-5xl font-bold text-ink leading-snug md:leading-tight tracking-tight mb-4 md:mb-6">
             {post.title}
@@ -218,8 +204,23 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             dangerouslySetInnerHTML={{ __html: post.contentHtml }}
           />
 
-          {/* Clean Article Footer: Just back button, bottom portfolio link removed */}
-          <div className="mt-12 md:mt-14 pt-6 md:pt-8 border-t border-paper-muted flex items-center justify-start">
+          {/* Subtle Tags at Bottom of Article with simple text */}
+          {post.tags && post.tags.length > 0 && (
+            <div className="mt-12 pt-6 border-t border-paper-muted flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-mono text-ink-muted">
+              <span className="text-[10px] uppercase tracking-wider text-ink-light select-none">
+                Topics:
+              </span>
+              {post.tags.map((tag, idx) => (
+                <span key={tag} className="text-ink-muted font-medium">
+                  #{tag.toLowerCase().replace(/\s+/g, '-')}
+                  {idx < post.tags!.length - 1 && <span className="text-paper-muted ml-3">·</span>}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Clean Article Footer: Just back button */}
+          <div className="mt-6 pt-6 border-t border-paper-muted/60 flex items-center justify-start">
             <Link
               href="/blog"
               className="inline-flex items-center gap-2 text-xs font-mono text-rust hover:text-vermilion transition-colors"

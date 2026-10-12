@@ -170,7 +170,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             )}
 
             <div className="flex items-center gap-3 md:gap-4 text-ink-muted">
-              <span className="inline-flex items-center gap-1.5 text-rust font-semibold">
+              <span className="inline-flex items-center gap-1.5 text-vermilion font-semibold">
                 <CalendarIcon size={13} className="shrink-0" />
                 <time dateTime={post.publishedAt}>{formattedDate}</time>
               </span>
@@ -223,7 +223,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <div className="mt-6 pt-6 border-t border-paper-muted/60 flex items-center justify-start">
             <Link
               href="/blog"
-              className="inline-flex items-center gap-2 text-xs font-mono text-rust hover:text-vermilion transition-colors"
+              className="inline-flex items-center gap-2 text-xs font-mono text-vermilion hover:underline"
             >
               <ArrowLeftIcon size={14} />
               <span>Back to all articles</span>

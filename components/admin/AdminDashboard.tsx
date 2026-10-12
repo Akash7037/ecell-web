@@ -2045,7 +2045,7 @@ function BlogsManager() {
         <div ref={formRef} className="mb-8 border border-paper-muted rounded-sm p-6 bg-paper-dim">
           <div className="flex items-center justify-between mb-6 pb-3 border-b border-paper-muted">
             <h3 className="font-semibold text-sm text-ink flex items-center gap-2">
-              <FileTextIcon size={16} className="text-rust" />
+              <FileTextIcon size={16} className="text-vermilion" />
               <span>{adding ? 'Compose New Blog Post' : `Editing: ${editing?.title}`}</span>
             </h3>
             <button
@@ -2425,7 +2425,7 @@ function BlogsManager() {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex items-center gap-2 bg-rust text-white text-xs font-semibold px-5 py-2 rounded-sm hover:bg-vermilion transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 bg-[#C2410C] text-white text-xs font-semibold px-5 py-2 rounded-sm disabled:opacity-50 select-none cursor-pointer"
               >
                 {saving && <Loader2Icon size={12} className="animate-spin" />}
                 {saving ? 'Publishing...' : adding ? 'Publish Blog Post' : 'Save Changes'}
@@ -2455,7 +2455,7 @@ function BlogsManager() {
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-mono text-[11px] font-semibold text-rust">
+                    <span className="font-mono text-[11px] font-semibold text-vermilion">
                       {b.publishedAt}
                     </span>
                     <span className="text-paper-muted">·</span>
@@ -2484,7 +2484,7 @@ function BlogsManager() {
                         href={b.authorPortfolioUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[10px] text-rust hover:underline"
+                        className="inline-flex items-center gap-1 text-[10px] text-vermilion hover:underline"
                         title="Open author portfolio"
                       >
                         <ExternalLinkIcon size={10} />

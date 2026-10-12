@@ -44,7 +44,7 @@ export function BloggerGate({ children }: BloggerGateProps) {
     <div className="min-h-screen bg-paper flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center sm:text-left">
-          <div className="w-10 h-10 rounded-full bg-rust/10 flex items-center justify-center text-rust mb-4 mx-auto sm:mx-0">
+          <div className="w-10 h-10 rounded-full bg-vermilion/10 flex items-center justify-center text-vermilion mb-4 mx-auto sm:mx-0">
             <PenToolIcon size={20} strokeWidth={1.75} />
           </div>
           <p className="font-mono text-[10px] tracking-widest uppercase text-ink-light mb-1.5">
@@ -81,7 +81,7 @@ export function BloggerGate({ children }: BloggerGateProps) {
 
           <button
             type="submit"
-            className="w-full bg-rust hover:bg-vermilion text-white font-semibold text-sm py-3 px-4 rounded-sm transition-colors duration-150 focus:outline-none"
+            className="w-full bg-[#C2410C] text-white font-semibold text-sm py-3 px-4 rounded-sm focus:outline-none select-none cursor-pointer"
           >
             Access Blogger Studio
           </button>

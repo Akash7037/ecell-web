@@ -42,7 +42,7 @@ export default function BlogCard({ post }: BlogCardProps) {
         <div>
           {/* Metadata Row: Date & Reading Time */}
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-2.5 md:gap-3 text-[11px] md:text-xs font-mono text-ink-light mb-2.5 md:mb-3">
-            <span className="inline-flex items-center gap-1.5 text-rust font-semibold">
+            <span className="inline-flex items-center gap-1.5 text-vermilion font-semibold">
               <CalendarIcon size={12} className="shrink-0" />
               <time dateTime={post.publishedAt}>{formattedDate}</time>
             </span>
@@ -94,7 +94,7 @@ export default function BlogCard({ post }: BlogCardProps) {
             )}
           </div>
 
-          <div className="hidden md:flex items-center gap-1.5 text-xs font-mono font-semibold text-rust group-hover:text-vermilion group-hover:translate-x-1 transition-all duration-200">
+          <div className="hidden md:flex items-center gap-1.5 text-xs font-mono font-semibold text-vermilion group-hover:translate-x-1 transition-transform duration-200">
             <span>Read Article</span>
             <ArrowRightIcon size={14} />
           </div>

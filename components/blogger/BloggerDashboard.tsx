@@ -261,7 +261,7 @@ export function BloggerDashboard() {
       <header className="border-b border-paper-muted bg-paper/95 backdrop-blur-sm sticky top-0 z-20">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-rust/10 flex items-center justify-center text-rust">
+            <div className="w-8 h-8 rounded-full bg-vermilion/10 flex items-center justify-center text-vermilion">
               <BookOpenIcon size={16} />
             </div>
             <div>
@@ -279,7 +279,7 @@ export function BloggerDashboard() {
               href="/blog"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-mono text-rust hover:text-vermilion transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-mono text-vermilion hover:underline"
             >
               <span>View Live Blog</span>
               <ExternalLinkIcon size={12} />
@@ -317,7 +317,7 @@ export function BloggerDashboard() {
             )}
             <button
               onClick={openAdd}
-              className="flex items-center gap-2 bg-rust hover:bg-vermilion text-white text-xs font-semibold px-4 py-2.5 rounded-sm transition-colors shadow-2xs"
+              className="flex items-center gap-2 bg-[#C2410C] text-white text-xs font-semibold px-4 py-2.5 rounded-sm select-none cursor-pointer"
             >
               <PlusIcon size={14} /> Write New Article
             </button>
@@ -329,7 +329,7 @@ export function BloggerDashboard() {
           <div ref={formRef} className="mb-10 border border-paper-muted rounded-sm p-6 bg-paper-dim shadow-xs">
             <div className="flex items-center justify-between mb-6 pb-3 border-b border-paper-muted">
               <h3 className="font-semibold text-sm text-ink flex items-center gap-2">
-                <FileTextIcon size={16} className="text-rust" />
+                <FileTextIcon size={16} className="text-vermilion" />
                 <span>{adding ? 'Compose New Blog Post' : `Editing: ${editing?.title}`}</span>
               </h3>
               <button
@@ -709,14 +709,14 @@ export function BloggerDashboard() {
                     setAdding(false);
                     setEditing(null);
                   }}
-                  className="px-4 py-2 border border-paper-muted text-xs font-semibold text-ink-muted hover:text-ink transition-colors rounded-sm"
+                  className="px-4 py-2 border border-paper-muted text-xs font-semibold text-ink-muted hover:text-ink rounded-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex items-center gap-2 bg-rust text-white text-xs font-semibold px-5 py-2.5 rounded-sm hover:bg-vermilion transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 bg-[#C2410C] text-white text-xs font-semibold px-5 py-2.5 rounded-sm disabled:opacity-50 select-none cursor-pointer"
                 >
                   {saving && <Loader2Icon size={12} className="animate-spin" />}
                   {saving ? 'Publishing...' : adding ? 'Publish Blog Post' : 'Save Changes'}
@@ -746,7 +746,7 @@ export function BloggerDashboard() {
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-mono text-[11px] font-semibold text-rust">
+                      <span className="font-mono text-[11px] font-semibold text-vermilion">
                         {b.publishedAt}
                       </span>
                       <span className="text-paper-muted">·</span>
@@ -775,7 +775,7 @@ export function BloggerDashboard() {
                           href={b.authorPortfolioUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[10px] text-rust hover:underline"
+                          className="inline-flex items-center gap-1 text-[10px] text-vermilion hover:underline"
                           title="Open author portfolio"
                         >
                           <ExternalLinkIcon size={10} />

@@ -26,6 +26,11 @@ const config: Config = {
           light: '#EA580C',
           dark: '#9A3412',
         },
+        rust: {
+          DEFAULT: '#C2410C',
+          light: '#EA580C',
+          dark: '#9A3412',
+        },
         brand: {
           50: '#FFF7ED',
           100: '#FFEDD5',

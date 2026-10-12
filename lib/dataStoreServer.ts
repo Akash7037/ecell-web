@@ -676,38 +676,68 @@ export async function getStoredBlogs(): Promise<StoredBlogPost[]> {
   let blogs: StoredBlogPost[] = [];
 
   if (supabase) {
+    // 1. Primary Cloud Store: site_settings 'blogs_store' (Always works, no schema changes required)
     try {
-      const { data, error } = await supabase
-        .from('blogs')
-        .select('*')
-        .order('published_at', { ascending: false });
+      const { data: ssData, error: ssError } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'blogs_store')
+        .maybeSingle();
 
-      if (!error && data && data.length > 0) {
-        blogs = data.map((d: any) => ({
-          id: d.id,
-          slug: d.slug,
-          title: d.title,
-          excerpt: d.excerpt || '',
-          contentHtml: d.content_html || d.contentHtml || '',
-          coverImageUrl: d.cover_image_url || d.coverImageUrl || '',
-          author: d.author || 'E-Cell Council',
-          authorRole: d.author_role || d.authorRole || '',
-          authorId: d.author_id || d.authorId || undefined,
-          authorAvatarUrl: d.author_avatar_url || d.authorAvatarUrl || undefined,
-          authorPortfolioUrl: d.author_portfolio_url || d.authorPortfolioUrl || undefined,
-          publishedAt: d.published_at || d.publishedAt || new Date().toISOString().split('T')[0],
-          readTime: d.read_time || d.readTime || '4 min read',
-          tags: Array.isArray(d.tags) ? d.tags : [],
-        }));
+      if (!ssError && ssData?.value?.blogs && Array.isArray(ssData.value.blogs) && ssData.value.blogs.length > 0) {
+        blogs = ssData.value.blogs;
       }
     } catch (err) {
-      console.warn('Supabase getStoredBlogs error, falling back to local file:', err);
+      console.warn('Supabase site_settings blogs_store read warning:', err);
+    }
+
+    // 2. Secondary Cloud Store: dedicated 'blogs' table if created
+    if (blogs.length === 0) {
+      try {
+        const { data, error } = await supabase
+          .from('blogs')
+          .select('*')
+          .order('published_at', { ascending: false });
+
+        if (!error && data && data.length > 0) {
+          blogs = data.map((d: any) => ({
+            id: d.id,
+            slug: d.slug,
+            title: d.title,
+            excerpt: d.excerpt || '',
+            contentHtml: d.content_html || d.contentHtml || '',
+            coverImageUrl: d.cover_image_url || d.coverImageUrl || '',
+            author: d.author || 'E-Cell Council',
+            authorRole: d.author_role || d.authorRole || '',
+            authorId: d.author_id || d.authorId || undefined,
+            authorAvatarUrl: d.author_avatar_url || d.authorAvatarUrl || undefined,
+            authorPortfolioUrl: d.author_portfolio_url || d.authorPortfolioUrl || undefined,
+            publishedAt: d.published_at || d.publishedAt || new Date().toISOString().split('T')[0],
+            readTime: d.read_time || d.readTime || '4 min read',
+            tags: Array.isArray(d.tags) ? d.tags : [],
+          }));
+        }
+      } catch (err) {
+        // Table may not exist yet
+      }
     }
   }
 
-  // Fallback to local JSON file if Supabase has no records or fails
+  // 3. Local JSON file fallback
   if (blogs.length === 0) {
     blogs = readJsonFile<StoredBlogPost[]>(blogsFilePath, []);
+    // Auto-seed to Supabase site_settings if Supabase is connected but empty
+    if (supabase && blogs.length > 0) {
+      try {
+        await supabase.from('site_settings').upsert({
+          key: 'blogs_store',
+          value: { blogs },
+          updated_at: new Date().toISOString(),
+        });
+      } catch (seedErr) {
+        console.warn('Auto-seed blogs to Supabase warning:', seedErr);
+      }
+    }
   }
 
   // Sort chronological descending: newest on top, older below
@@ -727,8 +757,39 @@ export async function getStoredBlogBySlug(slug: string): Promise<StoredBlogPost 
 }
 
 export async function saveStoredBlog(blog: StoredBlogPost): Promise<boolean> {
-  // Sync to Supabase if configured
+  const blogs = await getStoredBlogs();
+  const index = blogs.findIndex((b) => b.id === blog.id || b.slug === blog.slug);
+
+  if (index >= 0) {
+    blogs[index] = { ...blogs[index], ...blog };
+  } else {
+    blogs.unshift(blog);
+  }
+
+  // Keep sorted descending
+  blogs.sort((a, b) => {
+    const timeA = new Date(a.publishedAt).getTime() || 0;
+    const timeB = new Date(b.publishedAt).getTime() || 0;
+    return timeB - timeA;
+  });
+
+  // Always write to local JSON file
+  writeJsonFile(blogsFilePath, blogs);
+
+  // Sync to Supabase cloud
   if (supabase) {
+    // 1. Sync to site_settings 'blogs_store' (Guaranteed to work across all Vercel instances)
+    try {
+      await supabase.from('site_settings').upsert({
+        key: 'blogs_store',
+        value: { blogs },
+        updated_at: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.warn('Supabase site_settings save error:', err);
+    }
+
+    // 2. Also sync to 'blogs' table if available
     try {
       await supabase.from('blogs').upsert({
         id: blog.id,
@@ -747,42 +808,38 @@ export async function saveStoredBlog(blog: StoredBlogPost): Promise<boolean> {
         tags: blog.tags || [],
       });
     } catch (err) {
-      console.warn('Supabase saveStoredBlog error, saving to local file:', err);
+      // Table may not exist yet
     }
   }
 
-  // Always save to local JSON file
-  const blogs = readJsonFile<StoredBlogPost[]>(blogsFilePath, []);
-  const index = blogs.findIndex((b) => b.id === blog.id || b.slug === blog.slug);
-
-  if (index >= 0) {
-    blogs[index] = { ...blogs[index], ...blog };
-  } else {
-    blogs.unshift(blog);
-  }
-
-  // Keep sorted descending
-  blogs.sort((a, b) => {
-    const timeA = new Date(a.publishedAt).getTime() || 0;
-    const timeB = new Date(b.publishedAt).getTime() || 0;
-    return timeB - timeA;
-  });
-
-  writeJsonFile(blogsFilePath, blogs);
   return true;
 }
 
 export async function deleteStoredBlog(idOrSlug: string): Promise<boolean> {
+  const blogs = await getStoredBlogs();
+  const filtered = blogs.filter((b) => b.id !== idOrSlug && b.slug !== idOrSlug);
+
+  // Always write to local JSON file
+  writeJsonFile(blogsFilePath, filtered);
+
+  // Sync deletion to Supabase cloud
   if (supabase) {
+    try {
+      await supabase.from('site_settings').upsert({
+        key: 'blogs_store',
+        value: { blogs: filtered },
+        updated_at: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.warn('Supabase site_settings delete error:', err);
+    }
+
     try {
       await supabase.from('blogs').delete().or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
     } catch (err) {
-      console.warn('Supabase deleteStoredBlog error:', err);
+      // Table may not exist yet
     }
   }
 
-  const blogs = readJsonFile<StoredBlogPost[]>(blogsFilePath, []);
-  const filtered = blogs.filter((b) => b.id !== idOrSlug && b.slug !== idOrSlug);
-  writeJsonFile(blogsFilePath, filtered);
   return true;
 }

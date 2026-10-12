@@ -2015,6 +2015,16 @@ function BlogsManager() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <a
+            href="/blogger"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono font-medium border border-paper-muted rounded hover:bg-paper-light text-ink transition-colors"
+            title="Open Blogger Studio writing portal"
+          >
+            <span>Blogger Portal</span>
+            <ExternalLinkIcon size={12} />
+          </a>
           {notice && (
             <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-mono">
               <CheckCircle2Icon size={14} />

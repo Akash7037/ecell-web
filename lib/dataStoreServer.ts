@@ -29,6 +29,23 @@ export interface StoredMember {
   sortOrder?: number;
 }
 
+export interface StoredBlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  contentHtml: string;
+  coverImageUrl?: string;
+  author: string;
+  authorRole?: string;
+  authorId?: string;
+  authorAvatarUrl?: string;
+  authorPortfolioUrl?: string;
+  publishedAt: string; // YYYY-MM-DD
+  readTime?: string;
+  tags?: string[];
+}
+
 // ─── Default Seeds ─────────────────────────────────────────────────────────────
 const defaultEvents: StoredEvent[] = [
   {
@@ -76,6 +93,7 @@ const defaultMembers: StoredMember[] = seedMembers.map((m) => ({
 const eventsFilePath = path.join(process.cwd(), 'data', 'events-store.json');
 const membersFilePath = path.join(process.cwd(), 'data', 'members-store.json');
 const subscribersFilePath = path.join(process.cwd(), 'data', 'subscribers-store.json');
+const blogsFilePath = path.join(process.cwd(), 'data', 'blogs-store.json');
 
 // ─── Supabase Client (Optional Cloud Sync) ────────────────────────────────────
 let supabase: SupabaseClient | null = null;
@@ -650,5 +668,121 @@ export async function removeSubscriber(email: string): Promise<boolean> {
   const list = readJsonFile<string[]>(subscribersFilePath, []);
   const filtered = list.filter((e) => e !== cleanEmail);
   writeJsonFile(subscribersFilePath, filtered);
+  return true;
+}
+
+// ─── Blogs Store ──────────────────────────────────────────────────────────────
+export async function getStoredBlogs(): Promise<StoredBlogPost[]> {
+  let blogs: StoredBlogPost[] = [];
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('blogs')
+        .select('*')
+        .order('published_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        blogs = data.map((d: any) => ({
+          id: d.id,
+          slug: d.slug,
+          title: d.title,
+          excerpt: d.excerpt || '',
+          contentHtml: d.content_html || d.contentHtml || '',
+          coverImageUrl: d.cover_image_url || d.coverImageUrl || '',
+          author: d.author || 'E-Cell Council',
+          authorRole: d.author_role || d.authorRole || '',
+          authorId: d.author_id || d.authorId || undefined,
+          authorAvatarUrl: d.author_avatar_url || d.authorAvatarUrl || undefined,
+          authorPortfolioUrl: d.author_portfolio_url || d.authorPortfolioUrl || undefined,
+          publishedAt: d.published_at || d.publishedAt || new Date().toISOString().split('T')[0],
+          readTime: d.read_time || d.readTime || '4 min read',
+          tags: Array.isArray(d.tags) ? d.tags : [],
+        }));
+      }
+    } catch (err) {
+      console.warn('Supabase getStoredBlogs error, falling back to local file:', err);
+    }
+  }
+
+  // Fallback to local JSON file if Supabase has no records or fails
+  if (blogs.length === 0) {
+    blogs = readJsonFile<StoredBlogPost[]>(blogsFilePath, []);
+  }
+
+  // Sort chronological descending: newest on top, older below
+  blogs.sort((a, b) => {
+    const timeA = new Date(a.publishedAt).getTime() || 0;
+    const timeB = new Date(b.publishedAt).getTime() || 0;
+    return timeB - timeA;
+  });
+
+  return blogs;
+}
+
+export async function getStoredBlogBySlug(slug: string): Promise<StoredBlogPost | null> {
+  const blogs = await getStoredBlogs();
+  const normalizedSlug = slug.trim().toLowerCase();
+  return blogs.find((b) => b.slug.toLowerCase() === normalizedSlug || b.id === normalizedSlug) || null;
+}
+
+export async function saveStoredBlog(blog: StoredBlogPost): Promise<boolean> {
+  // Sync to Supabase if configured
+  if (supabase) {
+    try {
+      await supabase.from('blogs').upsert({
+        id: blog.id,
+        slug: blog.slug,
+        title: blog.title,
+        excerpt: blog.excerpt,
+        content_html: blog.contentHtml,
+        cover_image_url: blog.coverImageUrl || '',
+        author: blog.author,
+        author_role: blog.authorRole || '',
+        author_id: blog.authorId || '',
+        author_avatar_url: blog.authorAvatarUrl || '',
+        author_portfolio_url: blog.authorPortfolioUrl || '',
+        published_at: blog.publishedAt,
+        read_time: blog.readTime || '4 min read',
+        tags: blog.tags || [],
+      });
+    } catch (err) {
+      console.warn('Supabase saveStoredBlog error, saving to local file:', err);
+    }
+  }
+
+  // Always save to local JSON file
+  const blogs = readJsonFile<StoredBlogPost[]>(blogsFilePath, []);
+  const index = blogs.findIndex((b) => b.id === blog.id || b.slug === blog.slug);
+
+  if (index >= 0) {
+    blogs[index] = { ...blogs[index], ...blog };
+  } else {
+    blogs.unshift(blog);
+  }
+
+  // Keep sorted descending
+  blogs.sort((a, b) => {
+    const timeA = new Date(a.publishedAt).getTime() || 0;
+    const timeB = new Date(b.publishedAt).getTime() || 0;
+    return timeB - timeA;
+  });
+
+  writeJsonFile(blogsFilePath, blogs);
+  return true;
+}
+
+export async function deleteStoredBlog(idOrSlug: string): Promise<boolean> {
+  if (supabase) {
+    try {
+      await supabase.from('blogs').delete().or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
+    } catch (err) {
+      console.warn('Supabase deleteStoredBlog error:', err);
+    }
+  }
+
+  const blogs = readJsonFile<StoredBlogPost[]>(blogsFilePath, []);
+  const filtered = blogs.filter((b) => b.id !== idOrSlug && b.slug !== idOrSlug);
+  writeJsonFile(blogsFilePath, filtered);
   return true;
 }

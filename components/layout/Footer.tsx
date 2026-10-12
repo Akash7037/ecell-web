@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 const FOOTER_LINKS = [
   { label: 'Events', href: '/events' },
+  { label: 'Blog', href: '/blog' },
   { label: 'Team', href: '/team' },
   { label: 'Contact', href: '/contact' },
 ];

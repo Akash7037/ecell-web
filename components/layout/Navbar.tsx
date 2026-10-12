@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 const NAV_LINKS = [
   { href: '/events', label: 'Events' },
+  { href: '/blog', label: 'Blog' },
   { href: '/team', label: 'Team' },
   { href: '/contact', label: 'Contact' },
 ];

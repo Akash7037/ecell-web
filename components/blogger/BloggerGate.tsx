@@ -1,34 +1,51 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { EyeIcon, EyeOffIcon, PenToolIcon } from 'lucide-react';
+
+export type BloggerRole = 'editor' | 'creator';
 
 interface BloggerGateProps {
   children: React.ReactNode;
 }
 
-const BLOGGER_PASSWORD = process.env.NEXT_PUBLIC_BLOGGER_PASSWORD || 'Blogger@26';
-const SESSION_KEY = 'ecell_blogger_auth';
+const PASSWORD_EDITOR = process.env.NEXT_PUBLIC_BLOGGER_PASSWORD || 'Blogger@26';
+const PASSWORD_CREATOR = process.env.NEXT_PUBLIC_BLOGGER_CREATOR_PASSWORD || 'Blogger@24';
+const SESSION_KEY_AUTH = 'ecell_blogger_auth';
+const SESSION_KEY_ROLE = 'ecell_blogger_role';
 
 export function BloggerGate({ children }: BloggerGateProps) {
   const [authenticated, setAuthenticated] = useState(false);
+  const [role, setRole] = useState<BloggerRole>('editor');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem(SESSION_KEY);
-    if (stored === 'true') {
+    const storedAuth = sessionStorage.getItem(SESSION_KEY_AUTH);
+    const storedRole = (sessionStorage.getItem(SESSION_KEY_ROLE) as BloggerRole) || 'editor';
+    if (storedAuth === 'true') {
       setAuthenticated(true);
+      setRole(storedRole);
     }
     setChecking(false);
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === BLOGGER_PASSWORD) {
-      sessionStorage.setItem(SESSION_KEY, 'true');
+    const cleanPw = password.trim();
+
+    if (cleanPw === PASSWORD_EDITOR) {
+      sessionStorage.setItem(SESSION_KEY_AUTH, 'true');
+      sessionStorage.setItem(SESSION_KEY_ROLE, 'editor');
+      setRole('editor');
+      setAuthenticated(true);
+      setError('');
+    } else if (cleanPw === PASSWORD_CREATOR) {
+      sessionStorage.setItem(SESSION_KEY_AUTH, 'true');
+      sessionStorage.setItem(SESSION_KEY_ROLE, 'creator');
+      setRole('creator');
       setAuthenticated(true);
       setError('');
     } else {
@@ -38,7 +55,12 @@ export function BloggerGate({ children }: BloggerGateProps) {
   };
 
   if (checking) return null;
-  if (authenticated) return <>{children}</>;
+  if (authenticated) {
+    if (React.isValidElement(children)) {
+      return React.cloneElement(children as React.ReactElement<any>, { role });
+    }
+    return <>{children}</>;
+  }
 
   return (
     <div className="min-h-screen bg-paper flex items-center justify-center px-6 py-12">

@@ -22,8 +22,12 @@ import {
   CodeIcon,
   FileTextIcon,
   Image as ImageIcon,
+  SparklesIcon,
+  Wand2Icon,
+  XIcon,
 } from 'lucide-react';
 import { isEventConcluded } from '@/lib/eventUtils';
+import { slugify, estimateReadTime } from '@/lib/slugUtils';
 
 // ─── Types ───────────────────────────────────────────────
 interface AdminEvent {
@@ -1803,6 +1807,14 @@ function BlogsManager() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
+  // AI Assistant State
+  const [aiFormatting, setAiFormatting] = useState(false);
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiTopic, setAiTopic] = useState('');
+  const [aiContext, setAiContext] = useState('');
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiError, setAiError] = useState('');
+
   const emptyBlog = {
     title: '',
     slug: '',
@@ -1919,6 +1931,83 @@ function BlogsManager() {
       const newCursor = start + snippet.length;
       textarea.setSelectionRange(newCursor, newCursor);
     }, 50);
+  };
+
+  const handleAiFormat = async () => {
+    if (!form.contentHtml || !form.contentHtml.trim()) {
+      alert('Please enter or paste your article text into the editor first, then click Format.');
+      return;
+    }
+    setAiFormatting(true);
+    try {
+      const res = await fetch('/api/ai/blog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'format', text: form.contentHtml }),
+      });
+      const data = await res.json();
+      if (res.ok && data.html) {
+        setForm((prev) => ({
+          ...prev,
+          contentHtml: data.html,
+          readTime: estimateReadTime(data.html),
+        }));
+        flashNotice('Formatted into semantic HTML with auto-detected headings!');
+      } else {
+        alert(`AI Formatting Notice: ${data.error || 'Failed to format content'}`);
+      }
+    } catch (err) {
+      console.error('AI format error:', err);
+      alert('Unable to connect to AI formatting service.');
+    } finally {
+      setAiFormatting(false);
+    }
+  };
+
+  const handleAiGenerate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aiTopic.trim()) {
+      setAiError('Please enter an article topic.');
+      return;
+    }
+    setAiGenerating(true);
+    setAiError('');
+    try {
+      const res = await fetch('/api/ai/blog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'generate',
+          topic: aiTopic.trim(),
+          context: aiContext.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.html) {
+        const targetTitle = form.title.trim() ? form.title : aiTopic.trim();
+        const targetSlug = form.slug.trim() ? form.slug : slugify(targetTitle);
+        const targetExcerpt = form.excerpt.trim() ? form.excerpt : data.excerpt || targetTitle;
+        setForm((prev) => ({
+          ...prev,
+          title: targetTitle,
+          slug: targetSlug,
+          excerpt: targetExcerpt,
+          contentHtml: data.html,
+          readTime: estimateReadTime(data.html),
+        }));
+        setShowAiModal(false);
+        setAiTopic('');
+        setAiContext('');
+        flashNotice('Article generated successfully with NVIDIA AI! You can review and publish.');
+      } else {
+        setAiError(data.error || 'Failed to generate article from AI.');
+      }
+    } catch (err) {
+      console.error('AI generate error:', err);
+      setAiError('Network error while connecting to NVIDIA AI service.');
+    } finally {
+      setAiGenerating(false);
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -2353,32 +2442,67 @@ function BlogsManager() {
                   </button>
                 </div>
 
-                {/* Mode Switcher */}
-                <div className="flex items-center gap-1 bg-paper border border-paper-muted p-0.5 rounded text-xs">
-                  <button
-                    type="button"
-                    onClick={() => setEditorMode('html')}
-                    className={`flex items-center gap-1 px-2.5 py-1 rounded transition-colors ${
-                      editorMode === 'html'
-                        ? 'bg-ink text-paper-DEFAULT font-semibold'
-                        : 'text-ink-muted hover:text-ink'
-                    }`}
-                  >
-                    <CodeIcon size={12} />
-                    HTML Editor
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditorMode('preview')}
-                    className={`flex items-center gap-1 px-2.5 py-1 rounded transition-colors ${
-                      editorMode === 'preview'
-                        ? 'bg-ink text-paper-DEFAULT font-semibold'
-                        : 'text-ink-muted hover:text-ink'
-                    }`}
-                  >
-                    <EyeIcon size={12} />
-                    Live Preview
-                  </button>
+                {/* Right Tools: AI Buttons & Mode Switcher */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* AI Action Buttons */}
+                  <div className="flex items-center gap-1.5 pl-2 sm:border-l border-paper-muted">
+                    <button
+                      type="button"
+                      disabled={aiFormatting}
+                      onClick={handleAiFormat}
+                      className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-mono font-semibold bg-vermilion/10 text-vermilion border border-vermilion/30 rounded hover:bg-vermilion hover:text-white transition-colors disabled:opacity-50 select-none cursor-pointer"
+                      title="Auto-format plain text into clean semantic HTML with auto-detected headings"
+                    >
+                      {aiFormatting ? (
+                        <Loader2Icon size={12} className="animate-spin" />
+                      ) : (
+                        <SparklesIcon size={12} />
+                      )}
+                      <span>{aiFormatting ? 'Formatting...' : 'Format'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAiError('');
+                        if (form.title && !aiTopic) setAiTopic(form.title);
+                        setShowAiModal(true);
+                      }}
+                      className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-mono font-semibold bg-ink text-white rounded hover:bg-ink/85 transition-colors select-none cursor-pointer"
+                      title="Generate article content from a topic using NVIDIA AI"
+                    >
+                      <Wand2Icon size={12} />
+                      <span>Generate</span>
+                    </button>
+                  </div>
+
+                  {/* Mode Switcher */}
+                  <div className="flex items-center gap-1 bg-paper border border-paper-muted p-0.5 rounded text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setEditorMode('html')}
+                      className={`flex items-center gap-1 px-2.5 py-1 rounded transition-colors ${
+                        editorMode === 'html'
+                          ? 'bg-ink text-paper-DEFAULT font-semibold'
+                          : 'text-ink-muted hover:text-ink'
+                      }`}
+                    >
+                      <CodeIcon size={12} />
+                      HTML Editor
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditorMode('preview')}
+                      className={`flex items-center gap-1 px-2.5 py-1 rounded transition-colors ${
+                        editorMode === 'preview'
+                          ? 'bg-ink text-paper-DEFAULT font-semibold'
+                          : 'text-ink-muted hover:text-ink'
+                      }`}
+                    >
+                      <EyeIcon size={12} />
+                      Live Preview
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -2527,6 +2651,103 @@ function BlogsManager() {
           </div>
         )}
       </div>
+
+      {/* AI Generate Modal Dialog */}
+      {showAiModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/60 backdrop-blur-xs">
+          <div className="bg-paper border border-paper-muted rounded-sm max-w-lg w-full p-6 shadow-xl relative animate-fade-in">
+            <button
+              type="button"
+              onClick={() => setShowAiModal(false)}
+              className="absolute right-4 top-4 text-ink-light hover:text-ink p-1"
+              aria-label="Close"
+            >
+              <XIcon size={18} />
+            </button>
+
+            <div className="flex items-center gap-2.5 mb-2">
+              <div className="w-8 h-8 rounded-full bg-vermilion/10 text-vermilion flex items-center justify-center">
+                <Wand2Icon size={16} />
+              </div>
+              <div>
+                <h3 className="font-headline text-lg font-bold text-ink">AI Article Generator</h3>
+                <p className="text-[11px] font-mono text-ink-light">NVIDIA AI · openai/gpt-oss-20b</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-ink-muted mb-5 leading-relaxed">
+              Enter your topic and optional focus points. AI will generate an article in semantic HTML format with headings, paragraphs, and takeaways.
+            </p>
+
+            <form onSubmit={handleAiGenerate} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-ink mb-1">
+                  Topic / Headline <span className="text-vermilion">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={aiTopic}
+                  onChange={(e) => setAiTopic(e.target.value)}
+                  placeholder="e.g. From Prototype to Patent: Filing Student Inventions"
+                  className="w-full border border-paper-muted bg-paper-light rounded-sm px-3.5 py-2 text-xs text-ink focus:outline-none focus:border-ink font-medium"
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-ink mb-1">
+                  Summary &amp; Key Notes <span className="text-ink-light font-normal">(Optional)</span>
+                </label>
+                <textarea
+                  rows={4}
+                  value={aiContext}
+                  onChange={(e) => setAiContext(e.target.value)}
+                  placeholder="e.g. Key points to mention: provisional patents, Tamil Nadu startup ecosystem, engineering lab validation, bill of materials analysis..."
+                  className="w-full border border-paper-muted bg-paper-light rounded-sm px-3.5 py-2 text-xs text-ink focus:outline-none focus:border-ink leading-relaxed"
+                />
+                <span className="text-[10px] text-ink-light mt-1 block">
+                  Add bullet points or specific details you want included in the generated story.
+                </span>
+              </div>
+
+              {aiError && (
+                <div className="p-2.5 bg-red-50 border border-red-200 rounded text-xs text-vermilion">
+                  {aiError}
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-paper-muted">
+                <button
+                  type="button"
+                  disabled={aiGenerating}
+                  onClick={() => setShowAiModal(false)}
+                  className="px-4 py-2 border border-paper-muted text-xs font-semibold text-ink-muted hover:text-ink rounded-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={aiGenerating}
+                  className="flex items-center gap-2 bg-[#C2410C] text-white text-xs font-semibold px-5 py-2 rounded-sm disabled:opacity-50 select-none cursor-pointer"
+                >
+                  {aiGenerating ? (
+                    <>
+                      <Loader2Icon size={13} className="animate-spin" />
+                      <span>Generating with AI...</span>
+                    </>
+                  ) : (
+                    <>
+                      <SparklesIcon size={13} />
+                      <span>Generate Article</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

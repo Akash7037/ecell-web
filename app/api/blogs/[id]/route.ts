@@ -55,6 +55,7 @@ export async function PUT(
       publishedAt: body.publishedAt !== undefined ? body.publishedAt.trim() : existing.publishedAt,
       readTime: body.readTime !== undefined ? body.readTime.trim() : (body.contentHtml ? estimateReadTime(body.contentHtml) : existing.readTime),
       tags: Array.isArray(body.tags) ? body.tags.filter(Boolean) : existing.tags,
+      showLogoOverlay: body.showLogoOverlay !== undefined ? Boolean(body.showLogoOverlay) : (existing.showLogoOverlay !== false),
     };
 
     await saveStoredBlog(updated);

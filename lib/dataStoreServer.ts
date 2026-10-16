@@ -44,6 +44,7 @@ export interface StoredBlogPost {
   publishedAt: string; // YYYY-MM-DD
   readTime?: string;
   tags?: string[];
+  showLogoOverlay?: boolean;
 }
 
 export interface StoredEventSuggestion {
@@ -723,6 +724,7 @@ export async function getStoredBlogs(): Promise<StoredBlogPost[]> {
             publishedAt: d.published_at || d.publishedAt || new Date().toISOString().split('T')[0],
             readTime: d.read_time || d.readTime || '4 min read',
             tags: Array.isArray(d.tags) ? d.tags : [],
+            showLogoOverlay: d.show_logo_overlay !== undefined ? Boolean(d.show_logo_overlay) : (d.showLogoOverlay !== false),
           }));
         }
       } catch (err) {
@@ -814,6 +816,7 @@ export async function saveStoredBlog(blog: StoredBlogPost): Promise<boolean> {
         published_at: blog.publishedAt,
         read_time: blog.readTime || '4 min read',
         tags: blog.tags || [],
+        show_logo_overlay: blog.showLogoOverlay !== false,
       });
     } catch (err) {
       // Table may not exist yet

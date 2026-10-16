@@ -1797,6 +1797,7 @@ interface AdminBlog {
   publishedAt: string;
   readTime?: string;
   tags?: string[];
+  showLogoOverlay?: boolean;
 }
 
 function BlogsManager() {
@@ -1833,6 +1834,7 @@ function BlogsManager() {
     publishedAt: new Date().toISOString().split('T')[0],
     readTime: '4 min read',
     tags: '',
+    showLogoOverlay: true,
   };
 
   const [form, setForm] = useState(emptyBlog);
@@ -1904,6 +1906,7 @@ function BlogsManager() {
       publishedAt: blog.publishedAt || new Date().toISOString().split('T')[0],
       readTime: blog.readTime || '4 min read',
       tags: Array.isArray(blog.tags) ? blog.tags.join(', ') : '',
+      showLogoOverlay: blog.showLogoOverlay !== false,
     });
     setEditorMode('html');
     setTimeout(() => {
@@ -2047,6 +2050,7 @@ function BlogsManager() {
         publishedAt: form.publishedAt.trim(),
         readTime: form.readTime.trim(),
         tags: parsedTags,
+        showLogoOverlay: form.showLogoOverlay !== false,
       };
 
       const res = await fetch('/api/blogs', {
@@ -2373,6 +2377,18 @@ function BlogsManager() {
               value={form.coverImageUrl}
               onChange={(url: string) => setForm({ ...form, coverImageUrl: url })}
             />
+            <div className="flex items-center gap-2 -mt-2 mb-2">
+              <input
+                type="checkbox"
+                id="admin-show-logo-overlay"
+                checked={form.showLogoOverlay !== false}
+                onChange={(e) => setForm({ ...form, showLogoOverlay: e.target.checked })}
+                className="w-4 h-4 rounded border-paper-muted text-ink focus:ring-vermilion accent-vermilion cursor-pointer"
+              />
+              <label htmlFor="admin-show-logo-overlay" className="text-xs text-ink font-medium cursor-pointer select-none">
+                Show E-Cell & NEC logo notch overlay on cover image (top-center)
+              </label>
+            </div>
 
             {/* Content HTML Editor with Quick Insert Toolbar & Live Preview */}
             <div className="border border-paper-muted rounded-sm bg-paper overflow-hidden">

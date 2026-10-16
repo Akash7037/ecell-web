@@ -34,6 +34,17 @@ export default function BlogCard({ post }: BlogCardProps) {
             className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
             loading="lazy"
           />
+
+          {/* Top-Center Rectangle Notch */}
+          {post.showLogoOverlay !== false && (
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10 px-3 py-1 bg-[#FAF9F6] border-b border-x border-t-0 border-stone-300/80 shadow-2xs rounded-t-none rounded-b-xl flex items-center justify-center">
+              <img
+                src="/images/blog-header-badge.png"
+                alt="E-Cell Badge"
+                className="h-5 sm:h-5.5 w-auto max-w-[160px] sm:max-w-[180px] object-contain select-none pointer-events-none"
+              />
+            </div>
+          )}
         </div>
       )}
 

@@ -63,6 +63,7 @@ export async function POST(request: NextRequest) {
       publishedAt,
       readTime: body.readTime?.trim() || estimateReadTime(body.contentHtml),
       tags: Array.isArray(body.tags) ? body.tags.filter(Boolean) : [],
+      showLogoOverlay: body.showLogoOverlay !== false,
     };
 
     const saved = await saveStoredBlog(blog);

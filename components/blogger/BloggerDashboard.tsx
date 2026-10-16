@@ -35,6 +35,7 @@ interface BloggerPost {
   publishedAt: string;
   readTime?: string;
   tags?: string[];
+  showLogoOverlay?: boolean;
 }
 
 interface TeamMember {
@@ -87,6 +88,7 @@ export function BloggerDashboard({ role }: BloggerDashboardProps) {
     publishedAt: new Date().toISOString().split('T')[0],
     readTime: '4 min read',
     tags: '',
+    showLogoOverlay: true,
   };
 
   const [form, setForm] = useState(emptyBlog);
@@ -173,6 +175,7 @@ export function BloggerDashboard({ role }: BloggerDashboardProps) {
       publishedAt: blog.publishedAt || new Date().toISOString().split('T')[0],
       readTime: blog.readTime || '4 min read',
       tags: Array.isArray(blog.tags) ? blog.tags.join(', ') : '',
+      showLogoOverlay: blog.showLogoOverlay !== false,
     });
     setEditorMode('html');
     setTimeout(() => {
@@ -325,6 +328,7 @@ export function BloggerDashboard({ role }: BloggerDashboardProps) {
         publishedAt: form.publishedAt.trim(),
         readTime: form.readTime.trim() || estimateReadTime(form.contentHtml),
         tags: parsedTags,
+        showLogoOverlay: form.showLogoOverlay !== false,
       };
 
       const res = await fetch('/api/blogs', {
@@ -774,6 +778,18 @@ export function BloggerDashboard({ role }: BloggerDashboardProps) {
                   placeholder="https://images.unsplash.com/... or media URL"
                   className="w-full border border-paper-muted bg-paper rounded-sm px-3 py-2 text-xs text-ink focus:outline-none focus:border-ink font-mono"
                 />
+                <div className="mt-2 flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="blogger-show-logo-overlay"
+                    checked={form.showLogoOverlay !== false}
+                    onChange={(e) => setForm({ ...form, showLogoOverlay: e.target.checked })}
+                    className="w-4 h-4 rounded border-paper-muted text-ink focus:ring-vermilion accent-vermilion cursor-pointer"
+                  />
+                  <label htmlFor="blogger-show-logo-overlay" className="text-xs text-ink font-medium cursor-pointer select-none">
+                    Show E-Cell & NEC logo notch overlay on cover image (top-center)
+                  </label>
+                </div>
               </div>
 
               {/* Content HTML Editor with Quick Insert, AI Assistant & Live Preview */}

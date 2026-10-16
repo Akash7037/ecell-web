@@ -183,7 +183,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </div>
         </header>
 
-        {/* Cover Image (Responsive & strictly non-stretched) */}
+        {/* Cover Image (Responsive & strictly non-stretched with Top-Center Logo Notch) */}
         {post.coverImageUrl && (
           <div className="mx-auto max-w-4xl px-7 sm:px-8 md:px-6 my-6 md:my-10">
             <div className="relative w-full max-h-[480px] overflow-hidden rounded-lg border border-paper-muted bg-paper-light">
@@ -193,6 +193,17 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 className="w-full h-auto max-h-[480px] object-cover mx-auto"
                 priority-hint="high"
               />
+
+              {/* Top-Center Rectangle Notch (Only bottom corners rounded) */}
+              {post.showLogoOverlay !== false && (
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 px-6 py-2.5 sm:px-8 sm:py-3 md:px-9 md:py-3.5 bg-[#FAF9F6] border-b border-x border-t-0 border-stone-300/80 shadow-md rounded-t-none rounded-b-2xl sm:rounded-b-3xl flex items-center justify-center">
+                  <img
+                    src="/images/blog-header-badge.png"
+                    alt="E-Cell VSBCETC & NEC IIT Bombay"
+                    className="h-10 sm:h-12 md:h-14 w-auto max-w-[320px] sm:max-w-[400px] md:max-w-[480px] object-contain select-none pointer-events-none"
+                  />
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -183,27 +183,51 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </div>
         </header>
 
-        {/* Cover Image (Responsive & strictly non-stretched with Top-Center Logo Notch) */}
+        {/* Cover Image with Top Branding Bar */}
         {post.coverImageUrl && (
           <div className="mx-auto max-w-4xl px-7 sm:px-8 md:px-6 my-6 md:my-10">
-            <div className="relative w-full max-h-[480px] overflow-hidden rounded-lg border border-paper-muted bg-paper-light">
-              <img
-                src={post.coverImageUrl}
-                alt={post.title}
-                className="w-full h-auto max-h-[480px] object-cover mx-auto"
-                priority-hint="high"
-              />
-
-              {/* Top-Center Rectangle Notch (Only bottom corners rounded) */}
+            <div className="group overflow-hidden rounded-lg border border-paper-muted bg-paper shadow-2xs">
+              {/* Extra White Bar Above Image */}
               {post.showLogoOverlay !== false && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 px-6 py-2.5 sm:px-8 sm:py-3 md:px-9 md:py-3.5 bg-[#FAF9F6] border-b border-x border-t-0 border-stone-300/80 shadow-md rounded-t-none rounded-b-2xl sm:rounded-b-3xl flex items-center justify-center">
-                  <img
-                    src="/images/blog-header-badge.png"
-                    alt="E-Cell VSBCETC & NEC IIT Bombay"
-                    className="h-10 sm:h-12 md:h-14 w-auto max-w-[320px] sm:max-w-[400px] md:max-w-[480px] object-contain select-none pointer-events-none"
-                  />
+                <div className="bg-white border-b border-paper-muted px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-4">
+                  {/* Left: E-Cell VSBCETC */}
+                  <div className="flex items-center">
+                    <img
+                      src="/images/logo-ecell-vsbcetc.png"
+                      alt="E-Cell VSBCETC"
+                      className="h-8 sm:h-10 md:h-12 w-auto object-contain select-none"
+                    />
+                  </div>
+
+                  {/* Middle: NEC 2026 IIT Bombay */}
+                  <div className="flex items-center justify-center">
+                    <img
+                      src="/images/logo-nec-iitb.png"
+                      alt="National Entrepreneurship Challenge 2026 - IIT Bombay"
+                      className="h-7 sm:h-9 md:h-11 w-auto object-contain select-none"
+                    />
+                  </div>
+
+                  {/* Right: E-Cell IIT Bombay */}
+                  <div className="flex items-center justify-end">
+                    <img
+                      src="/images/logo-ecell-iitb.png"
+                      alt="E-Cell IIT Bombay"
+                      className="h-7 sm:h-9 md:h-11 w-auto object-contain select-none"
+                    />
+                  </div>
                 </div>
               )}
+
+              {/* Cover Image Container */}
+              <div className="relative w-full max-h-[480px] overflow-hidden bg-paper-light">
+                <img
+                  src={post.coverImageUrl}
+                  alt={post.title}
+                  className="w-full h-auto max-h-[480px] object-cover mx-auto transition-transform duration-500 ease-out group-hover:scale-105"
+                  priority-hint="high"
+                />
+              </div>
             </div>
           </div>
         )}

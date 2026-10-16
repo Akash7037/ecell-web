@@ -25,26 +25,42 @@ export default function BlogCard({ post }: BlogCardProps) {
 
   return (
     <article className="group relative flex flex-col md:flex-row items-stretch gap-6 md:gap-8 py-8 md:py-10 border-b border-paper-muted transition-colors">
-      {/* Cover Image (if available) - Enforced non-stretch aspect ratio */}
+      {/* Cover Image Block with Top White Branding Bar */}
       {post.coverImageUrl && (
-        <div className="relative w-full md:w-72 lg:w-80 h-52 md:h-48 shrink-0 overflow-hidden rounded bg-paper-light border border-paper-muted">
-          <img
-            src={post.coverImageUrl}
-            alt={post.title}
-            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-            loading="lazy"
-          />
-
-          {/* Top-Center Rectangle Notch */}
+        <div className="relative w-full md:w-72 lg:w-80 h-56 md:h-52 shrink-0 overflow-hidden rounded bg-paper border border-paper-muted flex flex-col shadow-2xs">
+          {/* Top White Bar with 3 Logos */}
           {post.showLogoOverlay !== false && (
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10 px-3 py-1 bg-[#FAF9F6] border-b border-x border-t-0 border-stone-300/80 shadow-2xs rounded-t-none rounded-b-xl flex items-center justify-center">
+            <div className="bg-white border-b border-paper-muted px-3 py-1.5 flex items-center justify-between shrink-0 z-10">
+              {/* Left: E-Cell VSBCETC */}
               <img
-                src="/images/blog-header-badge.png"
-                alt="E-Cell Badge"
-                className="h-5 sm:h-5.5 w-auto max-w-[160px] sm:max-w-[180px] object-contain select-none pointer-events-none"
+                src="/images/logo-ecell-vsbcetc.png"
+                alt="E-Cell VSBCETC"
+                className="h-4 sm:h-5 w-auto object-contain select-none"
+              />
+              {/* Middle: NEC 2026 */}
+              <img
+                src="/images/logo-nec-iitb.png"
+                alt="NEC 2026"
+                className="h-3.5 sm:h-4.5 w-auto object-contain select-none"
+              />
+              {/* Right: E-Cell IIT Bombay */}
+              <img
+                src="/images/logo-ecell-iitb.png"
+                alt="E-Cell IIT Bombay"
+                className="h-3.5 sm:h-4.5 w-auto object-contain select-none"
               />
             </div>
           )}
+
+          {/* Cover Image Container with Hover Animation */}
+          <div className="relative w-full flex-1 min-h-0 overflow-hidden bg-paper-light">
+            <img
+              src={post.coverImageUrl}
+              alt={post.title}
+              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+              loading="lazy"
+            />
+          </div>
         </div>
       )}
 

@@ -46,6 +46,13 @@ export interface StoredBlogPost {
   tags?: string[];
 }
 
+export interface StoredEventSuggestion {
+  id: string;
+  idea: string;
+  contact?: string;
+  createdAt: string; // ISO string
+}
+
 // ─── Default Seeds ─────────────────────────────────────────────────────────────
 const defaultEvents: StoredEvent[] = [
   {
@@ -94,6 +101,7 @@ const eventsFilePath = path.join(process.cwd(), 'data', 'events-store.json');
 const membersFilePath = path.join(process.cwd(), 'data', 'members-store.json');
 const subscribersFilePath = path.join(process.cwd(), 'data', 'subscribers-store.json');
 const blogsFilePath = path.join(process.cwd(), 'data', 'blogs-store.json');
+const eventSuggestionsFilePath = path.join(process.cwd(), 'data', 'event-suggestions-store.json');
 
 // ─── Supabase Client (Optional Cloud Sync) ────────────────────────────────────
 let supabase: SupabaseClient | null = null;
@@ -838,6 +846,80 @@ export async function deleteStoredBlog(idOrSlug: string): Promise<boolean> {
       await supabase.from('blogs').delete().or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
     } catch (err) {
       // Table may not exist yet
+    }
+  }
+
+  return true;
+}
+
+// ─── Event Suggestions Store ──────────────────────────────────────────────────
+export async function getStoredEventSuggestions(): Promise<StoredEventSuggestion[]> {
+  let suggestions: StoredEventSuggestion[] = [];
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'event_suggestions')
+        .maybeSingle();
+
+      if (!error && data?.value?.suggestions && Array.isArray(data.value.suggestions)) {
+        suggestions = data.value.suggestions;
+      }
+    } catch (err) {
+      console.warn('Supabase site_settings event_suggestions read warning:', err);
+    }
+  }
+
+  if (suggestions.length === 0) {
+    suggestions = readJsonFile<StoredEventSuggestion[]>(eventSuggestionsFilePath, []);
+  }
+
+  // Sort newest first
+  suggestions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  return suggestions;
+}
+
+export async function saveStoredEventSuggestion(suggestion: StoredEventSuggestion): Promise<boolean> {
+  const suggestions = await getStoredEventSuggestions();
+  // Filter out any duplicate id just in case
+  const filtered = suggestions.filter((s) => s.id !== suggestion.id);
+  filtered.unshift(suggestion);
+
+  writeJsonFile(eventSuggestionsFilePath, filtered);
+
+  if (supabase) {
+    try {
+      await supabase.from('site_settings').upsert({
+        key: 'event_suggestions',
+        value: { suggestions: filtered },
+        updated_at: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.warn('Supabase site_settings save error for event_suggestions:', err);
+    }
+  }
+
+  return true;
+}
+
+export async function deleteStoredEventSuggestion(id: string): Promise<boolean> {
+  const suggestions = await getStoredEventSuggestions();
+  const filtered = suggestions.filter((s) => s.id !== id);
+
+  writeJsonFile(eventSuggestionsFilePath, filtered);
+
+  if (supabase) {
+    try {
+      await supabase.from('site_settings').upsert({
+        key: 'event_suggestions',
+        value: { suggestions: filtered },
+        updated_at: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.warn('Supabase site_settings delete error for event_suggestions:', err);
     }
   }
 

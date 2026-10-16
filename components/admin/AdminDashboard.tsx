@@ -25,7 +25,9 @@ import {
   SparklesIcon,
   Wand2Icon,
   XIcon,
+  LightbulbIcon,
 } from 'lucide-react';
+import { EventSuggestionsManager } from './EventSuggestionsManager';
 import { isEventConcluded } from '@/lib/eventUtils';
 import { slugify, estimateReadTime } from '@/lib/slugUtils';
 
@@ -56,13 +58,14 @@ interface AdminMember {
 }
 
 // ─── Admin Dashboard ─────────────────────────────────────
-type Tab = 'events' | 'blogs' | 'team' | 'subscribers' | 'settings';
+type Tab = 'events' | 'suggestions' | 'blogs' | 'team' | 'subscribers' | 'settings';
 
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('events');
 
   const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: 'events', label: 'Events', icon: CalendarIcon },
+    { id: 'suggestions', label: 'Suggestions', icon: LightbulbIcon },
     { id: 'blogs', label: 'Blog Posts', icon: BookOpenIcon },
     { id: 'team', label: 'Team', icon: UsersIcon },
     { id: 'subscribers', label: 'Subscribers', icon: MailIcon },
@@ -117,6 +120,7 @@ export function AdminDashboard() {
       {/* Content */}
       <div className="mx-auto max-w-5xl px-6 py-10">
         {activeTab === 'events' && <EventsManager />}
+        {activeTab === 'suggestions' && <EventSuggestionsManager />}
         {activeTab === 'blogs' && <BlogsManager />}
         {activeTab === 'team' && <TeamManager />}
         {activeTab === 'subscribers' && <SubscribersManager />}

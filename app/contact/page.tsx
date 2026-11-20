@@ -12,8 +12,8 @@ const contacts = [
   {
     icon: MailIcon,
     label: 'Email',
-    value: 'ecell@vsb.ac.in',
-    href: 'mailto:ecell@vsb.ac.in',
+    value: 'ecellvsbcetc@gmail.com',
+    href: 'mailto:ecellvsbcetc@gmail.com',
   },
   {
     icon: MapPinIcon,

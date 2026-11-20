@@ -52,10 +52,10 @@ export default function Footer() {
               Contact
             </p>
             <a
-              href="mailto:ecell@vsb.ac.in"
+              href="mailto:ecellvsbcetc@gmail.com"
               className="text-sm text-ink-muted hover:text-ink transition-colors duration-150 block"
             >
-              ecell@vsb.ac.in
+              ecellvsbcetc@gmail.com
             </a>
           </div>
         </div>

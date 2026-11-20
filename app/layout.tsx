@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import LoadingScreen from '@/components/ui/LoadingScreen';
+import RouteSkeletonLoader from '@/components/skeletons/RouteSkeletonLoader';
 import SubscribeModal from '@/components/ui/SubscribeModal';
 import './globals.css';
 
@@ -176,6 +177,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <LoadingScreen />
+        <RouteSkeletonLoader />
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>

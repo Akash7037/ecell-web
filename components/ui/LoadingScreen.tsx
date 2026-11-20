@@ -1,15 +1,34 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 const LETTERS = ['L', 'O', 'A', 'D', 'I', 'N', 'G'];
 
 export default function LoadingScreen() {
-  const [mounted, setMounted] = useState(true);
+  const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
   const [isFading, setIsFading] = useState(false);
 
   useEffect(() => {
+    // Only show old loading screen on the home page ('/') and only on first initial visit
+    if (pathname !== '/') {
+      return;
+    }
+
+    try {
+      const introSeen = sessionStorage.getItem('ecell_home_intro_seen');
+      if (introSeen) {
+        return;
+      }
+      sessionStorage.setItem('ecell_home_intro_seen', 'true');
+    } catch {
+      // Ignore storage errors in private browsing/restricted modes
+    }
+
+    setMounted(true);
+
     // Lock scroll briefly during active loading
     document.body.style.overflow = 'hidden';
 
@@ -17,20 +36,20 @@ export default function LoadingScreen() {
     const fadeTimer = setTimeout(() => {
       setIsFading(true);
       document.body.style.overflow = '';
-    }, 650);
+    }, 700);
 
     // Completely unmount and clear from DOM after fade completes
     const unmountTimer = setTimeout(() => {
       setMounted(false);
       document.body.style.overflow = '';
-    }, 1050);
+    }, 1100);
 
     return () => {
       clearTimeout(fadeTimer);
       clearTimeout(unmountTimer);
       document.body.style.overflow = '';
     };
-  }, []);
+  }, [pathname]);
 
   if (!mounted) return null;
 

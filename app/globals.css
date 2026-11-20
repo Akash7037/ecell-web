@@ -371,4 +371,67 @@
   margin: 2.5rem 0;
 }
 
+/* ─── Skeleton Loading Shimmer & Pulse ──────────────────── */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #EBE7DF 0%,
+    #F4EFE7 35%,
+    #FFFFFF 50%,
+    #F4EFE7 65%,
+    #EBE7DF 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.skeleton-box {
+  background-color: #E8E4DC;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-box::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes fadeInFast {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeInFast 0.2s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer,
+  .skeleton-box::after {
+    animation: none !important;
+  }
+}
+
 

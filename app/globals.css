@@ -427,10 +427,38 @@
   animation: fadeInFast 0.2s ease-out forwards;
 }
 
+/* ─── Cascading Staggered Entrance ──────────────────────── */
+@keyframes cascadeEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cascade-item {
+  opacity: 0;
+  animation: cascadeEntrance 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.cascade-delay-0 { animation-delay: 20ms; }
+.cascade-delay-1 { animation-delay: 60ms; }
+.cascade-delay-2 { animation-delay: 110ms; }
+.cascade-delay-3 { animation-delay: 160ms; }
+.cascade-delay-4 { animation-delay: 220ms; }
+.cascade-delay-5 { animation-delay: 280ms; }
+.cascade-delay-6 { animation-delay: 340ms; }
+
 @media (prefers-reduced-motion: reduce) {
   .skeleton-shimmer,
-  .skeleton-box::after {
+  .skeleton-box::after,
+  .cascade-item {
     animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 

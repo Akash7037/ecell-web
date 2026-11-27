@@ -96,7 +96,7 @@ export default function RouteSkeletonLoader() {
   useEffect(() => {
     if (!isNavigating) return;
 
-    const minDisplayMs = 380; // Minimum time to let skeleton shimmer pleasantly
+    const minDisplayMs = 400; // Let skeleton cascade and shimmer smoothly
     const elapsed = Date.now() - startTimeRef.current;
     const remainingTime = Math.max(0, minDisplayMs - elapsed);
 
@@ -111,7 +111,7 @@ export default function RouteSkeletonLoader() {
         setIsNavigating(false);
         setIsFading(false);
         setTargetPath(null);
-      }, 320); // Matches transition-opacity duration-300
+      }, 350); // Matches transition duration
 
       return () => clearTimeout(cleanupTimer);
     }, remainingTime);
@@ -141,8 +141,8 @@ export default function RouteSkeletonLoader() {
   return (
     <div
       aria-hidden="true"
-      className={`fixed inset-0 top-0 left-0 right-0 z-40 bg-[#FAF8F2] overflow-y-auto pointer-events-none select-none transition-opacity duration-300 ease-out ${
-        isFading ? 'opacity-0' : 'opacity-100'
+      className={`fixed inset-0 top-0 left-0 right-0 z-40 bg-[#FAF8F2] overflow-y-auto pointer-events-none select-none transition-all duration-350 ease-out ${
+        isFading ? 'opacity-0 filter blur-[1px]' : 'opacity-100 filter blur-0'
       }`}
     >
       {renderSkeleton(targetPath)}

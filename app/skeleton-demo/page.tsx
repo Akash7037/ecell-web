@@ -10,7 +10,7 @@ import ContactSkeleton from '@/components/skeletons/ContactSkeleton';
 import HomeSkeleton from '@/components/skeletons/HomeSkeleton';
 
 export default function SkeletonDemoPage() {
-  const [activeTab, setActiveTab] = useState<'events' | 'blog' | 'blog-detail' | 'team' | 'contact' | 'home'>('team');
+  const [activeTab, setActiveTab] = useState<'events' | 'blog' | 'blog-detail' | 'team' | 'contact' | 'home'>('blog');
 
   return (
     <div className="min-h-screen bg-[#FAF8F2]">
